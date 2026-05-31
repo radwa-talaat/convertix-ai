@@ -1,0 +1,23 @@
+import { z } from "zod";
+
+const envSchema = z.object({
+  AI_RATE_LIMIT_MAX_REQUESTS: z.coerce.number().int().positive().default(10),
+  AI_RATE_LIMIT_WINDOW_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(3600),
+  NEXT_PUBLIC_APP_URL: z.string().url(),
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+  OPENAI_API_KEY: z.string().min(1),
+  OPENAI_MODEL: z.string().min(1).default("gpt-5.4-mini"),
+  PAYMOB_HMAC_SECRET: z.string().min(1),
+  PAYMOB_PUBLIC_KEY: z.string().min(1),
+  PAYMOB_SECRET_KEY: z.string().min(1),
+  SUPABASE_SECRET_KEY: z.string().min(1),
+});
+
+export function validateProductionEnv(env: NodeJS.ProcessEnv) {
+  return envSchema.safeParse(env);
+}

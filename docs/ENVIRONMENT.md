@@ -1,0 +1,32 @@
+# Environment Variables
+
+## Public
+
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+## Server Only
+
+- `SUPABASE_SECRET_KEY`
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL`
+- `AI_RATE_LIMIT_MAX_REQUESTS`
+- `AI_RATE_LIMIT_WINDOW_SECONDS`
+- `PAYMOB_BASE_URL`
+- `PAYMOB_PUBLIC_KEY`
+- `PAYMOB_SECRET_KEY`
+- `PAYMOB_HMAC_SECRET`
+- `PAYMOB_CARD_INTEGRATION_ID`
+- `PAYMOB_WALLET_INTEGRATION_ID`
+- `PAYMOB_APPLE_PAY_INTEGRATION_ID`
+
+## Validation
+
+Run:
+
+```bash
+npm run check:prod-env
+```
+
+Use `.env.example` as the canonical template.

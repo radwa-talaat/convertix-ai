@@ -1,0 +1,40 @@
+import { CreditCard, ShieldCheck } from "lucide-react";
+
+import { SubscriptionStatusBadge } from "@/components/billing/subscription-status-badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatEgp } from "@/lib/payments";
+import type { BillingPlan, BillingSubscription } from "@/types/billing";
+
+export function CurrentPlanCard({
+  plan,
+  subscription,
+}: {
+  plan: BillingPlan;
+  subscription: BillingSubscription;
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <CardTitle>Current plan</CardTitle>
+        <CreditCard className="size-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-3xl font-semibold">{plan.name}</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {plan.priceEgp === 0
+                ? "No active paid subscription"
+                : `${formatEgp(plan.priceEgp * 100)} per month`}
+            </p>
+          </div>
+          <SubscriptionStatusBadge status={subscription.status} />
+        </div>
+        <div className="mt-6 flex items-center gap-2 rounded-md border border-border bg-secondary/40 p-3 text-sm text-muted-foreground">
+          <ShieldCheck className="size-4" />
+          Payments are processed by Paymob with server-side webhook validation.
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

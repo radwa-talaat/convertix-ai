@@ -1,0 +1,142 @@
+import type {
+  AiBenefit,
+  AiFaqItem,
+  AiFeature,
+  AiTestimonial,
+} from "@/types/ai";
+import type { ReactNode } from "react";
+
+export type LandingPageSectionType =
+  | "navbar"
+  | "hero"
+  | "features"
+  | "benefits"
+  | "pricing"
+  | "testimonials"
+  | "faq"
+  | "cta"
+  | "footer";
+
+export type LandingPageThemeId = "linear" | "framer" | "midnight";
+
+export type LandingPageDirection = "ltr" | "rtl";
+
+export type LandingPageSection<TData = unknown> = {
+  id: string;
+  type: LandingPageSectionType;
+  data: TData;
+  order: number;
+  visible: boolean;
+};
+
+export type LandingPageSeo = {
+  title: string;
+  description: string;
+  canonicalPath: string;
+  ogImage?: string;
+};
+
+export type LandingPageTemplate = {
+  id: string;
+  slug: string;
+  name: string;
+  direction: LandingPageDirection;
+  themeId: LandingPageThemeId;
+  seo: LandingPageSeo;
+  sections: LandingPageSection[];
+};
+
+export type LandingPageTheme = {
+  id: LandingPageThemeId;
+  name: string;
+  colors: {
+    background: string;
+    foreground: string;
+    muted: string;
+    surface: string;
+    border: string;
+    primary: string;
+    primaryForeground: string;
+    accent: string;
+  };
+  typography: {
+    heading: string;
+    body: string;
+  };
+  radius: string;
+};
+
+export type NavbarSectionData = {
+  brandName: string;
+  links: Array<{ label: string; href: string }>;
+  cta: string;
+};
+
+export type HeroSectionData = {
+  headline: string;
+  subheadline: string;
+  cta: string;
+  secondaryCta?: string;
+};
+
+export type FeaturesSectionData = {
+  eyebrow: string;
+  title: string;
+  items: AiFeature[];
+};
+
+export type BenefitsSectionData = {
+  eyebrow: string;
+  title: string;
+  items: AiBenefit[];
+};
+
+export type PricingSectionData = {
+  eyebrow: string;
+  title: string;
+  copy: string;
+  cta: string;
+};
+
+export type TestimonialsSectionData = {
+  eyebrow: string;
+  title: string;
+  items: AiTestimonial[];
+};
+
+export type FaqSectionData = {
+  eyebrow: string;
+  title: string;
+  items: AiFaqItem[];
+};
+
+export type CtaSectionData = {
+  title: string;
+  description: string;
+  cta: string;
+};
+
+export type FooterSectionData = {
+  brandName: string;
+  description: string;
+  links: Array<{ label: string; href: string }>;
+};
+
+export type LandingPageSectionProps<TData = unknown> = {
+  data: TData;
+  direction: LandingPageDirection;
+  editor?: {
+    renderText: (options: LandingPageEditableTextOptions) => ReactNode;
+  };
+  sectionId: string;
+  theme: LandingPageTheme;
+};
+
+export type LandingPageEditableTextOptions = {
+  className?: string;
+  multiline?: boolean;
+  path: string;
+  value: string;
+};
+
+export type PreviewDevice = "desktop" | "tablet" | "mobile";
