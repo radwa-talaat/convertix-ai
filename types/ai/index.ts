@@ -7,6 +7,7 @@ export type AiGenerationInput = {
   goal: string;
   brandStyle: string;
   language: AiLanguage;
+  productImageUrl?: string;
   toneOfVoice: string;
 };
 

@@ -51,6 +51,11 @@ export function getEditableTextFields(
         },
         { label: "CTA", path: "cta", value: data.cta },
         {
+          label: "Product image URL",
+          path: "imageUrl",
+          value: data.imageUrl ?? "",
+        },
+        {
           label: "Secondary CTA",
           path: "secondaryCta",
           value: data.secondaryCta ?? "",

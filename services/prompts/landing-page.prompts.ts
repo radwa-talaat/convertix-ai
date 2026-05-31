@@ -26,6 +26,7 @@ Target Audience: ${input.targetAudience}
 Goal: ${input.goal}
 Brand Style: ${input.brandStyle}
 Language: ${input.language}
+Product Image Provided: ${input.productImageUrl ? "yes" : "no"}
 Tone of Voice: ${input.toneOfVoice}
 `.trim();
 }

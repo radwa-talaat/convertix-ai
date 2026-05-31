@@ -67,37 +67,49 @@ export function HeroRenderSection({
           </div>
         </div>
         <div
-          className="relative min-h-80 rounded-lg border p-4 shadow-2xl"
+          className="relative min-h-80 overflow-hidden rounded-lg border p-4 shadow-2xl"
           style={{
             backgroundColor: theme.colors.surface,
             borderColor: theme.colors.border,
             borderRadius: theme.radius,
           }}
         >
-          <div
-            className="absolute inset-4 rounded-md"
-            style={{ backgroundColor: theme.colors.background }}
-          />
-          <div className="relative grid h-full gap-3">
-            <div
-              className="h-24 rounded-md"
-              style={{ backgroundColor: theme.colors.primary }}
+          {data.imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              alt={data.imageAlt ?? data.headline}
+              className="absolute inset-0 size-full object-cover"
+              src={data.imageUrl}
             />
-            <div
-              className="h-20 rounded-md border"
-              style={{ borderColor: theme.colors.border }}
-            />
-            <div className="grid grid-cols-2 gap-3">
+          ) : (
+            <>
               <div
-                className="h-28 rounded-md"
-                style={{ backgroundColor: theme.colors.accent }}
+                className="absolute inset-4 rounded-md"
+                style={{ backgroundColor: theme.colors.background }}
               />
-              <div
-                className="h-28 rounded-md border"
-                style={{ borderColor: theme.colors.border }}
-              />
-            </div>
-          </div>
+              <div className="relative grid h-full gap-3">
+                <div
+                  className="h-24 rounded-md"
+                  style={{ backgroundColor: theme.colors.primary }}
+                />
+                <div
+                  className="h-20 rounded-md border"
+                  style={{ borderColor: theme.colors.border }}
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <div
+                    className="h-28 rounded-md"
+                    style={{ backgroundColor: theme.colors.accent }}
+                  />
+                  <div
+                    className="h-28 rounded-md border"
+                    style={{ borderColor: theme.colors.border }}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
         </div>
       </div>
     </section>

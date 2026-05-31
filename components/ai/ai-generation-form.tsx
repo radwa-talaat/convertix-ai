@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { AlertCircle, Loader2, Sparkles } from "lucide-react";
+import { AlertCircle, ImagePlus, Loader2, Sparkles } from "lucide-react";
 
 import { createLandingPageFromAiAction } from "@/app/dashboard/projects/actions";
 import { AiPreviewPanel } from "@/components/ai/ai-preview-panel";
@@ -70,7 +70,9 @@ export function AiGenerationForm({
   const [result, setResult] = React.useState<AiGenerationResult | null>(null);
   const [status, setStatus] = React.useState<GenerationStatus>("idle");
   const [error, setError] = React.useState<string | null>(null);
+  const [savedPageId, setSavedPageId] = React.useState<string | null>(null);
   const [savedPageSlug, setSavedPageSlug] = React.useState<string | null>(null);
+  const [imageName, setImageName] = React.useState<string | null>(null);
 
   const isLoading =
     status === "validating" ||
@@ -114,6 +116,7 @@ export function AiGenerationForm({
 
       setStatus("parsing");
       setResult(payload as AiGenerationResult);
+      setSavedPageId(null);
       setSavedPageSlug(null);
       setStatus("success");
       toast({
@@ -148,7 +151,9 @@ export function AiGenerationForm({
         projectId,
         result.content,
         input.language,
+        input.productImageUrl,
       );
+      setSavedPageId(page.id);
       setSavedPageSlug(page.slug);
       setStatus("success");
       toast({
@@ -168,6 +173,31 @@ export function AiGenerationForm({
         variant: "destructive",
       });
     }
+  }
+
+  function handleProductImageUpload(file?: File) {
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please upload an image file.");
+      return;
+    }
+
+    if (file.size > 900_000) {
+      setError("Image is too large. Please upload an image under 900KB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const value = typeof reader.result === "string" ? reader.result : "";
+      updateInput("productImageUrl", value);
+      setImageName(file.name);
+      setError(null);
+    };
+    reader.readAsDataURL(file);
   }
 
   return (
@@ -237,6 +267,52 @@ export function AiGenerationForm({
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="productImage">Product image</Label>
+                <div className="flex flex-col gap-3 rounded-md border border-dashed border-border bg-secondary/30 p-4">
+                  <label
+                    className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium shadow-luxury-sm transition-colors hover:bg-secondary"
+                    htmlFor="productImage"
+                  >
+                    <ImagePlus className="size-4" />
+                    Upload product image
+                  </label>
+                  <input
+                    accept="image/*"
+                    className="sr-only"
+                    id="productImage"
+                    onChange={(event) =>
+                      handleProductImageUpload(event.target.files?.[0])
+                    }
+                    type="file"
+                  />
+                  <Input
+                    onChange={(event) => {
+                      updateInput("productImageUrl", event.target.value);
+                      setImageName(null);
+                    }}
+                    placeholder="Or paste an image URL"
+                    value={
+                      input.productImageUrl?.startsWith("data:image/")
+                        ? ""
+                        : (input.productImageUrl ?? "")
+                    }
+                  />
+                  {imageName ? (
+                    <p className="text-xs text-muted-foreground">
+                      Uploaded: {imageName}
+                    </p>
+                  ) : null}
+                  {input.productImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      alt="Product preview"
+                      className="h-32 w-full rounded-md border border-border object-cover"
+                      src={input.productImageUrl}
+                    />
+                  ) : null}
+                </div>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="language">Language</Label>
                 <select
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-luxury-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -269,6 +345,7 @@ export function AiGenerationForm({
           isSaving={status === "saving"}
           onSaveDraft={projectId && result ? saveDraftPage : undefined}
           result={result}
+          savedPageId={savedPageId}
           savedPageSlug={savedPageSlug}
         />
       </div>

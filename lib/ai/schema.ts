@@ -7,6 +7,18 @@ export const aiGenerationInputSchema = z.object({
   goal: z.string().trim().min(2).max(240),
   brandStyle: z.string().trim().min(2).max(120),
   language: z.enum(["en", "ar"]),
+  productImageUrl: z
+    .string()
+    .trim()
+    .max(500_000)
+    .optional()
+    .refine(
+      (value) =>
+        !value ||
+        value.startsWith("data:image/") ||
+        /^https?:\/\/.+/i.test(value),
+      "Product image must be an image upload or a valid URL.",
+    ),
   toneOfVoice: z.string().trim().min(2).max(120),
 });
 

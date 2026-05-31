@@ -13,10 +13,11 @@ import { useEditorStore } from "@/store/editor";
 import type { LandingPageTemplate } from "@/types/rendering";
 
 type EditorShellProps = {
+  pageId?: string;
   template: LandingPageTemplate;
 };
 
-export function EditorShell({ template }: EditorShellProps) {
+export function EditorShell({ pageId, template }: EditorShellProps) {
   const initialize = useEditorStore((state) => state.initialize);
   const restoreSnapshot = useEditorStore((state) => state.restoreSnapshot);
   const [ready, setReady] = React.useState(false);
@@ -24,7 +25,7 @@ export function EditorShell({ template }: EditorShellProps) {
   React.useEffect(() => {
     const draft = loadEditorDraft();
 
-    if (draft) {
+    if (draft?.template.id === template.id) {
       restoreSnapshot(
         {
           sectionStyles: draft.sectionStyles,
@@ -46,7 +47,7 @@ export function EditorShell({ template }: EditorShellProps) {
   return (
     <CraftEditor enabled={false} resolver={{}}>
       <div className="flex h-[calc(100vh-4rem)] min-h-[720px] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-2xl">
-        <EditorToolbar />
+        <EditorToolbar pageId={pageId} />
         {ready ? (
           <div className="flex min-h-0 flex-1">
             <EditorLeftSidebar />

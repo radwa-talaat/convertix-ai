@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, FileText, Loader2, Save } from "lucide-react";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ type AiPreviewPanelProps = {
   isSaving?: boolean;
   onSaveDraft?: () => void;
   result: AiGenerationResult | null;
+  savedPageId?: string | null;
   savedPageSlug?: string | null;
 };
 
@@ -18,6 +20,7 @@ export function AiPreviewPanel({
   isSaving,
   onSaveDraft,
   result,
+  savedPageId,
   savedPageSlug,
 }: AiPreviewPanelProps) {
   if (!result) {
@@ -73,13 +76,22 @@ export function AiPreviewPanel({
                 </p>
               ) : null}
             </div>
-            <Button
-              disabled={isSaving || Boolean(savedPageSlug)}
-              onClick={onSaveDraft}
-            >
-              {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
-              {savedPageSlug ? "Saved" : "Save draft"}
-            </Button>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button
+                disabled={isSaving || Boolean(savedPageSlug)}
+                onClick={onSaveDraft}
+              >
+                {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
+                {savedPageSlug ? "Saved" : "Save draft"}
+              </Button>
+              {savedPageId ? (
+                <Button asChild variant="outline">
+                  <Link href={`/dashboard/editor?page=${savedPageId}`}>
+                    Open editor
+                  </Link>
+                </Button>
+              ) : null}
+            </div>
           </div>
         ) : null}
 

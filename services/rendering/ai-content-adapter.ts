@@ -19,6 +19,7 @@ type BuildLandingPageTemplateOptions = {
   brandName: string;
   content: AiLandingPageContent;
   direction?: LandingPageDirection;
+  heroImageUrl?: string;
   sectionVisibility?: Partial<Record<LandingPageSection["type"], boolean>>;
   slug: string;
   themeId?: LandingPageThemeId;
@@ -57,6 +58,7 @@ export function buildLandingPageTemplate({
   brandName,
   content,
   direction = "ltr",
+  heroImageUrl,
   sectionVisibility = {},
   slug,
   themeId = "linear",
@@ -75,6 +77,8 @@ export function buildLandingPageTemplate({
     createSection<HeroSectionData>("hero", 1, {
       cta: content.cta,
       headline: content.headline,
+      imageAlt: brandName,
+      imageUrl: heroImageUrl,
       secondaryCta: copy.secondaryCta,
       subheadline: content.subheadline,
     }),

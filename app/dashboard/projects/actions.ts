@@ -171,6 +171,7 @@ export async function createLandingPageFromAiAction(
   projectId: string,
   content: AiLandingPageContent,
   language: "ar" | "en" = "en",
+  heroImageUrl?: string,
 ) {
   const user = await requireUser();
   const supabase = createClient();
@@ -192,6 +193,7 @@ export async function createLandingPageFromAiAction(
     brandName: project.name,
     content: safeContent,
     direction: language === "ar" ? "rtl" : "ltr",
+    heroImageUrl,
     slug: pageSlug,
   });
 
@@ -215,6 +217,36 @@ export async function createLandingPageFromAiAction(
 
   revalidatePath("/dashboard/projects");
   revalidatePath(`/dashboard/projects/${project.id}`);
+
+  return page;
+}
+
+export async function updateLandingPageDraftAction(
+  pageId: string,
+  content: Json,
+  seo: Json,
+) {
+  const user = await requireUser();
+  const supabase = createClient();
+  const { data: page, error } = await supabase
+    .from("pages")
+    .update({
+      content,
+      seo,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", pageId)
+    .eq("user_id", user.id)
+    .select("id, project_id")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/dashboard/projects");
+  revalidatePath(`/dashboard/projects/${page.project_id}`);
+  revalidatePath("/dashboard/editor");
 
   return page;
 }

@@ -74,6 +74,8 @@ export type NavbarSectionData = {
 
 export type HeroSectionData = {
   headline: string;
+  imageAlt?: string;
+  imageUrl?: string;
   subheadline: string;
   cta: string;
   secondaryCta?: string;

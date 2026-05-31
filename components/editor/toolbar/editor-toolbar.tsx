@@ -13,10 +13,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { updateLandingPageDraftAction } from "@/app/dashboard/projects/actions";
 import { SegmentedControl } from "@/components/editor/controls/segmented-control";
 import { Button } from "@/components/ui/button";
 import { saveEditorDraft } from "@/services/editor";
 import { useEditorStore } from "@/store/editor";
+import type { Json } from "@/types/database";
 
 const deviceItems = [
   { icon: Laptop, label: "Desktop", value: "desktop" },
@@ -24,7 +26,11 @@ const deviceItems = [
   { icon: Smartphone, label: "Mobile", value: "mobile" },
 ] as const;
 
-export function EditorToolbar() {
+type EditorToolbarProps = {
+  pageId?: string;
+};
+
+export function EditorToolbar({ pageId }: EditorToolbarProps) {
   const canRedo = useEditorStore((state) => state.canRedo);
   const canUndo = useEditorStore((state) => state.canUndo);
   const deviceMode = useEditorStore((state) => state.deviceMode);
@@ -38,7 +44,7 @@ export function EditorToolbar() {
   const themeTokens = useEditorStore((state) => state.themeTokens);
   const undo = useEditorStore((state) => state.undo);
 
-  function handleSave() {
+  async function handleSave() {
     if (!template) {
       return;
     }
@@ -52,6 +58,20 @@ export function EditorToolbar() {
       },
       selectedSectionId,
     );
+
+    if (pageId) {
+      try {
+        await updateLandingPageDraftAction(
+          pageId,
+          template as unknown as Json,
+          template.seo as unknown as Json,
+        );
+      } catch {
+        setSaveStatus("error");
+        return;
+      }
+    }
+
     setSaveStatus("saved");
   }
 
