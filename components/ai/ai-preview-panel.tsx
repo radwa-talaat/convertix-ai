@@ -1,16 +1,25 @@
 "use client";
 
-import { CheckCircle2, FileText } from "lucide-react";
+import { CheckCircle2, FileText, Loader2, Save } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AiGenerationResult } from "@/types/ai";
 
 type AiPreviewPanelProps = {
+  isSaving?: boolean;
+  onSaveDraft?: () => void;
   result: AiGenerationResult | null;
+  savedPageSlug?: string | null;
 };
 
-export function AiPreviewPanel({ result }: AiPreviewPanelProps) {
+export function AiPreviewPanel({
+  isSaving,
+  onSaveDraft,
+  result,
+  savedPageSlug,
+}: AiPreviewPanelProps) {
   if (!result) {
     return (
       <Card className="h-full">
@@ -51,6 +60,29 @@ export function AiPreviewPanel({ result }: AiPreviewPanelProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {onSaveDraft ? (
+          <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-medium">Ready to save</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Save this AI output as a draft landing page in the project.
+              </p>
+              {savedPageSlug ? (
+                <p className="mt-2 text-xs text-emerald-600">
+                  Saved as /{savedPageSlug}
+                </p>
+              ) : null}
+            </div>
+            <Button
+              disabled={isSaving || Boolean(savedPageSlug)}
+              onClick={onSaveDraft}
+            >
+              {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
+              {savedPageSlug ? "Saved" : "Save draft"}
+            </Button>
+          </div>
+        ) : null}
+
         <section>
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
             Hero

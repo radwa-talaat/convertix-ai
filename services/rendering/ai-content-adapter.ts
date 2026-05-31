@@ -24,6 +24,35 @@ type BuildLandingPageTemplateOptions = {
   themeId?: LandingPageThemeId;
 };
 
+const sectionCopy = {
+  ltr: {
+    benefits: "Benefits",
+    benefitsTitle: "Why this offer matters",
+    faq: "FAQ",
+    faqTitle: "Clear answers",
+    features: "Features",
+    featuresTitle: "Everything needed to launch",
+    pricing: "Pricing",
+    pricingTitle: "Simple path to scale",
+    secondaryCta: "View details",
+    testimonials: "Testimonials",
+    testimonialsTitle: "Trusted by teams moving fast",
+  },
+  rtl: {
+    benefits: "الفوائد",
+    benefitsTitle: "لماذا يهم هذا العرض",
+    faq: "الأسئلة",
+    faqTitle: "إجابات مباشرة",
+    features: "المزايا",
+    featuresTitle: "كل ما تحتاجه للانطلاق",
+    pricing: "السعر",
+    pricingTitle: "خطة واضحة للنمو",
+    secondaryCta: "شاهد التفاصيل",
+    testimonials: "الشهادات",
+    testimonialsTitle: "ثقة من فرق مشابهة",
+  },
+} as const;
+
 export function buildLandingPageTemplate({
   brandName,
   content,
@@ -32,57 +61,48 @@ export function buildLandingPageTemplate({
   slug,
   themeId = "linear",
 }: BuildLandingPageTemplateOptions): LandingPageTemplate {
+  const copy = sectionCopy[direction];
   const sections: LandingPageSection[] = [
     createSection<NavbarSectionData>("navbar", 0, {
       brandName,
       cta: content.cta,
       links: [
-        {
-          href: "#features",
-          label: direction === "rtl" ? "المزايا" : "Features",
-        },
-        { href: "#pricing", label: direction === "rtl" ? "السعر" : "Pricing" },
-        { href: "#faq", label: direction === "rtl" ? "الأسئلة" : "FAQ" },
+        { href: "#features", label: copy.features },
+        { href: "#pricing", label: copy.pricing },
+        { href: "#faq", label: copy.faq },
       ],
     }),
     createSection<HeroSectionData>("hero", 1, {
       cta: content.cta,
       headline: content.headline,
-      secondaryCta: direction === "rtl" ? "شاهد التفاصيل" : "View details",
+      secondaryCta: copy.secondaryCta,
       subheadline: content.subheadline,
     }),
     createSection<FeaturesSectionData>("features", 2, {
-      eyebrow: direction === "rtl" ? "المزايا" : "Features",
+      eyebrow: copy.features,
       items: content.features,
-      title:
-        direction === "rtl"
-          ? "كل ما تحتاجه للانطلاق"
-          : "Everything needed to launch",
+      title: copy.featuresTitle,
     }),
     createSection<BenefitsSectionData>("benefits", 3, {
-      eyebrow: direction === "rtl" ? "الفوائد" : "Benefits",
+      eyebrow: copy.benefits,
       items: content.benefits,
-      title:
-        direction === "rtl" ? "لماذا يهم هذا العرض" : "Why this offer matters",
+      title: copy.benefitsTitle,
     }),
     createSection<PricingSectionData>("pricing", 4, {
       copy: content.pricingCopy,
       cta: content.cta,
-      eyebrow: direction === "rtl" ? "التسعير" : "Pricing",
-      title: direction === "rtl" ? "خطة واضحة للنمو" : "Simple path to scale",
+      eyebrow: copy.pricing,
+      title: copy.pricingTitle,
     }),
     createSection<TestimonialsSectionData>("testimonials", 5, {
-      eyebrow: direction === "rtl" ? "آراء العملاء" : "Testimonials",
+      eyebrow: copy.testimonials,
       items: content.testimonials,
-      title:
-        direction === "rtl"
-          ? "ثقة من فرق مشابهة"
-          : "Trusted by teams moving fast",
+      title: copy.testimonialsTitle,
     }),
     createSection<FaqSectionData>("faq", 6, {
-      eyebrow: direction === "rtl" ? "الأسئلة الشائعة" : "FAQ",
+      eyebrow: copy.faq,
       items: content.faq,
-      title: direction === "rtl" ? "إجابات مباشرة" : "Clear answers",
+      title: copy.faqTitle,
     }),
     createSection<CtaSectionData>("cta", 7, {
       cta: content.cta,
@@ -93,15 +113,9 @@ export function buildLandingPageTemplate({
       brandName,
       description: content.seo.description,
       links: [
-        {
-          href: "#features",
-          label: direction === "rtl" ? "المزايا" : "Features",
-        },
-        {
-          href: "#testimonials",
-          label: direction === "rtl" ? "الشهادات" : "Testimonials",
-        },
-        { href: "#faq", label: direction === "rtl" ? "الأسئلة" : "FAQ" },
+        { href: "#features", label: copy.features },
+        { href: "#testimonials", label: copy.testimonials },
+        { href: "#faq", label: copy.faq },
       ],
     }),
   ].map((section) => ({

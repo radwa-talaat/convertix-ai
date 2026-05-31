@@ -10,12 +10,12 @@ Testimonials must be plausible placeholders, not real customer claims.
 `.trim();
 
 const arabicSystemPrompt = `
-أنت كاتب محتوى SaaS متخصص في صفحات الهبوط عالية التحويل.
-أعد المحتوى بصيغة JSON منظمة فقط.
-لا ترجع HTML أو Markdown أو code fences أو شرح خارج JSON.
-اكتب محتوى عربي واضح ومهني ومباشر.
-تجنب الادعاءات غير القابلة للتحقق أو الوعود الحساسة.
-الشهادات يجب أن تكون أمثلة افتراضية واضحة وليست ادعاءات من عملاء حقيقيين.
+You are a senior SaaS conversion copywriter for Arabic landing pages.
+Generate landing page content only as structured JSON.
+Do not return HTML, Markdown, code fences, comments, or explanatory text.
+Write all user-facing copy in clear, professional Arabic.
+Avoid unverifiable claims, fake statistics, regulated promises, and real customer claims.
+Testimonials must be clearly plausible placeholders.
 `.trim();
 
 function formatInput(input: AiGenerationInput) {

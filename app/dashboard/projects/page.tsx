@@ -7,6 +7,7 @@ type ProjectWithPageCount = {
   created_at: string;
   id: string;
   name: string;
+  pages?: number;
   slug: string;
   status: DashboardProject["status"];
   updated_at: string;
@@ -24,7 +25,7 @@ function mapProject(project: ProjectWithPageCount): DashboardProject {
     conversionRate: "0%",
     id: project.id,
     name: project.name,
-    pages: 0,
+    pages: project.pages ?? 0,
     slug: project.slug,
     status: project.status,
     updatedAt: formatUpdatedAt(project.updated_at),
@@ -46,5 +47,34 @@ export default async function ProjectsPage() {
     return <ProjectsView databaseError={error.message} initialProjects={[]} />;
   }
 
-  return <ProjectsView initialProjects={(data ?? []).map(mapProject)} />;
+  const projects = data ?? [];
+  const projectIds = projects.map((project) => project.id);
+  const { data: pages, error: pagesError } = projectIds.length
+    ? await supabase
+        .from("pages")
+        .select("project_id")
+        .eq("user_id", user.id)
+        .in("project_id", projectIds)
+    : { data: [], error: null };
+
+  if (pagesError) {
+    console.error("Project page counts failed", pagesError);
+  }
+
+  const pageCounts = new Map<string, number>();
+
+  for (const page of pages ?? []) {
+    pageCounts.set(page.project_id, (pageCounts.get(page.project_id) ?? 0) + 1);
+  }
+
+  return (
+    <ProjectsView
+      initialProjects={projects.map((project) =>
+        mapProject({
+          ...project,
+          pages: pageCounts.get(project.id) ?? 0,
+        }),
+      )}
+    />
+  );
 }

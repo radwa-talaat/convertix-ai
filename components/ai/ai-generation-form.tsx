@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { AlertCircle, Loader2, Sparkles } from "lucide-react";
 
+import { createLandingPageFromAiAction } from "@/app/dashboard/projects/actions";
 import { AiPreviewPanel } from "@/components/ai/ai-preview-panel";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert } from "@/components/ui/alert";
@@ -20,10 +21,11 @@ type GenerationStatus =
   | "validating"
   | "generating"
   | "parsing"
+  | "saving"
   | "success"
   | "error";
 
-const initialInput: AiGenerationInput = {
+const initialInputDefaults: AiGenerationInput = {
   brandStyle: "Minimal luxury",
   businessName: "",
   businessType: "",
@@ -38,19 +40,43 @@ const progressLabels: Record<GenerationStatus, string> = {
   generating: "Generating structured copy",
   idle: "Ready",
   parsing: "Validating JSON output",
+  saving: "Saving draft page",
   success: "Content generated",
   validating: "Validating brief",
 };
 
-export function AiGenerationForm() {
+type AiGenerationFormProps = {
+  initialInput?: Partial<AiGenerationInput>;
+  projectId?: string;
+  projectName?: string;
+};
+
+export function AiGenerationForm({
+  initialInput,
+  projectId,
+  projectName,
+}: AiGenerationFormProps = {}) {
   const { toast } = useToast();
-  const [input, setInput] = React.useState<AiGenerationInput>(initialInput);
+  const [input, setInput] = React.useState<AiGenerationInput>({
+    ...initialInput,
+    businessName: initialInput?.businessName ?? projectName ?? "",
+    brandStyle: initialInput?.brandStyle ?? initialInputDefaults.brandStyle,
+    businessType: initialInput?.businessType ?? "",
+    goal: initialInput?.goal ?? "",
+    language: initialInput?.language ?? initialInputDefaults.language,
+    targetAudience: initialInput?.targetAudience ?? "",
+    toneOfVoice: initialInput?.toneOfVoice ?? initialInputDefaults.toneOfVoice,
+  });
   const [result, setResult] = React.useState<AiGenerationResult | null>(null);
   const [status, setStatus] = React.useState<GenerationStatus>("idle");
   const [error, setError] = React.useState<string | null>(null);
+  const [savedPageSlug, setSavedPageSlug] = React.useState<string | null>(null);
 
   const isLoading =
-    status === "validating" || status === "generating" || status === "parsing";
+    status === "validating" ||
+    status === "generating" ||
+    status === "parsing" ||
+    status === "saving";
 
   function updateInput<Key extends keyof AiGenerationInput>(
     key: Key,
@@ -88,6 +114,7 @@ export function AiGenerationForm() {
 
       setStatus("parsing");
       setResult(payload as AiGenerationResult);
+      setSavedPageSlug(null);
       setStatus("success");
       toast({
         description: "Structured JSON content is ready for review.",
@@ -108,12 +135,47 @@ export function AiGenerationForm() {
     }
   }
 
+  async function saveDraftPage() {
+    if (!projectId || !result) {
+      return;
+    }
+
+    setError(null);
+    setStatus("saving");
+
+    try {
+      const page = await createLandingPageFromAiAction(
+        projectId,
+        result.content,
+        input.language,
+      );
+      setSavedPageSlug(page.slug);
+      setStatus("success");
+      toast({
+        description: "The generated landing page was saved as a draft.",
+        title: "Draft page saved",
+      });
+    } catch (saveError) {
+      const message =
+        saveError instanceof Error
+          ? saveError.message
+          : "Draft page could not be saved.";
+      setError(message);
+      setStatus("error");
+      toast({
+        description: message,
+        title: "Save failed",
+        variant: "destructive",
+      });
+    }
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
       <PageHeader
         description="Generate structured landing page copy from a concise business brief. Output is JSON only and never HTML."
         eyebrow="AI Engine"
-        title="Content Generation"
+        title={projectName ? `${projectName} AI Builder` : "Content Generation"}
       />
 
       <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
@@ -203,7 +265,12 @@ export function AiGenerationForm() {
           </CardContent>
         </Card>
 
-        <AiPreviewPanel result={result} />
+        <AiPreviewPanel
+          isSaving={status === "saving"}
+          onSaveDraft={projectId && result ? saveDraftPage : undefined}
+          result={result}
+          savedPageSlug={savedPageSlug}
+        />
       </div>
     </div>
   );

@@ -2,10 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 
+import { aiLandingPageContentSchema } from "@/lib/ai/schema";
 import { generateSlug } from "@/lib/publishing";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
+import { buildLandingPageTemplate } from "@/services/rendering";
+import type { AiLandingPageContent } from "@/types/ai";
+import type { Json } from "@/types/database";
 
 function cleanProjectName(name: string) {
   const trimmed = name.trim();
@@ -59,6 +63,36 @@ async function createAvailableSlug(
       .filter((project) => project.id !== currentProjectId)
       .map((project) => project.slug),
   );
+
+  if (!existing.has(baseSlug)) {
+    return baseSlug;
+  }
+
+  let suffix = 2;
+  let candidate = `${baseSlug}-${suffix}`;
+
+  while (existing.has(candidate)) {
+    suffix += 1;
+    candidate = `${baseSlug}-${suffix}`;
+  }
+
+  return candidate;
+}
+
+async function createAvailablePageSlug(projectId: string, title: string) {
+  const supabase = createClient();
+  const baseSlug = generateSlug(title);
+  const { data, error } = await supabase
+    .from("pages")
+    .select("slug")
+    .eq("project_id", projectId)
+    .like("slug", `${baseSlug}%`);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const existing = new Set((data ?? []).map((page) => page.slug));
 
   if (!existing.has(baseSlug)) {
     return baseSlug;
@@ -131,4 +165,56 @@ export async function deleteProjectAction(projectId: string) {
   }
 
   revalidatePath("/dashboard/projects");
+}
+
+export async function createLandingPageFromAiAction(
+  projectId: string,
+  content: AiLandingPageContent,
+  language: "ar" | "en" = "en",
+) {
+  const user = await requireUser();
+  const supabase = createClient();
+  const safeContent = aiLandingPageContentSchema.parse(content);
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
+    .select("id, name, slug")
+    .eq("id", projectId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (projectError || !project) {
+    throw new Error(projectError?.message ?? "Project not found.");
+  }
+
+  const title = safeContent.seo.title || project.name;
+  const pageSlug = await createAvailablePageSlug(project.id, title);
+  const template = buildLandingPageTemplate({
+    brandName: project.name,
+    content: safeContent,
+    direction: language === "ar" ? "rtl" : "ltr",
+    slug: pageSlug,
+  });
+
+  const { data: page, error } = await supabase
+    .from("pages")
+    .insert({
+      content: template as unknown as Json,
+      project_id: project.id,
+      seo: template.seo as unknown as Json,
+      slug: pageSlug,
+      status: "draft",
+      title,
+      user_id: user.id,
+    })
+    .select("id, slug")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/dashboard/projects");
+  revalidatePath(`/dashboard/projects/${project.id}`);
+
+  return page;
 }

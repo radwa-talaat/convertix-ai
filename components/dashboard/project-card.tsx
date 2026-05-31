@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import {
+  ExternalLink,
+  MoreHorizontal,
+  Pencil,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,6 +82,19 @@ export function ProjectCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href={`/dashboard/projects/${project.id}`}>
+                  <ExternalLink />
+                  Open builder
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/dashboard/projects/${project.id}`}>
+                  <Sparkles />
+                  Generate with AI
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setIsEditing(true)}>
                 <Pencil />
                 Edit name
@@ -90,19 +110,39 @@ export function ProjectCard({
             </DropdownMenuContent>
           </DropdownMenu>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <Badge variant={statusVariant[project.status]}>
-              {project.status}
-            </Badge>
-            <span className="text-xs text-muted-foreground">
-              Updated {project.updatedAt}
-            </span>
-          </div>
-          <div className="mt-6 grid grid-cols-3 gap-3 rounded-md bg-secondary/40 p-3">
-            <ProjectMetric label="Pages" value={String(project.pages)} />
-            <ProjectMetric label="Visitors" value={project.visitors} />
-            <ProjectMetric label="CVR" value={project.conversionRate} />
+        <CardContent className="space-y-4">
+          <Link
+            aria-label={`Open ${project.name} builder`}
+            className="block rounded-md outline-none ring-ring transition hover:bg-secondary/30 focus-visible:ring-2"
+            href={`/dashboard/projects/${project.id}`}
+          >
+            <div className="flex items-center justify-between px-1 pt-1">
+              <Badge variant={statusVariant[project.status]}>
+                {project.status}
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                Updated {project.updatedAt}
+              </span>
+            </div>
+            <div className="mt-6 grid grid-cols-3 gap-3 rounded-md bg-secondary/40 p-3">
+              <ProjectMetric label="Pages" value={String(project.pages)} />
+              <ProjectMetric label="Visitors" value={project.visitors} />
+              <ProjectMetric label="CVR" value={project.conversionRate} />
+            </div>
+          </Link>
+          <div className="flex gap-2">
+            <Button asChild className="flex-1" size="sm">
+              <Link href={`/dashboard/projects/${project.id}`}>
+                <Sparkles />
+                Generate
+              </Link>
+            </Button>
+            <Button asChild className="flex-1" size="sm" variant="outline">
+              <Link href={`/dashboard/editor?project=${project.id}`}>
+                <ExternalLink />
+                Editor
+              </Link>
+            </Button>
           </div>
         </CardContent>
       </Card>

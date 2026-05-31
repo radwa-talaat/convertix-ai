@@ -26,7 +26,7 @@ const envSchema = z
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
     NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
     OPENAI_API_KEY: z.string().min(1),
-    OPENAI_MODEL: z.string().min(1).default("gpt-5.4-mini"),
+    OPENAI_MODEL: z.string().min(1).default("gpt-4.1-mini"),
     PAYMOB_HMAC_SECRET: z.string().min(1),
     PAYMOB_PUBLIC_KEY: z.string().min(1),
     PAYMOB_SECRET_KEY: z.string().min(1),
