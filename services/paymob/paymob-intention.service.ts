@@ -1,6 +1,7 @@
 import { env } from "@/lib/env";
 import { paymobRequest } from "@/lib/paymob";
 import { egpToCents, getPaymentIntegrationIds } from "@/lib/payments";
+import { createAppUrl } from "@/lib/urls";
 import type {
   BillingPlan,
   CheckoutSession,
@@ -25,8 +26,8 @@ export async function createPaymobIntention({
   userId: string;
 }): Promise<CheckoutSession> {
   const amountCents = egpToCents(plan.priceEgp);
-  const callbackUrl = `${env.appUrl}/billing/success`;
-  const notificationUrl = `${env.appUrl}/api/paymob/webhook`;
+  const callbackUrl = createAppUrl("/billing/success", env.appUrl);
+  const notificationUrl = createAppUrl("/api/paymob/webhook", env.appUrl);
   const integrationIds = getPaymentIntegrationIds();
 
   const response = await paymobRequest<PaymobIntentionResponse>(

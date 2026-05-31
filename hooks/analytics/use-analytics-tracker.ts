@@ -9,6 +9,7 @@ import {
   parseUtmParams,
   shouldTrackAnalytics,
 } from "@/lib/analytics";
+import { createApiPath } from "@/lib/api/urls";
 import type {
   AnalyticsBatchPayload,
   AnalyticsEventPayload,
@@ -47,11 +48,11 @@ export function useAnalyticsTracker({
     const body = JSON.stringify(payload);
 
     if (navigator.sendBeacon) {
-      navigator.sendBeacon("/api/analytics/events", body);
+      navigator.sendBeacon(createApiPath("/analytics/events"), body);
       return;
     }
 
-    void fetch("/api/analytics/events", {
+    void fetch(createApiPath("/analytics/events"), {
       body,
       headers: { "Content-Type": "application/json" },
       keepalive: true,

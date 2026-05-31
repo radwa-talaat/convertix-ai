@@ -1,7 +1,7 @@
-import { env } from "@/lib/env";
+import { getAppOrigin } from "@/lib/publishing";
 
 export function buildRobotsTxt() {
-  const baseUrl = env.appUrl.replace(/\/$/, "");
+  const baseUrl = getAppOrigin();
 
   return `User-agent: *
 Allow: /

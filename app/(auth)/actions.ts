@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { env } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { createAppUrl } from "@/lib/urls";
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -73,7 +74,7 @@ export async function registerAction(formData: FormData) {
       data: {
         full_name: parsed.data.fullName,
       },
-      emailRedirectTo: `${origin}/auth/callback?next=/dashboard`,
+      emailRedirectTo: createAppUrl("/auth/callback?next=/dashboard", origin),
     },
   });
 
@@ -98,7 +99,7 @@ export async function forgotPasswordAction(formData: FormData) {
   const { error } = await supabase.auth.resetPasswordForEmail(
     parsed.data.email,
     {
-      redirectTo: `${origin}/auth/callback?next=/dashboard`,
+      redirectTo: createAppUrl("/auth/callback?next=/dashboard", origin),
     },
   );
 

@@ -6,8 +6,10 @@ import { isValidSlug } from "@/lib/publishing/slug";
 import { getAppHostname } from "@/lib/publishing/urls";
 
 export function resolvePublishedHostRewrite(request: NextRequest) {
-  const host = request.headers.get("host")?.split(":")[0].toLowerCase();
-  const appHost = getAppHostname().split(":")[0].toLowerCase();
+  const requestHost = request.headers.get("host")?.toLowerCase();
+  const host = requestHost?.split(":")[0];
+  const appHostWithPort = getAppHostname().toLowerCase();
+  const appHost = appHostWithPort.split(":")[0];
   const pathname = request.nextUrl.pathname;
 
   if (
@@ -18,7 +20,10 @@ export function resolvePublishedHostRewrite(request: NextRequest) {
     return null;
   }
 
-  if (host.endsWith(`.${appHost}`)) {
+  if (
+    requestHost?.endsWith(`.${appHostWithPort}`) ||
+    host.endsWith(`.${appHost}`)
+  ) {
     const projectSlug = host.replace(`.${appHost}`, "");
 
     if (isValidSlug(projectSlug)) {

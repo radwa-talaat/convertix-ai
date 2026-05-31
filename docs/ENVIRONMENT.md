@@ -2,7 +2,9 @@
 
 ## Public
 
-- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_APP_URL` for local development. On Vercel this can be omitted
+  when `VERCEL_URL`, `VERCEL_BRANCH_URL`, or `VERCEL_PROJECT_PRODUCTION_URL` is
+  available.
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
@@ -29,4 +31,7 @@ Run:
 npm run check:prod-env
 ```
 
-Use `.env.example` as the canonical template.
+Use `.env.local.example` for local development and `.env.example` as the
+canonical deployment template. Next.js loads `.env.local` automatically during
+local development, while Vercel injects production values from the project
+settings.

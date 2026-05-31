@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 
-import { env } from "@/lib/env";
+import { getAppOrigin } from "@/lib/publishing";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = env.appUrl.replace(/\/$/, "");
+  const baseUrl = getAppOrigin();
 
   return {
     host: baseUrl,

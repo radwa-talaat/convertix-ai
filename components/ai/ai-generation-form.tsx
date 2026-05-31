@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { createApiPath } from "@/lib/api/urls";
 import type { AiGenerationInput, AiGenerationResult } from "@/types/ai";
 
 type GenerationStatus =
@@ -65,7 +66,7 @@ export function AiGenerationForm() {
 
     try {
       setStatus("generating");
-      const response = await fetch("/api/ai/generate", {
+      const response = await fetch(createApiPath("/ai/generate"), {
         body: JSON.stringify(input),
         headers: {
           "Content-Type": "application/json",

@@ -43,8 +43,9 @@ npm run format
 
 ## Environment
 
-Copy `.env.example` to `.env.local` when local secrets or public runtime values
-are needed.
+Copy `.env.local.example` to `.env.local` for local development. Vercel should
+receive the same production secrets through Project Settings, and the app will
+fall back to Vercel deployment URLs when `NEXT_PUBLIC_APP_URL` is not set.
 
 ## Supabase
 
