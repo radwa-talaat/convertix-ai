@@ -42,7 +42,8 @@ export default async function ProjectsPage() {
     .order("updated_at", { ascending: false });
 
   if (error) {
-    throw new Error(error.message);
+    console.error("Projects load failed", error);
+    return <ProjectsView databaseError={error.message} initialProjects={[]} />;
   }
 
   return <ProjectsView initialProjects={(data ?? []).map(mapProject)} />;

@@ -9,14 +9,19 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { ProjectCard } from "@/components/dashboard/project-card";
 import { ProjectGridLoading } from "@/components/dashboard/loading-state";
 import { ProjectsToolbar } from "@/components/dashboard/projects-toolbar";
+import { Alert } from "@/components/ui/alert";
 import { useProjects } from "@/hooks/use-projects";
 import type { DashboardProject } from "@/types/project";
 
 type ProjectsViewProps = {
+  databaseError?: string;
   initialProjects: DashboardProject[];
 };
 
-export function ProjectsView({ initialProjects }: ProjectsViewProps) {
+export function ProjectsView({
+  databaseError,
+  initialProjects,
+}: ProjectsViewProps) {
   const {
     createProject,
     deleteProject,
@@ -46,6 +51,11 @@ export function ProjectsView({ initialProjects }: ProjectsViewProps) {
         query={query}
         status={status}
       />
+      {databaseError ? (
+        <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
+          Projects could not be loaded from Supabase yet: {databaseError}
+        </Alert>
+      ) : null}
       {isLoading ? (
         <ProjectGridLoading />
       ) : filteredProjects.length > 0 ? (
