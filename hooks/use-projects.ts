@@ -1,31 +1,30 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 
-import { demoProjects, type ProjectStatusFilter } from "@/config/dashboard";
+import {
+  createProjectAction,
+  deleteProjectAction,
+  updateProjectNameAction,
+} from "@/app/dashboard/projects/actions";
+import type { ProjectStatusFilter } from "@/config/dashboard";
 import { useToast } from "@/hooks/use-toast";
 import type { DashboardProject } from "@/types/project";
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-}
-
-export function useProjects() {
+export function useProjects(initialProjects: DashboardProject[]) {
+  const router = useRouter();
   const { toast } = useToast();
-  const [projects, setProjects] =
-    React.useState<DashboardProject[]>(demoProjects);
+  const [projects, setProjects] = React.useState(initialProjects);
   const [query, setQuery] = React.useState("");
   const [status, setStatus] = React.useState<ProjectStatusFilter>("all");
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isMutating, startMutation] = React.useTransition();
 
   React.useEffect(() => {
-    const timer = window.setTimeout(() => setIsLoading(false), 450);
-    return () => window.clearTimeout(timer);
-  }, []);
+    setProjects(initialProjects);
+    setIsLoading(false);
+  }, [initialProjects]);
 
   const filteredProjects = React.useMemo(() => {
     return projects.filter((project) => {
@@ -37,6 +36,11 @@ export function useProjects() {
     });
   }, [projects, query, status]);
 
+  const refreshProjects = React.useCallback(() => {
+    setIsLoading(true);
+    router.refresh();
+  }, [router]);
+
   const createProject = React.useCallback(
     (name: string) => {
       const trimmedName = name.trim();
@@ -45,24 +49,27 @@ export function useProjects() {
         return;
       }
 
-      const project: DashboardProject = {
-        conversionRate: "0%",
-        id: crypto.randomUUID(),
-        name: trimmedName,
-        pages: 0,
-        slug: slugify(trimmedName),
-        status: "draft",
-        updatedAt: "Just now",
-        visitors: "0",
-      };
-
-      setProjects((current) => [project, ...current]);
-      toast({
-        description: `${trimmedName} is ready for setup.`,
-        title: "Project created",
+      startMutation(async () => {
+        try {
+          await createProjectAction(trimmedName);
+          toast({
+            description: `${trimmedName} is ready for setup.`,
+            title: "Project created",
+          });
+          refreshProjects();
+        } catch (error) {
+          toast({
+            description:
+              error instanceof Error
+                ? error.message
+                : "Could not create project.",
+            title: "Project creation failed",
+            variant: "destructive",
+          });
+        }
       });
     },
-    [toast],
+    [refreshProjects, toast],
   );
 
   const updateProjectName = React.useCallback(
@@ -73,34 +80,52 @@ export function useProjects() {
         return;
       }
 
-      setProjects((current) =>
-        current.map((project) =>
-          project.id === projectId
-            ? {
-                ...project,
-                name: trimmedName,
-                slug: slugify(trimmedName),
-                updatedAt: "Just now",
-              }
-            : project,
-        ),
-      );
-      toast({ title: "Project updated" });
+      startMutation(async () => {
+        try {
+          await updateProjectNameAction(projectId, trimmedName);
+          toast({ title: "Project updated" });
+          refreshProjects();
+        } catch (error) {
+          toast({
+            description:
+              error instanceof Error
+                ? error.message
+                : "Could not update project.",
+            title: "Project update failed",
+            variant: "destructive",
+          });
+        }
+      });
     },
-    [toast],
+    [refreshProjects, toast],
   );
 
   const deleteProject = React.useCallback(
     (projectId: string) => {
       const project = projects.find((item) => item.id === projectId);
-      setProjects((current) => current.filter((item) => item.id !== projectId));
-      toast({
-        description: project ? `${project.name} was removed.` : undefined,
-        title: "Project deleted",
-        variant: "destructive",
+
+      startMutation(async () => {
+        try {
+          await deleteProjectAction(projectId);
+          toast({
+            description: project ? `${project.name} was removed.` : undefined,
+            title: "Project deleted",
+            variant: "destructive",
+          });
+          refreshProjects();
+        } catch (error) {
+          toast({
+            description:
+              error instanceof Error
+                ? error.message
+                : "Could not delete project.",
+            title: "Project deletion failed",
+            variant: "destructive",
+          });
+        }
       });
     },
-    [projects, toast],
+    [projects, refreshProjects, toast],
   );
 
   return {
@@ -108,6 +133,7 @@ export function useProjects() {
     deleteProject,
     filteredProjects,
     isLoading,
+    isMutating,
     projects,
     query,
     setQuery,

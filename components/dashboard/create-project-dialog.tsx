@@ -17,10 +17,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 type CreateProjectDialogProps = {
+  disabled?: boolean;
   onCreate: (name: string) => void;
 };
 
-export function CreateProjectDialog({ onCreate }: CreateProjectDialogProps) {
+export function CreateProjectDialog({
+  disabled,
+  onCreate,
+}: CreateProjectDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState("");
 
@@ -34,7 +38,7 @@ export function CreateProjectDialog({ onCreate }: CreateProjectDialogProps) {
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <Button>
+        <Button disabled={disabled}>
           <Plus />
           New Project
         </Button>
@@ -44,13 +48,14 @@ export function CreateProjectDialog({ onCreate }: CreateProjectDialogProps) {
           <DialogHeader>
             <DialogTitle>Create project</DialogTitle>
             <DialogDescription>
-              Start a new landing page workspace. This is UI-only for now.
+              Start a new landing page workspace saved to Supabase.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-5 space-y-2">
             <Label htmlFor="project-name">Project name</Label>
             <Input
               autoFocus
+              disabled={disabled}
               id="project-name"
               minLength={2}
               onChange={(event) => setName(event.target.value)}
@@ -67,7 +72,9 @@ export function CreateProjectDialog({ onCreate }: CreateProjectDialogProps) {
             >
               Cancel
             </Button>
-            <Button type="submit">Create project</Button>
+            <Button disabled={disabled} type="submit">
+              Create project
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

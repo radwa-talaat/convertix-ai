@@ -10,24 +10,32 @@ import { ProjectCard } from "@/components/dashboard/project-card";
 import { ProjectGridLoading } from "@/components/dashboard/loading-state";
 import { ProjectsToolbar } from "@/components/dashboard/projects-toolbar";
 import { useProjects } from "@/hooks/use-projects";
+import type { DashboardProject } from "@/types/project";
 
-export function ProjectsView() {
+type ProjectsViewProps = {
+  initialProjects: DashboardProject[];
+};
+
+export function ProjectsView({ initialProjects }: ProjectsViewProps) {
   const {
     createProject,
     deleteProject,
     filteredProjects,
     isLoading,
+    isMutating,
     query,
     setQuery,
     setStatus,
     status,
     updateProjectName,
-  } = useProjects();
+  } = useProjects(initialProjects);
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
       <PageHeader
-        actions={<CreateProjectDialog onCreate={createProject} />}
+        actions={
+          <CreateProjectDialog disabled={isMutating} onCreate={createProject} />
+        }
         description="Manage your landing page workspaces, organize campaigns, and keep launch surfaces tidy."
         eyebrow="Project Management"
         title="Projects"
@@ -59,6 +67,7 @@ export function ProjectsView() {
               }}
             >
               <ProjectCard
+                disabled={isMutating}
                 onDelete={deleteProject}
                 onRename={updateProjectName}
                 project={project}
@@ -68,7 +77,12 @@ export function ProjectsView() {
         </motion.div>
       ) : (
         <EmptyState
-          action={<CreateProjectDialog onCreate={createProject} />}
+          action={
+            <CreateProjectDialog
+              disabled={isMutating}
+              onCreate={createProject}
+            />
+          }
           description="Adjust your search or create a new project to start fresh."
           icon={FolderKanban}
           title="No projects found"

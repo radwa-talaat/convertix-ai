@@ -32,12 +32,18 @@ const statusVariant = {
 } as const;
 
 type ProjectCardProps = {
+  disabled?: boolean;
   onDelete: (projectId: string) => void;
   onRename: (projectId: string, name: string) => void;
   project: DashboardProject;
 };
 
-export function ProjectCard({ onDelete, onRename, project }: ProjectCardProps) {
+export function ProjectCard({
+  disabled,
+  onDelete,
+  onRename,
+  project,
+}: ProjectCardProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [name, setName] = React.useState(project.name);
@@ -59,7 +65,12 @@ export function ProjectCard({ onDelete, onRename, project }: ProjectCardProps) {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button aria-label="Project actions" size="icon" variant="ghost">
+              <Button
+                aria-label="Project actions"
+                disabled={disabled}
+                size="icon"
+                variant="ghost"
+              >
                 <MoreHorizontal />
               </Button>
             </DropdownMenuTrigger>
@@ -107,6 +118,7 @@ export function ProjectCard({ onDelete, onRename, project }: ProjectCardProps) {
           <div className="space-y-2">
             <Label htmlFor={`project-name-${project.id}`}>Project name</Label>
             <Input
+              disabled={disabled}
               id={`project-name-${project.id}`}
               onChange={(event) => setName(event.target.value)}
               value={name}
@@ -116,7 +128,9 @@ export function ProjectCard({ onDelete, onRename, project }: ProjectCardProps) {
             <Button onClick={() => setIsEditing(false)} variant="outline">
               Cancel
             </Button>
-            <Button onClick={submitRename}>Save changes</Button>
+            <Button disabled={disabled} onClick={submitRename}>
+              Save changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -126,7 +140,8 @@ export function ProjectCard({ onDelete, onRename, project }: ProjectCardProps) {
           <DialogHeader>
             <DialogTitle>Delete project</DialogTitle>
             <DialogDescription>
-              This removes the project from the current dashboard view.
+              This permanently removes the project and its pages from your
+              workspace.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -134,6 +149,7 @@ export function ProjectCard({ onDelete, onRename, project }: ProjectCardProps) {
               Cancel
             </Button>
             <Button
+              disabled={disabled}
               onClick={() => {
                 onDelete(project.id);
                 setIsDeleting(false);
