@@ -29,6 +29,10 @@ export async function createPaymobIntention({
   const callbackUrl = createAppUrl("/billing/success", env.appUrl);
   const notificationUrl = createAppUrl("/api/paymob/webhook", env.appUrl);
   const integrationIds = getPaymentIntegrationIds();
+  const itemDescription =
+    plan.id === "free"
+      ? "One AI landing page package"
+      : `${plan.name} monthly subscription`;
 
   const response = await paymobRequest<PaymobIntentionResponse>(
     "/v1/intention/",
@@ -56,8 +60,8 @@ export async function createPaymobIntention({
         items: [
           {
             amount: amountCents,
-            description: `${plan.name} monthly subscription`,
-            name: `${plan.name} Plan`,
+            description: itemDescription,
+            name: plan.id === "free" ? "Landing Page" : `${plan.name} Plan`,
             quantity: 1,
           },
         ],

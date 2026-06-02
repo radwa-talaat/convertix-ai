@@ -21,8 +21,8 @@ export async function createCheckoutSession(
 ): Promise<CheckoutSession> {
   const plan = getBillingPlan(input.planId);
 
-  if (plan.id === "free") {
-    throw new Error("Free plan does not require checkout.");
+  if (plan.priceEgp <= 0) {
+    throw new Error("This plan does not require checkout.");
   }
 
   const amountCents = egpToCents(plan.priceEgp);

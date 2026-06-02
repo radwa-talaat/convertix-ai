@@ -10,16 +10,16 @@ export default function PricingPage() {
             Pricing
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-normal">
-            Plans built for Egyptian SaaS payments
+            Build your landing page from 50 EGP
           </h1>
           <p className="mt-4 text-muted-foreground">
-            Subscribe monthly with Paymob support for bank cards, local payment
-            methods, wallets, and Apple Pay where enabled on your merchant
-            account.
+            Start with one AI-generated landing page for 50 EGP, then upgrade
+            monthly when you need more pages, templates, domains, and advanced
+            AI credits.
           </p>
         </div>
         <div className="mt-10">
-          <PricingGrid currentPlanId="free" />
+          <PricingGrid />
         </div>
       </Container>
     </main>

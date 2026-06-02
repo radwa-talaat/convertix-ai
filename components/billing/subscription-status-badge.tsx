@@ -13,5 +13,7 @@ export function SubscriptionStatusBadge({
         ? "outline"
         : "muted";
 
-  return <Badge variant={variant}>{status.replace("_", " ")}</Badge>;
+  const label = status === "free" ? "starter" : status.replace("_", " ");
+
+  return <Badge variant={variant}>{label}</Badge>;
 }

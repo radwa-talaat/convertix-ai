@@ -5,7 +5,7 @@ import type { BillingPlanId } from "@/types/billing";
 export function PricingGrid({
   currentPlanId,
 }: {
-  currentPlanId: BillingPlanId;
+  currentPlanId?: BillingPlanId;
 }) {
   return (
     <div className="grid gap-4 lg:grid-cols-3">

@@ -121,7 +121,7 @@ export type PaymobBillingData = {
 
 export type CreateCheckoutInput = {
   billingData: PaymobBillingData;
-  planId: Exclude<BillingPlanId, "free">;
+  planId: BillingPlanId;
 };
 
 export type CheckoutSession = {

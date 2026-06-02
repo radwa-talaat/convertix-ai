@@ -25,7 +25,9 @@ export function CurrentPlanCard({
             <p className="mt-2 text-sm text-muted-foreground">
               {plan.priceEgp === 0
                 ? "No active paid subscription"
-                : `${formatEgp(plan.priceEgp * 100)} per month`}
+                : `${formatEgp(plan.priceEgp * 100)}${
+                    plan.id === "free" ? " per landing page" : " per month"
+                  }`}
             </p>
           </div>
           <SubscriptionStatusBadge status={subscription.status} />

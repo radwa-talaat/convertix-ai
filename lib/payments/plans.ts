@@ -3,23 +3,30 @@ import type { BillingPlan, BillingPlanId } from "@/types/billing";
 
 export const billingPlans: BillingPlan[] = [
   {
-    cta: "Start free",
-    description: "Validate your first AI landing page with basic limits.",
-    features: ["1 landing page", "Basic AI credits", "AI Builder watermark"],
+    cta: "Buy landing page",
+    description:
+      "Create and edit one AI landing page for a simple fixed price.",
+    features: [
+      "1 AI landing page",
+      "AI copy generation",
+      "Product image upload",
+      "Editor access",
+      "No watermark",
+    ],
     id: "free",
     interval: "month",
     limits: {
-      aiCredits: 25,
+      aiCredits: 75,
       customDomains: 0,
       landingPages: 1,
       premiumTemplates: false,
       teamMembers: 1,
-      watermark: true,
+      watermark: false,
       whiteLabel: false,
     },
-    name: "Free",
-    paymobIntegrationIdEnv: "",
-    priceEgp: 0,
+    name: "Landing Page",
+    paymobIntegrationIdEnv: "PAYMOB_CARD_INTEGRATION_ID",
+    priceEgp: 50,
     trialDays: 0,
   },
   {

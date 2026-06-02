@@ -47,7 +47,7 @@ export function getBillingDashboardSnapshot(): BillingDashboardSnapshot {
     },
   ];
   const invoices: InvoiceRecord[] = billingPlans
-    .filter((plan) => plan.id !== "free")
+    .filter((plan) => plan.priceEgp > 0)
     .slice(0, 1)
     .map((plan) => ({
       amountCents: egpToCents(plan.priceEgp),

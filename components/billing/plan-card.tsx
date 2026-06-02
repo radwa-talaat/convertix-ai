@@ -27,18 +27,14 @@ export function PlanCard({
   plan: BillingPlan;
 }) {
   const [pending, startTransition] = useTransition();
-  const isFree = plan.id === "free";
+  const isCheckoutDisabled = plan.priceEgp <= 0;
 
   function handleUpgrade() {
-    if (isFree) {
+    if (isCheckoutDisabled) {
       return;
     }
 
     startTransition(() => {
-      if (plan.id === "free") {
-        return;
-      }
-
       void createCheckoutAction({
         billingData: defaultBillingData,
         planId: plan.id,
@@ -61,10 +57,10 @@ export function PlanCard({
           {plan.description}
         </p>
         <p className="mt-5 text-3xl font-semibold">
-          {plan.priceEgp === 0 ? "Free" : formatEgp(plan.priceEgp * 100)}
+          {formatEgp(plan.priceEgp * 100)}
           {plan.priceEgp > 0 ? (
             <span className="text-sm font-normal text-muted-foreground">
-              /month
+              {plan.id === "free" ? " /landing page" : " /month"}
             </span>
           ) : null}
         </p>
@@ -79,7 +75,7 @@ export function PlanCard({
       </ul>
       <Button
         className="mt-6"
-        disabled={current || isFree || pending}
+        disabled={current || isCheckoutDisabled || pending}
         onClick={handleUpgrade}
         type="button"
         variant={current ? "outline" : "default"}
