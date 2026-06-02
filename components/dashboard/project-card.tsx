@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import {
   ExternalLink,
+  Files,
   MoreHorizontal,
   Pencil,
   Sparkles,
@@ -138,9 +139,9 @@ export function ProjectCard({
               </Link>
             </Button>
             <Button asChild className="flex-1" size="sm" variant="outline">
-              <Link href={`/dashboard/editor?project=${project.id}`}>
-                <ExternalLink />
-                Editor
+              <Link href={`/dashboard/projects/${project.id}#landing-pages`}>
+                <Files />
+                Pages
               </Link>
             </Button>
           </div>

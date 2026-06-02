@@ -3,8 +3,10 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert } from "@/components/ui/alert";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getSampleLandingPageTemplate } from "@/services/rendering";
-import type { Json } from "@/types/database";
+import {
+  getSampleLandingPageTemplate,
+  parseLandingPageTemplate,
+} from "@/services/rendering";
 import type { LandingPageTemplate } from "@/types/rendering";
 
 type EditorPageProps = {
@@ -82,23 +84,4 @@ async function loadRequestedEditorPage(
     id: data.id,
     template,
   };
-}
-
-function parseLandingPageTemplate(value: Json): LandingPageTemplate | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return null;
-  }
-
-  const candidate = value as Partial<LandingPageTemplate>;
-
-  if (
-    typeof candidate.id !== "string" ||
-    typeof candidate.name !== "string" ||
-    typeof candidate.slug !== "string" ||
-    !Array.isArray(candidate.sections)
-  ) {
-    return null;
-  }
-
-  return candidate as LandingPageTemplate;
 }
