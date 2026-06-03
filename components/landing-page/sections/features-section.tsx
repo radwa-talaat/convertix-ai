@@ -17,6 +17,7 @@ export function FeaturesSection({
   theme,
 }: LandingPageSectionProps<FeaturesSectionData>) {
   const renderText = editor?.renderText;
+  const textScale = (theme.typography.textScale ?? 100) / 100;
 
   return (
     <SectionShell direction={direction} id={sectionId} theme={theme}>
@@ -25,7 +26,13 @@ export function FeaturesSection({
           {renderText?.({ path: "eyebrow", value: data.eyebrow }) ??
             data.eyebrow}
         </Eyebrow>
-        <h2 className="mt-4 text-3xl font-semibold tracking-normal sm:text-4xl">
+        <h2
+          className="mt-4 text-balance break-words text-[clamp(1.85rem,7vw,2.5rem)] font-semibold leading-tight tracking-normal"
+          style={{
+            fontFamily: theme.typography.heading,
+            fontSize: `calc(clamp(1.85rem, 7vw, 2.5rem) * ${textScale})`,
+          }}
+        >
           {renderText?.({
             multiline: true,
             path: "title",
@@ -50,7 +57,13 @@ export function FeaturesSection({
             >
               <Sparkles className="size-4" />
             </span>
-            <h3 className="mt-5 text-lg font-semibold">
+            <h3
+              className="mt-5 text-lg font-semibold"
+              style={{
+                fontFamily: theme.typography.heading,
+                fontSize: `calc(1.125rem * ${textScale})`,
+              }}
+            >
               {renderText?.({
                 path: `items.${index}.title`,
                 value: item.title,
@@ -58,7 +71,10 @@ export function FeaturesSection({
             </h3>
             <p
               className="mt-3 text-sm leading-6"
-              style={{ color: theme.colors.muted }}
+              style={{
+                color: theme.colors.muted,
+                fontSize: `calc(0.875rem * ${textScale})`,
+              }}
             >
               {renderText?.({
                 multiline: true,

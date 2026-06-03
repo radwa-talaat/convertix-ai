@@ -1,4 +1,12 @@
-import type { AiLandingPageContent } from "@/types/ai";
+import { createDefaultSectionStyle } from "@/services/editor/template-mutators.service";
+import { defaultEditorThemeTokens } from "@/services/editor/editor-tokens.service";
+import type { AiLandingPageContent, AiLandingPageDesign } from "@/types/ai";
+import type {
+  EditorColorPalette,
+  EditorSectionStyle,
+  EditorThemeTokens,
+  EditorTypographyScale,
+} from "@/types/editor";
 import type {
   BenefitsSectionData,
   CtaSectionData,
@@ -19,6 +27,7 @@ import type {
 type BuildLandingPageTemplateOptions = {
   brandName: string;
   content: AiLandingPageContent;
+  design?: AiLandingPageDesign;
   direction?: LandingPageDirection;
   heroImageUrl?: string;
   sectionVisibility?: Partial<Record<LandingPageSection["type"], boolean>>;
@@ -65,6 +74,7 @@ const sectionCopy = {
 export function buildLandingPageTemplate({
   brandName,
   content,
+  design,
   direction = "ltr",
   heroImageUrl,
   sectionVisibility = {},
@@ -150,8 +160,13 @@ export function buildLandingPageTemplate({
     visible: sectionVisibility[section.type] ?? section.visible,
   }));
 
+  const editorState = design
+    ? createEditorStateFromDesign(sections, design, direction, heroImageUrl)
+    : undefined;
+
   return {
     direction,
+    editorState,
     id: `${slug}-template`,
     name: brandName,
     sections,
@@ -163,6 +178,168 @@ export function buildLandingPageTemplate({
     slug,
     themeId,
   };
+}
+
+function createEditorStateFromDesign(
+  sections: LandingPageSection[],
+  design: AiLandingPageDesign,
+  direction: LandingPageDirection,
+  heroImageUrl?: string,
+): LandingPageTemplate["editorState"] {
+  const sectionStyles = Object.fromEntries(
+    sections.map((section) => [section.id, createDefaultSectionStyle()]),
+  ) as Record<string, EditorSectionStyle>;
+
+  const heroId = findSectionId(sections, "hero");
+  const featuresId = findSectionId(sections, "features");
+  const pricingId = findSectionId(sections, "pricing");
+  const ctaId = findSectionId(sections, "cta");
+
+  if (heroId) {
+    sectionStyles[heroId] = {
+      ...sectionStyles[heroId],
+      ...mapDesignSectionStyle(design.sectionStyles.hero),
+      customTexts: design.heroBadge
+        ? [
+            {
+              color: design.colors.primaryForeground,
+              fontSize: 16,
+              id: "ai-hero-badge",
+              text: design.heroBadge,
+              x: direction === "rtl" ? 82 : 18,
+              y: 22,
+            },
+          ]
+        : [],
+      foregroundImageUrl: heroImageUrl,
+      foregroundImageWidth:
+        design.imagePlacement === "center"
+          ? 360
+          : design.imagePlacement === "floating"
+            ? 300
+            : 320,
+      foregroundImageX: resolveImageX(design.imagePlacement, direction),
+      foregroundImageY: design.imagePlacement === "center" ? 72 : 58,
+      padding: "spacious",
+    };
+  }
+
+  if (featuresId) {
+    sectionStyles[featuresId] = {
+      ...sectionStyles[featuresId],
+      ...mapDesignSectionStyle(design.sectionStyles.features),
+    };
+  }
+
+  if (pricingId) {
+    sectionStyles[pricingId] = {
+      ...sectionStyles[pricingId],
+      ...mapDesignSectionStyle(design.sectionStyles.pricing),
+    };
+  }
+
+  if (ctaId) {
+    sectionStyles[ctaId] = {
+      ...sectionStyles[ctaId],
+      ...mapDesignSectionStyle(design.sectionStyles.cta),
+      padding: "spacious",
+    };
+  }
+
+  return {
+    sectionStyles,
+    themeTokens: createEditorThemeTokensFromDesign(design),
+  };
+}
+
+function findSectionId(
+  sections: LandingPageSection[],
+  type: LandingPageSection["type"],
+) {
+  return sections.find((section) => section.type === type)?.id;
+}
+
+function mapDesignSectionStyle(
+  style: AiLandingPageDesign["sectionStyles"]["hero"],
+): Partial<EditorSectionStyle> {
+  return {
+    align: style.align,
+    backgroundColor: style.backgroundColor,
+    textScale: style.textScale,
+  };
+}
+
+function createEditorThemeTokensFromDesign(
+  design: AiLandingPageDesign,
+): EditorThemeTokens {
+  const colorPalette: EditorColorPalette = {
+    ...design.colors,
+    id: `ai-${design.theme}`,
+    name: design.theme[0].toUpperCase() + design.theme.slice(1),
+  };
+  const typography = resolveTypography(design.typographyStyle);
+
+  return {
+    ...defaultEditorThemeTokens,
+    colorPalette,
+    radius: design.theme === "bold" ? "6px" : "16px",
+    typography,
+  };
+}
+
+function resolveTypography(
+  style: AiLandingPageDesign["typographyStyle"],
+): EditorTypographyScale {
+  switch (style) {
+    case "bold":
+      return {
+        body: "Inter, ui-sans-serif, system-ui, sans-serif",
+        heading: "Inter, ui-sans-serif, system-ui, sans-serif",
+        id: "ai-bold",
+        name: "AI Bold",
+      };
+    case "elegant":
+      return {
+        body: "Georgia, Cambria, serif",
+        heading: "Georgia, Cambria, serif",
+        id: "ai-elegant",
+        name: "AI Elegant",
+      };
+    case "playful":
+      return {
+        body: "Trebuchet MS, Inter, ui-sans-serif, system-ui, sans-serif",
+        heading: "Trebuchet MS, Inter, ui-sans-serif, system-ui, sans-serif",
+        id: "ai-playful",
+        name: "AI Playful",
+      };
+    case "clean":
+    default:
+      return {
+        body: "Inter, ui-sans-serif, system-ui, sans-serif",
+        heading: "Inter, ui-sans-serif, system-ui, sans-serif",
+        id: "ai-clean",
+        name: "AI Clean",
+      };
+  }
+}
+
+function resolveImageX(
+  placement: AiLandingPageDesign["imagePlacement"],
+  direction: LandingPageDirection,
+) {
+  if (placement === "center") {
+    return 50;
+  }
+
+  if (placement === "floating") {
+    return direction === "rtl" ? 20 : 80;
+  }
+
+  if (placement === "left") {
+    return 22;
+  }
+
+  return 78;
 }
 
 function createSection<TData>(

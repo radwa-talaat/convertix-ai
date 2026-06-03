@@ -17,6 +17,7 @@ export function TestimonialsSection({
   theme,
 }: LandingPageSectionProps<TestimonialsSectionData>) {
   const renderText = editor?.renderText;
+  const textScale = (theme.typography.textScale ?? 100) / 100;
 
   return (
     <SectionShell direction={direction} id={sectionId} theme={theme}>
@@ -25,7 +26,13 @@ export function TestimonialsSection({
           {renderText?.({ path: "eyebrow", value: data.eyebrow }) ??
             data.eyebrow}
         </Eyebrow>
-        <h2 className="mt-4 text-3xl font-semibold tracking-normal sm:text-4xl">
+        <h2
+          className="mt-4 text-balance break-words text-[clamp(1.85rem,7vw,2.5rem)] font-semibold leading-tight tracking-normal"
+          style={{
+            fontFamily: theme.typography.heading,
+            fontSize: `calc(clamp(1.85rem, 7vw, 2.5rem) * ${textScale})`,
+          }}
+        >
           {renderText?.({
             multiline: true,
             path: "title",
@@ -45,7 +52,10 @@ export function TestimonialsSection({
             }}
           >
             <Quote className="size-5 opacity-70" />
-            <p className="mt-5 text-base leading-7">
+            <p
+              className="mt-5 text-base leading-7"
+              style={{ fontSize: `calc(1rem * ${textScale})` }}
+            >
               &ldquo;
               {renderText?.({
                 multiline: true,
@@ -55,13 +65,22 @@ export function TestimonialsSection({
               &rdquo;
             </p>
             <div className="mt-6">
-              <p className="font-semibold">
+              <p
+                className="font-semibold"
+                style={{ fontSize: `calc(1rem * ${textScale})` }}
+              >
                 {renderText?.({
                   path: `items.${index}.author`,
                   value: item.author,
                 }) ?? item.author}
               </p>
-              <p className="mt-1 text-sm" style={{ color: theme.colors.muted }}>
+              <p
+                className="mt-1 text-sm"
+                style={{
+                  color: theme.colors.muted,
+                  fontSize: `calc(0.875rem * ${textScale})`,
+                }}
+              >
                 {renderText?.({
                   path: `items.${index}.role`,
                   value: item.role,

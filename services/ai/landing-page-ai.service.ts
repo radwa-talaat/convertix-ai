@@ -4,7 +4,7 @@ import { createHash } from "crypto";
 
 import { env } from "@/lib/env";
 import { toAiError } from "@/lib/ai/errors";
-import { createFallbackLandingPageContent } from "@/lib/ai/fallback";
+import { createFallbackLandingPageGeneration } from "@/lib/ai/fallback";
 import { parseAiJsonResponse } from "@/lib/ai/parser";
 import { assertAiRateLimit } from "@/lib/ai/rate-limit";
 import { aiGenerationInputSchema } from "@/lib/ai/schema";
@@ -54,11 +54,12 @@ export async function generateLandingPageContent({
       },
     );
 
-    const content = parseAiJsonResponse(response.outputText);
+    const generated = parseAiJsonResponse(response.outputText);
     trackAiTokenUsage(stableIdentifier, response.usage);
 
     return {
-      content,
+      content: generated.content,
+      design: generated.design,
       fallbackUsed: false,
       model: env.openaiModel,
       requestId: response.id,
@@ -82,8 +83,11 @@ function buildFallbackResult(
   input: AiGenerationInput,
   reason: string,
 ): AiGenerationResult {
+  const generated = createFallbackLandingPageGeneration(input);
+
   return {
-    content: createFallbackLandingPageContent(input),
+    content: generated.content,
+    design: generated.design,
     fallbackUsed: true,
     model: "fallback",
     requestId: reason,

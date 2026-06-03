@@ -74,9 +74,19 @@ export const editorSpacingScale: EditorSpacingScale[] = [
 
 export const defaultEditorThemeTokens: EditorThemeTokens = {
   colorPalette: editorColorPalettes[0],
+  customFonts: [],
   radius: "12px",
   typography: editorTypographyScales[0],
 };
+
+export function buildEditorFontFaceCss(tokens?: EditorThemeTokens) {
+  return (tokens?.customFonts ?? [])
+    .map(
+      (font) =>
+        `@font-face{font-family:"${escapeCssString(font.family)}";src:url("${font.dataUrl}");font-display:swap;}`,
+    )
+    .join("\n");
+}
 
 export function createThemeFromEditorTokens(
   tokens: EditorThemeTokens,
@@ -100,4 +110,8 @@ export function createThemeFromEditorTokens(
       heading: tokens.typography.heading,
     },
   };
+}
+
+function escapeCssString(value: string) {
+  return value.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
 }

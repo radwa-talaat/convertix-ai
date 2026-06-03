@@ -4,6 +4,8 @@ export type BillingInterval = "month";
 
 export type PaymentProvider = "paymob";
 
+export type BillingCurrency = "USD" | "EGP" | "SAR" | "AED" | "EUR" | "GBP";
+
 export type BillingPaymentStatus =
   | "pending"
   | "authorized"
@@ -44,7 +46,7 @@ export type BillingPlan = {
   limits: BillingPlanLimits;
   name: string;
   paymobIntegrationIdEnv: string;
-  priceEgp: number;
+  priceUsd: number;
   trialDays: number;
 };
 
@@ -69,7 +71,7 @@ export type BillingSubscription = {
 
 export type PaymentRecord = {
   amountCents: number;
-  currency: "EGP";
+  currency: BillingCurrency;
   id: string;
   invoiceId: string | null;
   paymobIntentionId: string | null;
@@ -81,7 +83,7 @@ export type PaymentRecord = {
 
 export type InvoiceRecord = {
   amountCents: number;
-  currency: "EGP";
+  currency: BillingCurrency;
   dueAt: string | null;
   id: string;
   paidAt: string | null;
@@ -121,6 +123,8 @@ export type PaymobBillingData = {
 
 export type CreateCheckoutInput = {
   billingData: PaymobBillingData;
+  currency?: BillingCurrency;
+  landingPageQuantity?: number;
   planId: BillingPlanId;
 };
 

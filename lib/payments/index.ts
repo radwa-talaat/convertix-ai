@@ -1,3 +1,4 @@
+export * from "./currencies";
 export * from "./feature-access";
 export * from "./money";
 export * from "./plans";

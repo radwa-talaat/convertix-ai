@@ -7,7 +7,7 @@ export const billingPlans: BillingPlan[] = [
     description:
       "Create and edit one AI landing page for a simple fixed price.",
     features: [
-      "1 AI landing page",
+      "Buy one or more landing pages",
       "AI copy generation",
       "Product image upload",
       "Editor access",
@@ -26,7 +26,7 @@ export const billingPlans: BillingPlan[] = [
     },
     name: "Landing Page",
     paymobIntegrationIdEnv: "PAYMOB_CARD_INTEGRATION_ID",
-    priceEgp: 50,
+    priceUsd: 1,
     trialDays: 0,
   },
   {
@@ -51,7 +51,7 @@ export const billingPlans: BillingPlan[] = [
     },
     name: "Pro",
     paymobIntegrationIdEnv: "PAYMOB_CARD_INTEGRATION_ID",
-    priceEgp: 499,
+    priceUsd: 10,
     trialDays: 7,
   },
   {
@@ -76,7 +76,7 @@ export const billingPlans: BillingPlan[] = [
     },
     name: "Agency",
     paymobIntegrationIdEnv: "PAYMOB_CARD_INTEGRATION_ID",
-    priceEgp: 1499,
+    priceUsd: 30,
     trialDays: 7,
   },
 ];

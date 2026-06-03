@@ -1,4 +1,4 @@
-import { formatEgp } from "@/lib/payments";
+import { formatMinorUnits } from "@/lib/payments";
 import type { InvoiceRecord, PaymentRecord } from "@/types/billing";
 
 export function BillingHistory({
@@ -26,7 +26,7 @@ export function BillingHistory({
               <p className="font-medium">{invoice.planId} invoice</p>
               <p className="text-xs text-muted-foreground">{invoice.status}</p>
             </div>
-            <p>{formatEgp(invoice.amountCents)}</p>
+            <p>{formatMinorUnits(invoice.amountCents, invoice.currency)}</p>
           </div>
         ))}
         {payments.map((payment) => (
@@ -38,7 +38,7 @@ export function BillingHistory({
               <p className="font-medium">Paymob payment</p>
               <p className="text-xs text-muted-foreground">{payment.status}</p>
             </div>
-            <p>{formatEgp(payment.amountCents)}</p>
+            <p>{formatMinorUnits(payment.amountCents, payment.currency)}</p>
           </div>
         ))}
       </div>

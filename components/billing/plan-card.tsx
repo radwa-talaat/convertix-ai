@@ -1,13 +1,17 @@
 "use client";
 
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Minus, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { createCheckoutAction } from "@/app/dashboard/billing/actions";
 import { Button } from "@/components/ui/button";
-import { formatEgp } from "@/lib/payments";
-import type { BillingPlan, PaymobBillingData } from "@/types/billing";
+import { formatMoney, normalizeLandingPageQuantity } from "@/lib/payments";
+import type {
+  BillingCurrency,
+  BillingPlan,
+  PaymobBillingData,
+} from "@/types/billing";
 
 const defaultBillingData: PaymobBillingData = {
   city: "Cairo",
@@ -21,15 +25,21 @@ const defaultBillingData: PaymobBillingData = {
 };
 
 export function PlanCard({
+  currency,
   current,
   plan,
 }: {
+  currency: BillingCurrency;
   current: boolean;
   plan: BillingPlan;
 }) {
   const t = useTranslations("billing");
+  const [landingPageQuantity, setLandingPageQuantity] = useState(1);
   const [pending, startTransition] = useTransition();
-  const isCheckoutDisabled = plan.priceEgp <= 0;
+  const isLandingPagePackage = plan.id === "free";
+  const quantity = isLandingPagePackage ? landingPageQuantity : 1;
+  const totalPriceUsd = plan.priceUsd * quantity;
+  const isCheckoutDisabled = plan.priceUsd <= 0;
 
   function handleUpgrade() {
     if (isCheckoutDisabled) {
@@ -39,9 +49,15 @@ export function PlanCard({
     startTransition(() => {
       void createCheckoutAction({
         billingData: defaultBillingData,
+        currency,
+        landingPageQuantity: quantity,
         planId: plan.id,
       });
     });
+  }
+
+  function updateQuantity(value: number) {
+    setLandingPageQuantity(normalizeLandingPageQuantity(value));
   }
 
   return (
@@ -59,13 +75,55 @@ export function PlanCard({
           {plan.description}
         </p>
         <p className="mt-5 text-3xl font-semibold">
-          {formatEgp(plan.priceEgp * 100)}
-          {plan.priceEgp > 0 ? (
+          {formatMoney(totalPriceUsd, currency)}
+          {plan.priceUsd > 0 ? (
             <span className="text-sm font-normal text-muted-foreground">
-              {plan.id === "free" ? ` /${t("landingPage")}` : ` /${t("month")}`}
+              {isLandingPagePackage
+                ? ` / ${quantity} ${t("landingPage")}`
+                : ` /${t("month")}`}
             </span>
           ) : null}
         </p>
+        {isLandingPagePackage ? (
+          <div className="mt-4 rounded-md border border-border bg-secondary/30 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-medium">Landing pages</span>
+              <div className="inline-flex items-center rounded-md border border-border bg-background">
+                <Button
+                  className="size-9 rounded-none border-0"
+                  onClick={() => updateQuantity(quantity - 1)}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <Minus className="size-4" />
+                </Button>
+                <input
+                  className="h-9 w-14 border-x border-border bg-transparent text-center text-sm font-semibold outline-none"
+                  min={1}
+                  onChange={(event) =>
+                    updateQuantity(Number(event.target.value))
+                  }
+                  type="number"
+                  value={quantity}
+                />
+                <Button
+                  className="size-9 rounded-none border-0"
+                  onClick={() => updateQuantity(quantity + 1)}
+                  size="icon"
+                  type="button"
+                  variant="ghost"
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {formatMoney(plan.priceUsd, currency)} each. Increase quantity to
+              buy more landing page credits.
+            </p>
+          </div>
+        ) : null}
       </div>
       <ul className="mt-5 flex-1 space-y-3">
         {plan.features.map((feature) => (

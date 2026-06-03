@@ -6,8 +6,16 @@ export type AiGenerationInput = {
   targetAudience: string;
   goal: string;
   brandStyle: string;
+  customerProblem?: string;
+  keyBenefits?: string;
   language: AiLanguage;
+  offer?: string;
+  orderMethod?: string;
+  productCategory?: string;
   productImageUrl?: string;
+  productPrice?: string;
+  salesCountry?: string;
+  dialect?: string;
   toneOfVoice: string;
 };
 
@@ -47,6 +55,39 @@ export type AiLandingPageContent = {
   };
 };
 
+export type AiLandingPageDesign = {
+  theme: "luxury" | "medical" | "bold" | "minimal" | "organic" | "tech";
+  backgroundStyle: string;
+  imagePlacement: "right" | "left" | "center" | "floating";
+  heroBadge: string;
+  colors: {
+    background: string;
+    foreground: string;
+    primary: string;
+    primaryForeground: string;
+    accent: string;
+    surface: string;
+    border: string;
+    muted: string;
+  };
+  typographyStyle: "bold" | "elegant" | "clean" | "playful";
+  textScale: number;
+  sectionStyles: Record<
+    "hero" | "features" | "pricing" | "cta",
+    {
+      backgroundColor: string;
+      align: "start" | "center" | "end";
+      textScale: number;
+    }
+  >;
+  designNotes: string[];
+};
+
+export type AiGeneratedLandingPage = {
+  content: AiLandingPageContent;
+  design: AiLandingPageDesign;
+};
+
 export type AiTokenUsage = {
   inputTokens: number;
   outputTokens: number;
@@ -55,6 +96,7 @@ export type AiTokenUsage = {
 
 export type AiGenerationResult = {
   content: AiLandingPageContent;
+  design: AiLandingPageDesign;
   fallbackUsed: boolean;
   model: string;
   requestId?: string;

@@ -34,6 +34,7 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
   const sectionStyles = useEditorStore((state) => state.sectionStyles);
   const selectSection = useEditorStore((state) => state.selectSection);
   const selectedSectionId = useEditorStore((state) => state.selectedSectionId);
+  const themeTokens = useEditorStore((state) => state.themeTokens);
   const toggleSectionVisibility = useEditorStore(
     (state) => state.toggleSectionVisibility,
   );
@@ -64,12 +65,6 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
       ref={setNodeRef}
       style={{
         backgroundColor: style.backgroundColor,
-        backgroundImage: style.backgroundImageUrl
-          ? `linear-gradient(hsl(var(--background) / 0.38), hsl(var(--background) / 0.38)), url("${style.backgroundImageUrl}")`
-          : undefined,
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
         paddingBottom: spacing?.value,
         paddingTop: spacing?.value,
         textAlign: style.align,
@@ -77,6 +72,16 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
         transition,
       }}
     >
+      {style.backgroundImageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0 size-full object-cover"
+          src={style.backgroundImageUrl}
+        />
+      ) : null}
+
       <div
         className={cn(
           "pointer-events-none absolute inset-x-3 top-3 z-40 flex items-center justify-between opacity-0 transition-opacity group-hover:opacity-100",
@@ -176,16 +181,42 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
         </div>
       ) : null}
 
-      <EditorSectionRenderer section={section} />
+      <div className="relative z-10">
+        <EditorSectionRenderer section={section} />
+      </div>
 
       {style.foregroundImageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           alt={`${section.type} media`}
-          className="pointer-events-none absolute bottom-8 end-8 z-10 max-h-56 w-40 rounded-lg border border-border bg-background object-contain p-2 shadow-2xl sm:w-52"
+          className="pointer-events-none absolute z-20 max-w-[70%] rounded-lg border border-border bg-background object-contain p-2 shadow-2xl"
           src={style.foregroundImageUrl}
+          style={{
+            left: `${style.foregroundImageX ?? 82}%`,
+            top: `${style.foregroundImageY ?? 72}%`,
+            transform: "translate(-50%, -50%)",
+            width: `min(${style.foregroundImageWidth ?? 220}px, 70%)`,
+          }}
         />
       ) : null}
+
+      {(style.customTexts ?? []).map((text) => (
+        <div
+          className="pointer-events-none absolute z-30 max-w-[70%] whitespace-pre-wrap break-words rounded-sm px-1 font-semibold leading-tight"
+          key={text.id}
+          style={{
+            color: text.color,
+            fontFamily: text.fontFamily ?? themeTokens.typography.heading,
+            fontSize: `min(${text.fontSize}px, 12vw)`,
+            left: `${text.x}%`,
+            textAlign: style.align,
+            top: `${text.y}%`,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          {text.text}
+        </div>
+      ))}
     </div>
   );
 }

@@ -78,7 +78,10 @@ async function persistGenerationRecord(
     error_message: result.fallbackUsed ? result.requestId : null,
     input: input as Json,
     input_tokens: result.usage.inputTokens,
-    output: result.content as unknown as Json,
+    output: {
+      content: result.content,
+      design: result.design,
+    } as unknown as Json,
     output_tokens: result.usage.outputTokens,
     prompt: "landing_page_content_generation",
     status: result.fallbackUsed ? "failed" : "completed",

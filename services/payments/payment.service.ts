@@ -3,7 +3,13 @@ import { revalidatePath } from "next/cache";
 import { env } from "@/lib/env";
 import { verifyPaymobHmac } from "@/lib/paymob";
 import { parsePaymobWebhook } from "@/lib/paymob/webhook";
-import { egpToCents, getBillingPlan } from "@/lib/payments";
+import {
+  calculateCheckoutAmount,
+  defaultBillingCurrency,
+  getBillingPlan,
+  isBillingCurrency,
+  normalizeLandingPageQuantity,
+} from "@/lib/payments";
 import type { SupabaseDatabaseClient } from "@/services/database/types";
 import { createPaymobIntention } from "@/services/paymob";
 import { activateSubscriptionPlan } from "@/services/subscriptions";
@@ -20,12 +26,23 @@ export async function createCheckoutSession(
   input: CreateCheckoutInput,
 ): Promise<CheckoutSession> {
   const plan = getBillingPlan(input.planId);
+  const currency = isBillingCurrency(input.currency)
+    ? input.currency
+    : defaultBillingCurrency;
+  const landingPageQuantity =
+    plan.id === "free"
+      ? normalizeLandingPageQuantity(input.landingPageQuantity)
+      : 1;
 
-  if (plan.priceEgp <= 0) {
+  if (plan.priceUsd <= 0) {
     throw new Error("This plan does not require checkout.");
   }
 
-  const amountCents = egpToCents(plan.priceEgp);
+  const amountCents = calculateCheckoutAmount({
+    currency,
+    planPriceUsd: plan.priceUsd,
+    quantity: landingPageQuantity,
+  });
   const { data: subscription } = await supabase
     .from("subscriptions")
     .select("*")
@@ -38,7 +55,7 @@ export async function createCheckoutSession(
     .from("invoices")
     .insert({
       amount_cents: amountCents,
-      currency: "EGP",
+      currency,
       plan: plan.id,
       status: "open",
       subscription_id: subscription?.id ?? null,
@@ -53,7 +70,10 @@ export async function createCheckoutSession(
 
   const merchantOrderId = `sub_${userId}_${invoice.id}`;
   const checkout = await createPaymobIntention({
+    amountCents,
     billingData: input.billingData,
+    currency,
+    landingPageQuantity,
     merchantOrderId,
     plan,
     userId,
@@ -61,7 +81,7 @@ export async function createCheckoutSession(
 
   const { error: paymentError } = await supabase.from("payments").insert({
     amount_cents: amountCents,
-    currency: "EGP",
+    currency,
     invoice_id: invoice.id,
     plan: plan.id,
     provider: "paymob",

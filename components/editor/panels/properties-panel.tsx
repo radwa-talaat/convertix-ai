@@ -9,6 +9,8 @@ import {
   EyeOff,
   ImagePlus,
   Palette,
+  Plus,
+  Trash2,
   X,
 } from "lucide-react";
 
@@ -27,6 +29,7 @@ import {
 import { useEditorStore } from "@/store/editor";
 import type {
   EditorColorPalette,
+  EditorCustomFont,
   EditorDeviceMode,
   EditorPropertiesTab,
   EditorSectionStyle,
@@ -107,8 +110,8 @@ export function EditorPropertiesPanel() {
         </h2>
       </div>
 
-      <div className="shrink-0 overflow-x-auto border-b border-border p-2">
-        <div className="flex min-w-max flex-wrap gap-1">
+      <div className="shrink-0 border-b border-border p-2">
+        <div className="grid grid-cols-3 gap-1">
           {propertyTabs.map((tab) => (
             <button
               className={`rounded px-2 py-1 text-xs capitalize transition-colors ${
@@ -313,29 +316,64 @@ function ActivePropertiesTab({
 
   if (propertiesTab === "typography") {
     return (
-      <div className="space-y-3">
-        <p className="text-sm font-semibold">Typography scale</p>
-        <div className="grid gap-2">
-          {editorTypographyScales.map((typography) => (
-            <button
-              className={`rounded-md border p-3 text-left transition-colors ${
-                themeTokens.typography.id === typography.id
-                  ? "border-foreground"
-                  : "border-border hover:bg-background"
-              }`}
-              key={typography.id}
-              onClick={() => onUpdateThemeTokens({ typography })}
-              type="button"
-            >
-              <span className="block text-sm font-medium">
-                {typography.name}
-              </span>
-              <span className="mt-1 block text-xs text-muted-foreground">
-                {typography.heading}
-              </span>
-            </button>
-          ))}
+      <div className="space-y-5">
+        <div className="space-y-3">
+          <p className="text-sm font-semibold">Typography scale</p>
+          <div className="grid gap-2">
+            {[
+              ...editorTypographyScales,
+              ...(themeTokens.customFonts ?? []).map((font) =>
+                customFontToTypography(font),
+              ),
+            ].map((typography) => (
+              <button
+                className={`rounded-md border p-3 text-left transition-colors ${
+                  themeTokens.typography.id === typography.id
+                    ? "border-foreground"
+                    : "border-border hover:bg-background"
+                }`}
+                key={typography.id}
+                onClick={() => onUpdateThemeTokens({ typography })}
+                type="button"
+              >
+                <span className="block text-sm font-medium">
+                  {typography.name}
+                </span>
+                <span className="mt-1 block truncate text-xs text-muted-foreground">
+                  {typography.heading}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
+
+        <FontUploadField
+          onUpload={(font) =>
+            onUpdateThemeTokens({
+              customFonts: [...(themeTokens.customFonts ?? []), font],
+              typography: customFontToTypography(font),
+            })
+          }
+        />
+
+        <div className="space-y-3 rounded-md border border-border bg-background p-3">
+          <p className="text-sm font-semibold">Section text size</p>
+          <RangeField
+            label="Text scale"
+            max={180}
+            min={70}
+            onChange={(value) => onPatchStyle({ textScale: value })}
+            step={5}
+            suffix="%"
+            value={selectedStyle.textScale ?? 100}
+          />
+        </div>
+
+        <CustomTextControls
+          onPatchStyle={onPatchStyle}
+          selectedStyle={selectedStyle}
+          themeTokens={themeTokens}
+        />
       </div>
     );
   }
@@ -427,6 +465,38 @@ function ActivePropertiesTab({
         onChange={(value) => onPatchStyle({ foregroundImageUrl: value })}
         value={selectedStyle.foregroundImageUrl ?? ""}
       />
+      {selectedStyle.foregroundImageUrl ? (
+        <div className="space-y-3 rounded-md border border-border bg-background p-3">
+          <p className="text-sm font-semibold">Product image position</p>
+          <RangeField
+            label="Width"
+            max={640}
+            min={80}
+            onChange={(value) => onPatchStyle({ foregroundImageWidth: value })}
+            step={10}
+            suffix="px"
+            value={selectedStyle.foregroundImageWidth ?? 220}
+          />
+          <RangeField
+            label="Horizontal"
+            max={100}
+            min={0}
+            onChange={(value) => onPatchStyle({ foregroundImageX: value })}
+            step={1}
+            suffix="%"
+            value={selectedStyle.foregroundImageX ?? 82}
+          />
+          <RangeField
+            label="Vertical"
+            max={100}
+            min={0}
+            onChange={(value) => onPatchStyle({ foregroundImageY: value })}
+            step={1}
+            suffix="%"
+            value={selectedStyle.foregroundImageY ?? 72}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -517,6 +587,245 @@ function ImageUrlField({
       ) : null}
     </div>
   );
+}
+
+function FontUploadField({
+  onUpload,
+}: {
+  onUpload: (font: EditorCustomFont) => void;
+}) {
+  return (
+    <div className="space-y-3 rounded-md border border-border bg-background p-3">
+      <p className="text-sm font-semibold">Upload font</p>
+      <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-secondary/40 px-3 text-xs font-medium transition-colors hover:bg-secondary">
+        <Plus className="size-4" />
+        Upload TTF / OTF / WOFF
+        <input
+          accept=".ttf,.otf,.woff,.woff2,font/*"
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+
+            if (file) {
+              void readFileAsDataUrl(file).then((dataUrl) => {
+                const name = cleanFontName(file.name);
+                onUpload({
+                  dataUrl,
+                  family: `Custom ${name} ${Date.now()}`,
+                  id: `custom-font-${Date.now()}`,
+                  name,
+                });
+              });
+            }
+          }}
+          type="file"
+        />
+      </label>
+      <p className="text-xs leading-5 text-muted-foreground">
+        Uploaded fonts are saved with the landing page draft and used in preview
+        and publish.
+      </p>
+    </div>
+  );
+}
+
+function CustomTextControls({
+  onPatchStyle,
+  selectedStyle,
+  themeTokens,
+}: {
+  onPatchStyle: (update: Partial<EditorSectionStyle>) => void;
+  selectedStyle: EditorSectionStyle;
+  themeTokens: ReturnType<typeof useEditorStore.getState>["themeTokens"];
+}) {
+  const customTexts = selectedStyle.customTexts ?? [];
+
+  function updateText(
+    id: string,
+    update: Partial<(typeof customTexts)[number]>,
+  ) {
+    onPatchStyle({
+      customTexts: customTexts.map((text) =>
+        text.id === id ? { ...text, ...update } : text,
+      ),
+    });
+  }
+
+  return (
+    <div className="space-y-3 rounded-md border border-border bg-background p-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-semibold">Extra text blocks</p>
+        <Button
+          onClick={() =>
+            onPatchStyle({
+              customTexts: [
+                ...customTexts,
+                {
+                  color: themeTokens.colorPalette.foreground,
+                  fontSize: 34,
+                  id: `text-${Date.now()}`,
+                  text: "New text",
+                  x: 50,
+                  y: 50,
+                },
+              ],
+            })
+          }
+          size="sm"
+          type="button"
+          variant="outline"
+        >
+          <Plus className="size-4" />
+          Add
+        </Button>
+      </div>
+
+      {customTexts.length ? (
+        <div className="space-y-3">
+          {customTexts.map((text, index) => (
+            <div
+              className="space-y-3 rounded-md border border-border bg-secondary/20 p-3"
+              key={text.id}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Text block {index + 1}
+                </p>
+                <Button
+                  onClick={() =>
+                    onPatchStyle({
+                      customTexts: customTexts.filter(
+                        (item) => item.id !== text.id,
+                      ),
+                    })
+                  }
+                  size="icon"
+                  title="Delete text block"
+                  type="button"
+                  variant="ghost"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+              <textarea
+                className="min-h-20 w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background transition-shadow focus-visible:ring-2 focus-visible:ring-ring"
+                onChange={(event) =>
+                  updateText(text.id, { text: event.target.value })
+                }
+                value={text.text}
+              />
+              <ColorField
+                label="Text color"
+                onChange={(value) => updateText(text.id, { color: value })}
+                value={text.color ?? themeTokens.colorPalette.foreground}
+              />
+              <RangeField
+                label="Size"
+                max={160}
+                min={12}
+                onChange={(value) => updateText(text.id, { fontSize: value })}
+                step={1}
+                suffix="px"
+                value={text.fontSize}
+              />
+              <RangeField
+                label="Horizontal"
+                max={100}
+                min={0}
+                onChange={(value) => updateText(text.id, { x: value })}
+                step={1}
+                suffix="%"
+                value={text.x}
+              />
+              <RangeField
+                label="Vertical"
+                max={100}
+                min={0}
+                onChange={(value) => updateText(text.id, { y: value })}
+                step={1}
+                suffix="%"
+                value={text.y}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="rounded-md border border-dashed border-border p-3 text-xs leading-5 text-muted-foreground">
+          Add floating text on top of this layer for badges, offers, notes, or
+          product highlights.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function RangeField({
+  label,
+  max,
+  min,
+  onChange,
+  step,
+  suffix,
+  value,
+}: {
+  label: string;
+  max: number;
+  min: number;
+  onChange: (value: number) => void;
+  step: number;
+  suffix: string;
+  value: number;
+}) {
+  return (
+    <label className="grid gap-2 text-sm">
+      <span className="flex items-center justify-between gap-3">
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-mono text-xs text-muted-foreground">
+          {value}
+          {suffix}
+        </span>
+      </span>
+      <input
+        className="h-2 w-full cursor-pointer accent-foreground"
+        max={max}
+        min={min}
+        onChange={(event) => onChange(Number(event.target.value))}
+        step={step}
+        type="range"
+        value={value}
+      />
+    </label>
+  );
+}
+
+function customFontToTypography(font: EditorCustomFont) {
+  const family = `"${font.family}", ui-sans-serif, system-ui, sans-serif`;
+
+  return {
+    body: family,
+    heading: family,
+    id: font.id,
+    name: font.name,
+  };
+}
+
+function cleanFontName(fileName: string) {
+  return fileName
+    .replace(/\.[^.]+$/, "")
+    .replace(/[^a-zA-Z0-9\u0600-\u06FF\s_-]/g, "")
+    .trim()
+    .slice(0, 48);
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("File upload failed."));
+    reader.onload = () =>
+      resolve(typeof reader.result === "string" ? reader.result : "");
+    reader.readAsDataURL(file);
+  });
 }
 
 function readImageFile(file: File) {

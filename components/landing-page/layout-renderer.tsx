@@ -4,7 +4,10 @@ import { getLandingPageTheme } from "@/components/landing-page/themes";
 import { resolveSectionComponent } from "@/lib/rendering/component-resolver";
 import { getRenderableSections } from "@/lib/rendering/section-ordering";
 import { buildLandingPageStructuredData } from "@/lib/rendering/seo";
-import { createThemeFromEditorTokens } from "@/services/editor";
+import {
+  buildEditorFontFaceCss,
+  createThemeFromEditorTokens,
+} from "@/services/editor";
 import type {
   LandingPageRenderContext,
   LandingPageTemplate,
@@ -29,6 +32,7 @@ export const LayoutRenderer = React.memo(function LayoutRenderer({
       : getLandingPageTheme(template.themeId));
   const sections = getRenderableSections(template.sections);
   const structuredData = buildLandingPageStructuredData(template);
+  const fontFaceCss = buildEditorFontFaceCss(template.editorState?.themeTokens);
 
   return (
     <div
@@ -43,6 +47,9 @@ export const LayoutRenderer = React.memo(function LayoutRenderer({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         type="application/ld+json"
       />
+      {fontFaceCss ? (
+        <style dangerouslySetInnerHTML={{ __html: fontFaceCss }} />
+      ) : null}
       {sections.map((section) => {
         const Component = resolveSectionComponent(section.type);
 
@@ -51,15 +58,24 @@ export const LayoutRenderer = React.memo(function LayoutRenderer({
         }
 
         const style = template.editorState?.sectionStyles?.[section.id];
-        const sectionTheme = style?.backgroundColor
-          ? {
-              ...theme,
-              colors: {
-                ...theme.colors,
-                background: style.backgroundColor,
-              },
-            }
-          : theme;
+        const sectionTheme =
+          style?.backgroundColor ||
+          style?.backgroundImageUrl ||
+          style?.textScale
+            ? {
+                ...theme,
+                colors: {
+                  ...theme.colors,
+                  background: style?.backgroundImageUrl
+                    ? "transparent"
+                    : (style?.backgroundColor ?? theme.colors.background),
+                },
+                typography: {
+                  ...theme.typography,
+                  textScale: style?.textScale ?? 100,
+                },
+              }
+            : theme;
 
         return (
           <div
@@ -67,30 +83,58 @@ export const LayoutRenderer = React.memo(function LayoutRenderer({
             key={section.id}
             style={{
               backgroundColor: style?.backgroundColor,
-              backgroundImage: style?.backgroundImageUrl
-                ? `linear-gradient(rgb(255 255 255 / 0.32), rgb(255 255 255 / 0.32)), url("${style.backgroundImageUrl}")`
-                : undefined,
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              backgroundSize: "cover",
               textAlign: style?.align,
             }}
           >
-            <Component
-              data={section.data}
-              direction={template.direction}
-              renderContext={renderContext}
-              sectionId={section.type}
-              theme={sectionTheme}
-            />
+            {style?.backgroundImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 z-0 size-full object-cover"
+                src={style.backgroundImageUrl}
+              />
+            ) : null}
+            <div className="relative z-10">
+              <Component
+                data={section.data}
+                direction={template.direction}
+                renderContext={renderContext}
+                sectionId={section.type}
+                theme={sectionTheme}
+              />
+            </div>
             {style?.foregroundImageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 alt={`${section.type} media`}
-                className="pointer-events-none absolute bottom-8 end-8 z-10 max-h-56 w-40 rounded-lg border border-black/10 bg-white object-contain p-2 shadow-2xl sm:w-52"
+                className="pointer-events-none absolute z-20 max-w-[70%] rounded-lg border border-black/10 bg-white object-contain p-2 shadow-2xl"
                 src={style.foregroundImageUrl}
+                style={{
+                  left: `${style.foregroundImageX ?? 82}%`,
+                  top: `${style.foregroundImageY ?? 72}%`,
+                  transform: "translate(-50%, -50%)",
+                  width: `min(${style.foregroundImageWidth ?? 220}px, 70%)`,
+                }}
               />
             ) : null}
+            {(style?.customTexts ?? []).map((text) => (
+              <div
+                className="pointer-events-none absolute z-30 max-w-[70%] whitespace-pre-wrap break-words rounded-sm px-1 font-semibold leading-tight"
+                key={text.id}
+                style={{
+                  color: text.color ?? theme.colors.foreground,
+                  fontFamily: text.fontFamily ?? theme.typography.heading,
+                  fontSize: `min(${text.fontSize}px, 12vw)`,
+                  left: `${text.x}%`,
+                  textAlign: style?.align,
+                  top: `${text.y}%`,
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                {text.text}
+              </div>
+            ))}
           </div>
         );
       })}

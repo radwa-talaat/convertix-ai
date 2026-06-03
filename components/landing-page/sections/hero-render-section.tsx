@@ -11,6 +11,7 @@ export function HeroRenderSection({
   theme,
 }: LandingPageSectionProps<HeroSectionData>) {
   const renderText = editor?.renderText;
+  const textScale = (theme.typography.textScale ?? 100) / 100;
 
   return (
     <section
@@ -22,18 +23,28 @@ export function HeroRenderSection({
         color: theme.colors.foreground,
       }}
     >
-      <div className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1fr_0.8fr] lg:px-8">
+      <div className="mx-auto grid min-h-[calc(100svh-4rem)] w-full max-w-6xl items-center gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1fr_0.8fr] lg:gap-10 lg:px-8">
         <div className="duration-700 animate-in fade-in slide-in-from-bottom-4">
-          <h1 className="text-balance text-5xl font-semibold tracking-normal sm:text-6xl lg:text-7xl">
-            {renderText?.({
-              multiline: true,
-              path: "headline",
-              value: data.headline,
-            }) ?? data.headline}
+          <h1 className="text-balance break-words text-[clamp(2.35rem,10vw,4.5rem)] font-semibold leading-[1.05] tracking-normal">
+            <span
+              style={{
+                fontFamily: theme.typography.heading,
+                fontSize: `calc(clamp(2.35rem, 10vw, 4.5rem) * ${textScale})`,
+              }}
+            >
+              {renderText?.({
+                multiline: true,
+                path: "headline",
+                value: data.headline,
+              }) ?? data.headline}
+            </span>
           </h1>
           <p
-            className="mt-6 max-w-2xl text-lg leading-8"
-            style={{ color: theme.colors.muted }}
+            className="mt-5 max-w-2xl text-base leading-7 sm:mt-6 sm:text-lg sm:leading-8"
+            style={{
+              color: theme.colors.muted,
+              fontSize: `calc(1rem * ${textScale})`,
+            }}
           >
             {renderText?.({
               multiline: true,
@@ -67,7 +78,7 @@ export function HeroRenderSection({
           </div>
         </div>
         <div
-          className="relative min-h-80 overflow-hidden rounded-lg border p-4 shadow-2xl"
+          className="relative min-h-64 overflow-hidden rounded-lg border p-4 shadow-2xl sm:min-h-80"
           style={{
             backgroundColor: theme.colors.surface,
             borderColor: theme.colors.border,

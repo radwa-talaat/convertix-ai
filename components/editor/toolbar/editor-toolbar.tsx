@@ -2,8 +2,8 @@
 
 import {
   Code2,
-  FileJson,
   Eye,
+  FileJson,
   Images,
   Laptop,
   Loader2,
@@ -15,11 +15,14 @@ import {
   Undo2,
 } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import * as React from "react";
 
+import { publishPageAction } from "@/app/dashboard/publishing/actions";
 import { updateLandingPageDraftAction } from "@/app/dashboard/projects/actions";
 import { SegmentedControl } from "@/components/editor/controls/segmented-control";
 import { Button } from "@/components/ui/button";
+import { createLocalizedPathname, type AppLocale } from "@/lib/i18n/config";
 import {
   downloadEditorHtml,
   downloadEditorJson,
@@ -52,8 +55,12 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
   const template = useEditorStore((state) => state.template);
   const themeTokens = useEditorStore((state) => state.themeTokens);
   const undo = useEditorStore((state) => state.undo);
+  const locale = useLocale() as AppLocale;
   const [exportStatus, setExportStatus] = React.useState<
     "idle" | "html" | "json" | "png"
+  >("idle");
+  const [publishStatus, setPublishStatus] = React.useState<
+    "idle" | "publishing" | "published" | "error"
   >("idle");
 
   const snapshot = template
@@ -101,6 +108,42 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
     }
 
     setSaveStatus("saved");
+  }
+
+  async function handlePublish() {
+    if (!template || !pageId) {
+      setPublishStatus("error");
+      return;
+    }
+
+    setPublishStatus("publishing");
+    setSaveStatus("saving");
+
+    const persistedTemplate = {
+      ...template,
+      editorState: {
+        sectionStyles,
+        themeTokens,
+      },
+    };
+
+    try {
+      await updateLandingPageDraftAction(
+        pageId,
+        persistedTemplate as unknown as Json,
+        persistedTemplate.seo as unknown as Json,
+      );
+      await publishPageAction({
+        pageId,
+        projectSlug: persistedTemplate.slug,
+        template: persistedTemplate,
+      });
+      setSaveStatus("saved");
+      setPublishStatus("published");
+    } catch {
+      setSaveStatus("error");
+      setPublishStatus("error");
+    }
   }
 
   function handleJsonExport() {
@@ -228,19 +271,35 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
           <span className="hidden sm:inline">Save</span>
         </Button>
         <Button asChild size="sm" title="Preview" variant="ghost">
-          <Link href="/preview/launch-os" rel="noreferrer" target="_blank">
+          <Link
+            href={createLocalizedPathname(
+              pageId
+                ? `/dashboard/preview?page=${pageId}`
+                : `/preview/${template?.slug ?? "launch-os"}`,
+              locale,
+            )}
+            rel="noreferrer"
+            target="_blank"
+          >
             <Eye className="size-4" />
             <span className="hidden sm:inline">Preview</span>
           </Link>
         </Button>
         <Button
-          disabled
+          disabled={!pageId || !template || publishStatus === "publishing"}
+          onClick={() => void handlePublish()}
           size="sm"
-          title="Publishing is a later phase"
+          title={pageId ? "Publish page" : "Save this page before publishing"}
           type="button"
         >
-          <Rocket className="size-4" />
-          <span className="hidden sm:inline">Publish</span>
+          {publishStatus === "publishing" ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Rocket className="size-4" />
+          )}
+          <span className="hidden sm:inline">
+            {publishStatus === "publishing" ? "Publishing..." : "Publish"}
+          </span>
         </Button>
       </div>
     </header>

@@ -30,7 +30,7 @@ export function SectionShell({
         color: theme.colors.foreground,
       }}
     >
-      <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+      <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         {children}
       </div>
     </section>

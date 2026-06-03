@@ -1,4 +1,8 @@
-import { billingPlans, egpToCents, getBillingPlan } from "@/lib/payments";
+import {
+  billingPlans,
+  calculateCheckoutAmount,
+  getBillingPlan,
+} from "@/lib/payments";
 import type {
   BillingDashboardSnapshot,
   BillingSubscription,
@@ -47,11 +51,14 @@ export function getBillingDashboardSnapshot(): BillingDashboardSnapshot {
     },
   ];
   const invoices: InvoiceRecord[] = billingPlans
-    .filter((plan) => plan.priceEgp > 0)
+    .filter((plan) => plan.priceUsd > 0)
     .slice(0, 1)
     .map((plan) => ({
-      amountCents: egpToCents(plan.priceEgp),
-      currency: "EGP",
+      amountCents: calculateCheckoutAmount({
+        currency: "USD",
+        planPriceUsd: plan.priceUsd,
+      }),
+      currency: "USD",
       dueAt: null,
       id: "invoice-demo-1",
       paidAt: null,

@@ -1,10 +1,10 @@
 import { Bell, Shield, UserRound } from "lucide-react";
 
 import { PageHeader } from "@/components/dashboard/page-header";
-import { Button } from "@/components/ui/button";
+import { SettingsProfileForm } from "@/components/dashboard/settings-profile-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { requireUser } from "@/lib/supabase/auth";
+import { createClient } from "@/lib/supabase/server";
 
 const settingsSections = [
   {
@@ -24,11 +24,25 @@ const settingsSections = [
   },
 ];
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const user = await requireUser();
+  const supabase = createClient();
+  const { data: profile } = await supabase
+    .from("users")
+    .select("email, full_name")
+    .eq("id", user.id)
+    .maybeSingle();
+  const email = profile?.email ?? user.email ?? "";
+  const fullName =
+    profile?.full_name ??
+    (typeof user.user_metadata.full_name === "string"
+      ? user.user_metadata.full_name
+      : "");
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
       <PageHeader
-        description="Account settings UI foundation with accessible form structure and clear sections."
+        description="Manage the account identity used across your dashboard."
         eyebrow="Workspace"
         title="Settings"
       />
@@ -58,20 +72,8 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle>Profile details</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="Your name" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" placeholder="you@company.com" type="email" />
-              </div>
-            </div>
-            <div className="flex justify-end">
-              <Button type="button">Save changes</Button>
-            </div>
+          <CardContent>
+            <SettingsProfileForm email={email} fullName={fullName} />
           </CardContent>
         </Card>
       </div>

@@ -40,11 +40,24 @@ export function MobileDashboardNav() {
               key={item.href}
             >
               {Icon ? <Icon className="size-4" /> : null}
-              {t(item.title.toLowerCase())}
+              {getDashboardNavLabel(t, item.title)}
             </Link>
           );
         })}
       </div>
     </nav>
   );
+}
+
+function getDashboardNavLabel(
+  t: ReturnType<typeof useTranslations>,
+  title: string,
+) {
+  const key = title.toLowerCase();
+
+  if (key === "projects") {
+    return t("projects.title");
+  }
+
+  return t(key);
 }

@@ -17,6 +17,7 @@ export function PricingSection({
   theme,
 }: LandingPageSectionProps<PricingSectionData>) {
   const renderText = editor?.renderText;
+  const textScale = (theme.typography.textScale ?? 100) / 100;
 
   return (
     <SectionShell direction={direction} id={sectionId} theme={theme}>
@@ -32,7 +33,13 @@ export function PricingSection({
           {renderText?.({ path: "eyebrow", value: data.eyebrow }) ??
             data.eyebrow}
         </Eyebrow>
-        <h2 className="mt-4 text-3xl font-semibold tracking-normal sm:text-4xl">
+        <h2
+          className="mt-4 text-balance break-words text-[clamp(1.85rem,7vw,2.5rem)] font-semibold leading-tight tracking-normal"
+          style={{
+            fontFamily: theme.typography.heading,
+            fontSize: `calc(clamp(1.85rem, 7vw, 2.5rem) * ${textScale})`,
+          }}
+        >
           {renderText?.({
             multiline: true,
             path: "title",
@@ -41,7 +48,10 @@ export function PricingSection({
         </h2>
         <p
           className="mt-4 text-base leading-7"
-          style={{ color: theme.colors.muted }}
+          style={{
+            color: theme.colors.muted,
+            fontSize: `calc(1rem * ${textScale})`,
+          }}
         >
           {renderText?.({ multiline: true, path: "copy", value: data.copy }) ??
             data.copy}

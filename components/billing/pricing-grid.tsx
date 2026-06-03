@@ -1,21 +1,70 @@
+"use client";
+
+import * as React from "react";
+
 import { PlanCard } from "@/components/billing/plan-card";
-import { billingPlans } from "@/lib/payments";
-import type { BillingPlanId } from "@/types/billing";
+import {
+  billingPlans,
+  currencyOptions,
+  defaultBillingCurrency,
+  detectCurrencyFromLocale,
+} from "@/lib/payments";
+import type { BillingCurrency, BillingPlanId } from "@/types/billing";
 
 export function PricingGrid({
   currentPlanId,
+  initialCurrency,
 }: {
   currentPlanId?: BillingPlanId;
+  initialCurrency?: BillingCurrency;
 }) {
+  const [currency, setCurrency] = React.useState<BillingCurrency>(
+    initialCurrency ?? defaultBillingCurrency,
+  );
+
+  React.useEffect(() => {
+    if (initialCurrency) {
+      return;
+    }
+
+    const detected = detectCurrencyFromLocale(window.navigator.language);
+    setCurrency(detected);
+  }, [initialCurrency]);
+
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
-      {billingPlans.map((plan) => (
-        <PlanCard
-          current={plan.id === currentPlanId}
-          key={plan.id}
-          plan={plan}
-        />
-      ))}
+    <div className="space-y-4">
+      <div className="flex flex-col justify-between gap-3 rounded-lg border border-border bg-background p-4 sm:flex-row sm:items-center">
+        <div>
+          <p className="text-sm font-semibold">Local currency</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Prices start from USD and update by selected country currency.
+          </p>
+        </div>
+        <select
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+          onChange={(event) =>
+            setCurrency(event.target.value as BillingCurrency)
+          }
+          value={currency}
+        >
+          {currencyOptions.map((option) => (
+            <option key={option.code} value={option.code}>
+              {option.code} - {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        {billingPlans.map((plan) => (
+          <PlanCard
+            currency={currency}
+            current={plan.id !== "free" && plan.id === currentPlanId}
+            key={plan.id}
+            plan={plan}
+          />
+        ))}
+      </div>
     </div>
   );
 }

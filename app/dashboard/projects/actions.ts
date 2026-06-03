@@ -2,13 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 
-import { aiLandingPageContentSchema } from "@/lib/ai/schema";
+import {
+  aiLandingPageContentSchema,
+  aiLandingPageDesignSchema,
+} from "@/lib/ai/schema";
 import { generateSlug } from "@/lib/publishing";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import { buildLandingPageTemplate } from "@/services/rendering";
-import type { AiLandingPageContent } from "@/types/ai";
+import type { AiLandingPageContent, AiLandingPageDesign } from "@/types/ai";
 import type { Json } from "@/types/database";
 
 function cleanProjectName(name: string) {
@@ -172,10 +175,14 @@ export async function createLandingPageFromAiAction(
   content: AiLandingPageContent,
   language: "ar" | "en" = "en",
   heroImageUrl?: string,
+  design?: AiLandingPageDesign,
 ) {
   const user = await requireUser();
   const supabase = createClient();
   const safeContent = aiLandingPageContentSchema.parse(content);
+  const safeDesign = design
+    ? aiLandingPageDesignSchema.parse(design)
+    : undefined;
   const { data: project, error: projectError } = await supabase
     .from("projects")
     .select("id, name, slug")
@@ -192,6 +199,7 @@ export async function createLandingPageFromAiAction(
   const template = buildLandingPageTemplate({
     brandName: project.name,
     content: safeContent,
+    design: safeDesign,
     direction: language === "ar" ? "rtl" : "ltr",
     heroImageUrl,
     slug: pageSlug,

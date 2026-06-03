@@ -1,4 +1,4 @@
-import type { AiLandingPageContent } from "@/types/ai";
+import type { AiLandingPageContent, AiLandingPageDesign } from "@/types/ai";
 
 const htmlTagPattern = /<[^>]*>/g;
 const whitespacePattern = /\s+/g;
@@ -39,5 +39,72 @@ export function sanitizeLandingPageContent(
       title: sanitizeText(content.seo.title),
       description: sanitizeText(content.seo.description),
     },
+  };
+}
+
+function sanitizeColor(value: string, fallback: string) {
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
+}
+
+function sanitizeScale(value: number) {
+  return Math.max(80, Math.min(150, Math.round(value)));
+}
+
+export function sanitizeLandingPageDesign(
+  design: AiLandingPageDesign,
+): AiLandingPageDesign {
+  return {
+    ...design,
+    backgroundStyle: sanitizeText(design.backgroundStyle),
+    colors: {
+      accent: sanitizeColor(design.colors.accent, "#d7fb72"),
+      background: sanitizeColor(design.colors.background, "#f7f7f2"),
+      border: sanitizeColor(design.colors.border, "#deded4"),
+      foreground: sanitizeColor(design.colors.foreground, "#10100e"),
+      muted: sanitizeColor(design.colors.muted, "#68685f"),
+      primary: sanitizeColor(design.colors.primary, "#111111"),
+      primaryForeground: sanitizeColor(
+        design.colors.primaryForeground,
+        "#ffffff",
+      ),
+      surface: sanitizeColor(design.colors.surface, "#ffffff"),
+    },
+    designNotes: design.designNotes.map(sanitizeText),
+    heroBadge: sanitizeText(design.heroBadge),
+    sectionStyles: {
+      cta: {
+        ...design.sectionStyles.cta,
+        backgroundColor: sanitizeColor(
+          design.sectionStyles.cta.backgroundColor,
+          design.colors.primary,
+        ),
+        textScale: sanitizeScale(design.sectionStyles.cta.textScale),
+      },
+      features: {
+        ...design.sectionStyles.features,
+        backgroundColor: sanitizeColor(
+          design.sectionStyles.features.backgroundColor,
+          design.colors.surface,
+        ),
+        textScale: sanitizeScale(design.sectionStyles.features.textScale),
+      },
+      hero: {
+        ...design.sectionStyles.hero,
+        backgroundColor: sanitizeColor(
+          design.sectionStyles.hero.backgroundColor,
+          design.colors.background,
+        ),
+        textScale: sanitizeScale(design.sectionStyles.hero.textScale),
+      },
+      pricing: {
+        ...design.sectionStyles.pricing,
+        backgroundColor: sanitizeColor(
+          design.sectionStyles.pricing.backgroundColor,
+          design.colors.surface,
+        ),
+        textScale: sanitizeScale(design.sectionStyles.pricing.textScale),
+      },
+    },
+    textScale: sanitizeScale(design.textScale),
   };
 }

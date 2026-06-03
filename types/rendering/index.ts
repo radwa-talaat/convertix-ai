@@ -68,6 +68,7 @@ export type LandingPageTheme = {
   typography: {
     heading: string;
     body: string;
+    textScale?: number;
   };
   radius: string;
 };

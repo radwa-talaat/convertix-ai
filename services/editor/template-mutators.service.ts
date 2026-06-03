@@ -158,9 +158,14 @@ export function createDefaultSectionStyle(): EditorSectionStyle {
   return {
     align: "start",
     backgroundImageUrl: undefined,
+    customTexts: [],
+    foregroundImageX: 82,
+    foregroundImageY: 72,
     foregroundImageUrl: undefined,
+    foregroundImageWidth: 220,
     hiddenOn: [],
     padding: "comfortable",
+    textScale: 100,
   };
 }
 

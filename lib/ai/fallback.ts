@@ -1,4 +1,18 @@
-import type { AiGenerationInput, AiLandingPageContent } from "@/types/ai";
+import type {
+  AiGeneratedLandingPage,
+  AiGenerationInput,
+  AiLandingPageContent,
+  AiLandingPageDesign,
+} from "@/types/ai";
+
+export function createFallbackLandingPageGeneration(
+  input: AiGenerationInput,
+): AiGeneratedLandingPage {
+  return {
+    content: createFallbackLandingPageContent(input),
+    design: createFallbackLandingPageDesign(input),
+  };
+}
 
 export function createFallbackLandingPageContent(
   input: AiGenerationInput,
@@ -143,5 +157,143 @@ export function createFallbackLandingPageContent(
       title: `${input.businessName} | ${input.goal}`,
       description: `${input.businessName} helps ${input.targetAudience} achieve ${input.goal} with a focused ${input.businessType} solution.`,
     },
+  };
+}
+
+export function createFallbackLandingPageDesign(
+  input: AiGenerationInput,
+): AiLandingPageDesign {
+  const brief = [
+    input.businessName,
+    input.businessType,
+    input.productCategory,
+    input.brandStyle,
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  if (/(perfume|fragrance|عطر|عطور|برفان)/i.test(brief)) {
+    return createDesignPreset(input, {
+      accent: "#d9b45f",
+      background: "#f7f1e7",
+      border: "#e2d4bd",
+      foreground: "#18130d",
+      muted: "#746756",
+      primary: "#17120c",
+      primaryForeground: "#ffffff",
+      surface: "#fffaf2",
+      theme: "luxury",
+      typographyStyle: "elegant",
+    });
+  }
+
+  if (/(medical|clinic|doctor|health|طبي|عيادة|صحة|دكتور)/i.test(brief)) {
+    return createDesignPreset(input, {
+      accent: "#9ddcff",
+      background: "#edf8fb",
+      border: "#c8e5ee",
+      foreground: "#0d2430",
+      muted: "#53717b",
+      primary: "#0b5f79",
+      primaryForeground: "#ffffff",
+      surface: "#ffffff",
+      theme: "medical",
+      typographyStyle: "clean",
+    });
+  }
+
+  if (/(men|male|max man|رجال|رجالي|ذكر|ذكور)/i.test(brief)) {
+    return createDesignPreset(input, {
+      accent: "#f6c453",
+      background: "#111111",
+      border: "#2c2c2c",
+      foreground: "#fff9ed",
+      muted: "#c0b7a7",
+      primary: "#f04f32",
+      primaryForeground: "#ffffff",
+      surface: "#1b1b1b",
+      theme: "bold",
+      typographyStyle: "bold",
+    });
+  }
+
+  return createDesignPreset(input, {
+    accent: "#d7fb72",
+    background: "#f7f7f2",
+    border: "#deded4",
+    foreground: "#10100e",
+    muted: "#68685f",
+    primary: "#111111",
+    primaryForeground: "#ffffff",
+    surface: "#ffffff",
+    theme: "minimal",
+    typographyStyle: "clean",
+  });
+}
+
+function createDesignPreset(
+  input: AiGenerationInput,
+  preset: AiLandingPageDesign["colors"] & {
+    theme: AiLandingPageDesign["theme"];
+    typographyStyle: AiLandingPageDesign["typographyStyle"];
+  },
+): AiLandingPageDesign {
+  const isArabic = input.language === "ar";
+
+  return {
+    backgroundStyle: isArabic
+      ? "خلفية منتج نظيفة مع مساحة قوية للصورة والدعوة للشراء"
+      : "Clean product-first background with strong image and CTA space",
+    colors: {
+      accent: preset.accent,
+      background: preset.background,
+      border: preset.border,
+      foreground: preset.foreground,
+      muted: preset.muted,
+      primary: preset.primary,
+      primaryForeground: preset.primaryForeground,
+      surface: preset.surface,
+    },
+    designNotes: isArabic
+      ? [
+          "اجعل صورة المنتج واضحة في الهيرو.",
+          "استخدم تباين قوي بين العنوان والزر.",
+          "اعرض السعر أو العرض بالقرب من أول دعوة للشراء.",
+        ]
+      : [
+          "Keep the product image visible in the hero.",
+          "Use strong contrast between headline and CTA.",
+          "Place price or offer close to the first action.",
+        ],
+    heroBadge:
+      input.offer ||
+      input.productPrice ||
+      (isArabic ? "عرض خاص" : "Featured offer"),
+    imagePlacement: isArabic ? "left" : "right",
+    sectionStyles: {
+      cta: {
+        align: "center",
+        backgroundColor: preset.primary,
+        textScale: 105,
+      },
+      features: {
+        align: isArabic ? "end" : "start",
+        backgroundColor: preset.surface,
+        textScale: 100,
+      },
+      hero: {
+        align: isArabic ? "end" : "start",
+        backgroundColor: preset.background,
+        textScale: 112,
+      },
+      pricing: {
+        align: "center",
+        backgroundColor: preset.surface,
+        textScale: 102,
+      },
+    },
+    textScale: 108,
+    theme: preset.theme,
+    typographyStyle: preset.typographyStyle,
   };
 }

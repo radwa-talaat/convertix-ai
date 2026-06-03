@@ -2,13 +2,19 @@ import { CreditCard, ShieldCheck } from "lucide-react";
 
 import { SubscriptionStatusBadge } from "@/components/billing/subscription-status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatEgp } from "@/lib/payments";
-import type { BillingPlan, BillingSubscription } from "@/types/billing";
+import { formatMoney } from "@/lib/payments";
+import type {
+  BillingCurrency,
+  BillingPlan,
+  BillingSubscription,
+} from "@/types/billing";
 
 export function CurrentPlanCard({
+  currency = "USD",
   plan,
   subscription,
 }: {
+  currency?: BillingCurrency;
   plan: BillingPlan;
   subscription: BillingSubscription;
 }) {
@@ -23,9 +29,9 @@ export function CurrentPlanCard({
           <div>
             <p className="text-3xl font-semibold">{plan.name}</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              {plan.priceEgp === 0
+              {plan.priceUsd === 0
                 ? "No active paid subscription"
-                : `${formatEgp(plan.priceEgp * 100)}${
+                : `${formatMoney(plan.priceUsd, currency)}${
                     plan.id === "free" ? " per landing page" : " per month"
                   }`}
             </p>

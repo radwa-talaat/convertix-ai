@@ -31,8 +31,16 @@ const initialInputDefaults: AiGenerationInput = {
   brandStyle: "Minimal luxury",
   businessName: "",
   businessType: "",
+  customerProblem: "",
+  dialect: "",
   goal: "",
+  keyBenefits: "",
   language: "en",
+  offer: "",
+  orderMethod: "",
+  productCategory: "",
+  productPrice: "",
+  salesCountry: "",
   targetAudience: "",
   toneOfVoice: "Confident and clear",
 };
@@ -62,6 +70,7 @@ export function AiGenerationForm({
   const commonT = useTranslations("common");
   const { toast } = useToast();
   const [input, setInput] = React.useState<AiGenerationInput>({
+    ...initialInputDefaults,
     ...initialInput,
     businessName: initialInput?.businessName ?? projectName ?? "",
     brandStyle: initialInput?.brandStyle ?? initialInputDefaults.brandStyle,
@@ -156,6 +165,7 @@ export function AiGenerationForm({
         result.content,
         input.language,
         input.productImageUrl,
+        result.design,
       );
       setSavedPageId(page.id);
       setSavedPageSlug(page.slug);
@@ -284,6 +294,74 @@ export function AiGenerationForm({
                   value={input.toneOfVoice}
                 />
               </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label={locale === "ar" ? "فئة المنتج" : "Product Category"}
+                  name="productCategory"
+                  onChange={(value) => updateInput("productCategory", value)}
+                  placeholder="Perfume, supplement, clinic, course"
+                  required={false}
+                  value={input.productCategory ?? ""}
+                />
+                <Field
+                  label={locale === "ar" ? "سعر المنتج" : "Product Price"}
+                  name="productPrice"
+                  onChange={(value) => updateInput("productPrice", value)}
+                  placeholder="50 EGP, 1 USD, 99 SAR"
+                  required={false}
+                  value={input.productPrice ?? ""}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label={locale === "ar" ? "العرض" : "Offer"}
+                  name="offer"
+                  onChange={(value) => updateInput("offer", value)}
+                  placeholder="Free delivery, limited discount, bundle"
+                  required={false}
+                  value={input.offer ?? ""}
+                />
+                <Field
+                  label={locale === "ar" ? "طريقة الطلب" : "Order Method"}
+                  name="orderMethod"
+                  onChange={(value) => updateInput("orderMethod", value)}
+                  placeholder="WhatsApp, form submission, call now"
+                  required={false}
+                  value={input.orderMethod ?? ""}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label={locale === "ar" ? "بلد البيع" : "Sales Country"}
+                  name="salesCountry"
+                  onChange={(value) => updateInput("salesCountry", value)}
+                  placeholder="Egypt, Saudi Arabia, UAE"
+                  required={false}
+                  value={input.salesCountry ?? ""}
+                />
+                <Field
+                  label={locale === "ar" ? "اللهجة" : "Dialect"}
+                  name="dialect"
+                  onChange={(value) => updateInput("dialect", value)}
+                  placeholder="Egyptian Arabic, Saudi Arabic, formal"
+                  required={false}
+                  value={input.dialect ?? ""}
+                />
+              </div>
+              <TextareaField
+                label={locale === "ar" ? "مشكلة العميل" : "Customer Problem"}
+                name="customerProblem"
+                onChange={(value) => updateInput("customerProblem", value)}
+                placeholder="What pain or desire should the page speak to?"
+                value={input.customerProblem ?? ""}
+              />
+              <TextareaField
+                label={locale === "ar" ? "أهم الفوائد" : "Key Benefits"}
+                name="keyBenefits"
+                onChange={(value) => updateInput("keyBenefits", value)}
+                placeholder="List the strongest product benefits in plain language."
+                value={input.keyBenefits ?? ""}
+              />
               <div className="space-y-2">
                 <Label htmlFor="productImage">
                   {locale === "ar" ? "صورة المنتج" : "Product image"}
@@ -384,6 +462,36 @@ function Field({
   name,
   onChange,
   placeholder,
+  required = true,
+  value,
+}: {
+  label: string;
+  name: keyof AiGenerationInput;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  required?: boolean;
+  value: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={name}>{label}</Label>
+      <Input
+        id={name}
+        minLength={required ? 2 : undefined}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        required={required}
+        value={value}
+      />
+    </div>
+  );
+}
+
+function TextareaField({
+  label,
+  name,
+  onChange,
+  placeholder,
   value,
 }: {
   label: string;
@@ -395,12 +503,11 @@ function Field({
   return (
     <div className="space-y-2">
       <Label htmlFor={name}>{label}</Label>
-      <Input
+      <textarea
+        className="flex min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-luxury-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         id={name}
-        minLength={2}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        required
         value={value}
       />
     </div>

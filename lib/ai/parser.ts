@@ -1,13 +1,20 @@
 import { AiError } from "@/lib/ai/errors";
-import { aiLandingPageContentSchema } from "@/lib/ai/schema";
-import { sanitizeLandingPageContent } from "@/lib/ai/sanitize";
-import type { AiLandingPageContent } from "@/types/ai";
+import { aiLandingPageGenerationSchema } from "@/lib/ai/schema";
+import {
+  sanitizeLandingPageContent,
+  sanitizeLandingPageDesign,
+} from "@/lib/ai/sanitize";
+import type { AiGeneratedLandingPage } from "@/types/ai";
 
-export function parseAiJsonResponse(rawText: string): AiLandingPageContent {
+export function parseAiJsonResponse(rawText: string): AiGeneratedLandingPage {
   try {
     const parsed = JSON.parse(rawText) as unknown;
-    const validated = aiLandingPageContentSchema.parse(parsed);
-    return sanitizeLandingPageContent(validated);
+    const validated = aiLandingPageGenerationSchema.parse(parsed);
+
+    return {
+      content: sanitizeLandingPageContent(validated.content),
+      design: sanitizeLandingPageDesign(validated.design),
+    };
   } catch {
     throw new AiError(
       "AI response did not match the required landing page schema.",

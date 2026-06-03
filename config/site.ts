@@ -1,5 +1,4 @@
 import {
-  Blocks,
   CreditCard,
   Eye,
   LineChart,
@@ -44,11 +43,6 @@ export const dashboardNavSections: NavigationSection[] = [
         title: "Projects",
         href: "/dashboard/projects",
         icon: PanelsTopLeft,
-      },
-      {
-        title: "Templates",
-        href: "/dashboard/templates",
-        icon: Blocks,
       },
       {
         title: "Preview",

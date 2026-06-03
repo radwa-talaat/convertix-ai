@@ -17,6 +17,7 @@ import {
 
 import { SortableSectionFrame } from "@/components/editor/canvas/sortable-section-frame";
 import { cn } from "@/lib/utils";
+import { buildEditorFontFaceCss } from "@/services/editor";
 import { useEditorStore } from "@/store/editor";
 
 const canvasWidth = {
@@ -29,6 +30,8 @@ export function EditorCanvas() {
   const deviceMode = useEditorStore((state) => state.deviceMode);
   const reorderSections = useEditorStore((state) => state.reorderSections);
   const template = useEditorStore((state) => state.template);
+  const themeTokens = useEditorStore((state) => state.themeTokens);
+  const fontFaceCss = buildEditorFontFaceCss(themeTokens);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -68,6 +71,9 @@ export function EditorCanvas() {
           )}
           data-editor-export-root="true"
         >
+          {fontFaceCss ? (
+            <style dangerouslySetInnerHTML={{ __html: fontFaceCss }} />
+          ) : null}
           <DndContext
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}

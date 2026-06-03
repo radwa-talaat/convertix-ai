@@ -17,6 +17,7 @@ export function BenefitsSection({
   theme,
 }: LandingPageSectionProps<BenefitsSectionData>) {
   const renderText = editor?.renderText;
+  const textScale = (theme.typography.textScale ?? 100) / 100;
 
   return (
     <SectionShell
@@ -31,7 +32,13 @@ export function BenefitsSection({
             {renderText?.({ path: "eyebrow", value: data.eyebrow }) ??
               data.eyebrow}
           </Eyebrow>
-          <h2 className="mt-4 text-3xl font-semibold tracking-normal sm:text-4xl">
+          <h2
+            className="mt-4 text-balance break-words text-[clamp(1.85rem,7vw,2.5rem)] font-semibold leading-tight tracking-normal"
+            style={{
+              fontFamily: theme.typography.heading,
+              fontSize: `calc(clamp(1.85rem, 7vw, 2.5rem) * ${textScale})`,
+            }}
+          >
             {renderText?.({
               multiline: true,
               path: "title",
@@ -52,7 +59,13 @@ export function BenefitsSection({
             >
               <CheckCircle2 className="mt-1 size-5 shrink-0" />
               <div>
-                <h3 className="font-semibold">
+                <h3
+                  className="font-semibold"
+                  style={{
+                    fontFamily: theme.typography.heading,
+                    fontSize: `calc(1rem * ${textScale})`,
+                  }}
+                >
                   {renderText?.({
                     path: `items.${index}.title`,
                     value: item.title,
@@ -60,7 +73,10 @@ export function BenefitsSection({
                 </h3>
                 <p
                   className="mt-2 text-sm leading-6"
-                  style={{ color: theme.colors.muted }}
+                  style={{
+                    color: theme.colors.muted,
+                    fontSize: `calc(0.875rem * ${textScale})`,
+                  }}
                 >
                   {renderText?.({
                     multiline: true,

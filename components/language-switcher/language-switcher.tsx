@@ -2,8 +2,7 @@
 
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +16,7 @@ import {
 export function LanguageSwitcher() {
   const locale = useLocale() as AppLocale;
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const t = useTranslations("common");
   const nextLocale = locale === "ar" ? "en" : "ar";
@@ -25,24 +25,23 @@ export function LanguageSwitcher() {
     ? `${localizedPath}?${searchParams.toString()}`
     : localizedPath;
 
+  function switchLanguage() {
+    document.cookie = `${localeCookieName}=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
+    router.push(href);
+    router.refresh();
+  }
+
   return (
     <Button
       aria-label={t("switchLanguage")}
-      asChild
+      onClick={switchLanguage}
       size="sm"
       title={t("switchLanguage")}
+      type="button"
       variant="outline"
     >
-      <Link
-        href={href}
-        hrefLang={nextLocale}
-        onClick={() => {
-          document.cookie = `${localeCookieName}=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
-        }}
-      >
-        <Languages />
-        <span className="hidden sm:inline">{localeLabels[nextLocale]}</span>
-      </Link>
+      <Languages />
+      <span className="hidden sm:inline">{localeLabels[nextLocale]}</span>
     </Button>
   );
 }

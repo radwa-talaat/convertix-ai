@@ -26,15 +26,22 @@ export function EditorSectionRenderer({ section }: EditorSectionRendererProps) {
 
   const style = sectionStyles[section.id] ?? createDefaultSectionStyle();
   const theme = createThemeFromEditorTokens(themeTokens);
-  const sectionTheme = style.backgroundColor
-    ? {
-        ...theme,
-        colors: {
-          ...theme.colors,
-          background: style.backgroundColor,
-        },
-      }
-    : theme;
+  const sectionTheme =
+    style.backgroundColor || style.backgroundImageUrl || style.textScale
+      ? {
+          ...theme,
+          colors: {
+            ...theme.colors,
+            background: style.backgroundImageUrl
+              ? "transparent"
+              : (style.backgroundColor ?? theme.colors.background),
+          },
+          typography: {
+            ...theme.typography,
+            textScale: style.textScale ?? 100,
+          },
+        }
+      : theme;
 
   return (
     <Component

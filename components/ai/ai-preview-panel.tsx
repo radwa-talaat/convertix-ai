@@ -58,6 +58,7 @@ export function AiPreviewPanel({
   }
 
   const content = result.content;
+  const design = result.design;
 
   return (
     <Card className="h-full">
@@ -132,6 +133,48 @@ export function AiPreviewPanel({
           <Badge className="mt-4" variant="outline">
             CTA: {content.cta}
           </Badge>
+        </section>
+
+        <section className="rounded-md border border-border bg-secondary/30 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium">
+                {isArabic ? "اتجاه التصميم" : "Design Direction"}
+              </p>
+              <p className="mt-1 text-xs capitalize text-muted-foreground">
+                {design.theme} · {design.typographyStyle} ·{" "}
+                {design.imagePlacement}
+              </p>
+            </div>
+            <Badge variant="outline">{design.heroBadge}</Badge>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            {design.backgroundStyle}
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {Object.entries(design.colors).map(([name, color]) => (
+              <span
+                className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1 text-[11px] text-muted-foreground"
+                key={name}
+              >
+                <span
+                  className="size-4 rounded-sm border border-border"
+                  style={{ backgroundColor: color }}
+                />
+                {name}
+              </span>
+            ))}
+          </div>
+          <div className="mt-4 grid gap-2">
+            {design.designNotes.map((note) => (
+              <p
+                className="rounded-md border border-border bg-background px-3 py-2 text-xs text-muted-foreground"
+                key={note}
+              >
+                {note}
+              </p>
+            ))}
+          </div>
         </section>
 
         <PreviewList

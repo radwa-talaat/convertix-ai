@@ -28,13 +28,28 @@ export type EditorTextField = {
   multiline?: boolean;
 };
 
+export type EditorCustomText = {
+  id: string;
+  color?: string;
+  fontFamily?: string;
+  fontSize: number;
+  text: string;
+  x: number;
+  y: number;
+};
+
 export type EditorSectionStyle = {
   align: "start" | "center" | "end";
   backgroundColor?: string;
   backgroundImageUrl?: string;
+  customTexts?: EditorCustomText[];
+  foregroundImageX?: number;
+  foregroundImageY?: number;
   foregroundImageUrl?: string;
+  foregroundImageWidth?: number;
   hiddenOn: EditorDeviceMode[];
   padding: "compact" | "comfortable" | "spacious";
+  textScale?: number;
 };
 
 export type EditorColorPalette = {
@@ -57,6 +72,13 @@ export type EditorTypographyScale = {
   body: string;
 };
 
+export type EditorCustomFont = {
+  dataUrl: string;
+  family: string;
+  id: string;
+  name: string;
+};
+
 export type EditorSpacingScale = {
   id: EditorSectionStyle["padding"];
   name: string;
@@ -65,6 +87,7 @@ export type EditorSpacingScale = {
 
 export type EditorThemeTokens = {
   colorPalette: EditorColorPalette;
+  customFonts?: EditorCustomFont[];
   typography: EditorTypographyScale;
   radius: string;
 };

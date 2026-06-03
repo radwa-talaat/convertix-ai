@@ -34,15 +34,16 @@ export async function generateStructuredLandingPageContent({
   const response = await openai.responses.create({
     input: user,
     instructions: system,
-    max_output_tokens: 1800,
+    max_output_tokens: 2600,
     model,
     prompt_cache_key: promptCacheKey,
     safety_identifier: safetyIdentifier,
     store: false,
     text: {
       format: {
-        description: "Landing page copy content for a SaaS page builder.",
-        name: "landing_page_content",
+        description:
+          "Product-aware landing page copy and design direction for a SaaS page builder.",
+        name: "landing_page_generation",
         schema: aiLandingPageJsonSchema,
         strict: true,
         type: "json_schema",

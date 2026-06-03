@@ -11,6 +11,7 @@ export function CtaSection({
   theme,
 }: LandingPageSectionProps<CtaSectionData>) {
   const renderText = editor?.renderText;
+  const textScale = (theme.typography.textScale ?? 100) / 100;
 
   return (
     <section
@@ -31,14 +32,23 @@ export function CtaSection({
           color: theme.colors.primaryForeground,
         }}
       >
-        <h2 className="text-3xl font-semibold tracking-normal sm:text-4xl">
+        <h2
+          className="text-balance break-words text-[clamp(1.85rem,7vw,2.5rem)] font-semibold leading-tight tracking-normal"
+          style={{
+            fontFamily: theme.typography.heading,
+            fontSize: `calc(clamp(1.85rem, 7vw, 2.5rem) * ${textScale})`,
+          }}
+        >
           {renderText?.({
             multiline: true,
             path: "title",
             value: data.title,
           }) ?? data.title}
         </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-7 opacity-80">
+        <p
+          className="mx-auto mt-4 max-w-2xl text-base leading-7 opacity-80"
+          style={{ fontSize: `calc(1rem * ${textScale})` }}
+        >
           {renderText?.({
             multiline: true,
             path: "description",

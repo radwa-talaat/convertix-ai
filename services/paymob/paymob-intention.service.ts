@@ -1,8 +1,9 @@
 import { env } from "@/lib/env";
 import { paymobRequest } from "@/lib/paymob";
-import { egpToCents, getPaymentIntegrationIds } from "@/lib/payments";
+import { getPaymentIntegrationIds } from "@/lib/payments";
 import { createAppUrl } from "@/lib/urls";
 import type {
+  BillingCurrency,
   BillingPlan,
   CheckoutSession,
   PaymobBillingData,
@@ -15,23 +16,28 @@ type PaymobIntentionResponse = {
 };
 
 export async function createPaymobIntention({
+  amountCents,
   billingData,
+  currency,
+  landingPageQuantity,
   merchantOrderId,
   plan,
   userId,
 }: {
+  amountCents: number;
   billingData: PaymobBillingData;
+  currency: BillingCurrency;
+  landingPageQuantity: number;
   merchantOrderId: string;
   plan: BillingPlan;
   userId: string;
 }): Promise<CheckoutSession> {
-  const amountCents = egpToCents(plan.priceEgp);
   const callbackUrl = createAppUrl("/billing/success", env.appUrl);
   const notificationUrl = createAppUrl("/api/paymob/webhook", env.appUrl);
   const integrationIds = getPaymentIntegrationIds();
   const itemDescription =
     plan.id === "free"
-      ? "One AI landing page package"
+      ? `${landingPageQuantity} AI landing page package`
       : `${plan.name} monthly subscription`;
 
   const response = await paymobRequest<PaymobIntentionResponse>(
@@ -52,8 +58,9 @@ export async function createPaymobIntention({
           state: billingData.state,
           street: billingData.street,
         },
-        currency: "EGP",
+        currency,
         extras: {
+          landing_page_quantity: landingPageQuantity,
           plan_id: plan.id,
           user_id: userId,
         },
@@ -62,7 +69,7 @@ export async function createPaymobIntention({
             amount: amountCents,
             description: itemDescription,
             name: plan.id === "free" ? "Landing Page" : `${plan.name} Plan`,
-            quantity: 1,
+            quantity: landingPageQuantity,
           },
         ],
         notification_url: notificationUrl,
