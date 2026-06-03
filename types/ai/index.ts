@@ -58,6 +58,12 @@ export type AiLandingPageContent = {
 export type AiLandingPageDesign = {
   theme: "luxury" | "medical" | "bold" | "minimal" | "organic" | "tech";
   backgroundStyle: string;
+  layoutVariant:
+    | "split"
+    | "centered"
+    | "product-showcase"
+    | "editorial"
+    | "stacked";
   imagePlacement: "right" | "left" | "center" | "floating";
   heroBadge: string;
   colors: {
@@ -80,6 +86,21 @@ export type AiLandingPageDesign = {
       textScale: number;
     }
   >;
+  sectionOrder: Array<
+    | "hero"
+    | "features"
+    | "benefits"
+    | "pricing"
+    | "testimonials"
+    | "faq"
+    | "lead-form"
+    | "cta"
+  >;
+  imagePrompts: {
+    heroBackground: string;
+    productScene: string;
+    sectionMotifs: string[];
+  };
   designNotes: string[];
 };
 

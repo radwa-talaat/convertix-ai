@@ -20,6 +20,10 @@ export function resolvePublishedHostRewrite(request: NextRequest) {
     return null;
   }
 
+  if (isSameAppHost(host, appHost)) {
+    return null;
+  }
+
   if (
     requestHost?.endsWith(`.${appHostWithPort}`) ||
     host.endsWith(`.${appHost}`)
@@ -40,4 +44,12 @@ export function resolvePublishedHostRewrite(request: NextRequest) {
   }
 
   return null;
+}
+
+function isSameAppHost(host: string, appHost: string) {
+  return stripWww(host) === stripWww(appHost);
+}
+
+function stripWww(hostname: string) {
+  return hostname.replace(/^www\./, "");
 }

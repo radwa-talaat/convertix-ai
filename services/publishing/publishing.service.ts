@@ -1,4 +1,4 @@
-import { unstable_cache, revalidatePath } from "next/cache";
+import { unstable_cache, revalidatePath, revalidateTag } from "next/cache";
 
 import {
   checkPublishRateLimit,
@@ -86,6 +86,7 @@ export async function publishPage(
 
   revalidatePath(`/p/${slug}`);
   revalidatePath("/sitemap.xml");
+  revalidateTag("published-pages");
 
   const page = mapPublishedPage(updatedPage, request.template, [
     mapPublishVersion(versionRow),
@@ -119,6 +120,7 @@ export async function unpublishPage(
 
   revalidatePath(`/p/${data.slug}`);
   revalidatePath("/sitemap.xml");
+  revalidateTag("published-pages");
 
   return data;
 }

@@ -71,6 +71,11 @@ export function sanitizeLandingPageDesign(
     },
     designNotes: design.designNotes.map(sanitizeText),
     heroBadge: sanitizeText(design.heroBadge),
+    imagePrompts: {
+      heroBackground: sanitizeText(design.imagePrompts.heroBackground),
+      productScene: sanitizeText(design.imagePrompts.productScene),
+      sectionMotifs: design.imagePrompts.sectionMotifs.map(sanitizeText),
+    },
     sectionStyles: {
       cta: {
         ...design.sectionStyles.cta,
@@ -105,6 +110,39 @@ export function sanitizeLandingPageDesign(
         textScale: sanitizeScale(design.sectionStyles.pricing.textScale),
       },
     },
+    sectionOrder: sanitizeSectionOrder(design.sectionOrder),
     textScale: sanitizeScale(design.textScale),
   };
+}
+
+function sanitizeSectionOrder(
+  sectionOrder: AiLandingPageDesign["sectionOrder"],
+): AiLandingPageDesign["sectionOrder"] {
+  const allowed = new Set([
+    "hero",
+    "features",
+    "benefits",
+    "pricing",
+    "testimonials",
+    "faq",
+    "lead-form",
+    "cta",
+  ]);
+  const unique = sectionOrder.filter(
+    (section, index) =>
+      allowed.has(section) && sectionOrder.indexOf(section) === index,
+  );
+
+  return unique.length >= 6
+    ? unique
+    : [
+        "hero",
+        "features",
+        "benefits",
+        "pricing",
+        "lead-form",
+        "faq",
+        "testimonials",
+        "cta",
+      ];
 }

@@ -78,15 +78,21 @@ Requirements:
 - content.seo.description: max 160 characters.
 - design.theme: choose one of luxury, medical, bold, minimal, organic, tech.
 - design.backgroundStyle: describe the visual direction in one short phrase.
+- design.layoutVariant: choose split, centered, product-showcase, editorial, or stacked.
 - design.imagePlacement: choose right, left, center, or floating based on language and product.
 - design.heroBadge: short badge text, ideally offer/price/category specific.
 - design.colors: use only accessible six-digit hex colors.
 - design.typographyStyle: choose bold, elegant, clean, or playful.
 - design.textScale: integer 80 to 150.
 - design.sectionStyles: include hero, features, pricing, and cta with backgroundColor, align, and textScale.
+- design.sectionOrder: choose 6 to 8 unique sections from hero, features, benefits, pricing, testimonials, faq, lead-form, cta. Keep hero first and cta near the end. Vary the order based on the product and conversion goal.
+- design.imagePrompts.heroBackground: prompt for a professional background image suitable for the product.
+- design.imagePrompts.productScene: prompt for a product scene or ad visual.
+- design.imagePrompts.sectionMotifs: 2 to 5 short visual motif prompts for supporting sections.
 - design.designNotes: 2 to 5 practical notes for placing product imagery and background.
 - If a product image is provided, design around it; do not invent a different product image.
 - Do not invent medical, financial, or guaranteed claims.
+- Make the page feel visually different for different product categories. A perfume page, men's supplement page, clinic page, and SaaS page must not share the same layout rhythm or palette.
 `.trim(),
   };
 }

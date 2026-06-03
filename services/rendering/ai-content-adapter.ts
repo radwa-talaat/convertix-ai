@@ -93,12 +93,15 @@ export function buildLandingPageTemplate({
       ],
     }),
     createSection<HeroSectionData>("hero", 1, {
+      badge: design?.heroBadge,
       cta: content.cta,
       headline: content.headline,
       imageAlt: brandName,
       imageUrl: heroImageUrl,
+      layoutVariant: design?.layoutVariant,
       secondaryCta: copy.secondaryCta,
       subheadline: content.subheadline,
+      visualPrompt: design?.imagePrompts.productScene,
     }),
     createSection<FeaturesSectionData>("features", 2, {
       eyebrow: copy.features,
@@ -155,13 +158,24 @@ export function buildLandingPageTemplate({
         { href: "#faq", label: copy.faq },
       ],
     }),
-  ].map((section) => ({
+  ];
+
+  const orderedSections = design
+    ? applyAiSectionOrder(sections, design.sectionOrder)
+    : sections;
+
+  const finalSections = orderedSections.map((section) => ({
     ...section,
     visible: sectionVisibility[section.type] ?? section.visible,
   }));
 
   const editorState = design
-    ? createEditorStateFromDesign(sections, design, direction, heroImageUrl)
+    ? createEditorStateFromDesign(
+        finalSections,
+        design,
+        direction,
+        heroImageUrl,
+      )
     : undefined;
 
   return {
@@ -169,7 +183,7 @@ export function buildLandingPageTemplate({
     editorState,
     id: `${slug}-template`,
     name: brandName,
-    sections,
+    sections: finalSections,
     seo: {
       canonicalPath: `/preview/${slug}`,
       description: content.seo.description,
@@ -178,6 +192,29 @@ export function buildLandingPageTemplate({
     slug,
     themeId,
   };
+}
+
+function applyAiSectionOrder(
+  sections: LandingPageSection[],
+  requestedOrder: AiLandingPageDesign["sectionOrder"],
+) {
+  const byType = new Map(sections.map((section) => [section.type, section]));
+  const fixedStart = byType.get("navbar");
+  const fixedEnd = byType.get("footer");
+  const ordered = requestedOrder
+    .map((type) => byType.get(type))
+    .filter((section): section is LandingPageSection => Boolean(section));
+  const missing = sections.filter(
+    (section) =>
+      section.type !== "navbar" &&
+      section.type !== "footer" &&
+      !ordered.some((item) => item.type === section.type),
+  );
+  const next = [fixedStart, ...ordered, ...missing, fixedEnd].filter(
+    (section): section is LandingPageSection => Boolean(section),
+  );
+
+  return next.map((section, order) => ({ ...section, order }));
 }
 
 function createEditorStateFromDesign(

@@ -269,7 +269,24 @@ function createDesignPreset(
       input.offer ||
       input.productPrice ||
       (isArabic ? "عرض خاص" : "Featured offer"),
+    imagePrompts: {
+      heroBackground: isArabic
+        ? `خلفية إعلانية أنيقة لمنتج ${input.businessName} بألوان البراند ومساحة واضحة للنص`
+        : `Elegant advertising background for ${input.businessName} using brand colors with clean copy space`,
+      productScene: isArabic
+        ? `مشهد منتج احترافي يعرض ${input.businessName} بطريقة مناسبة لفئة ${input.productCategory || input.businessType}`
+        : `Professional product scene for ${input.businessName}, suitable for ${input.productCategory || input.businessType}`,
+      sectionMotifs: isArabic
+        ? ["تفاصيل قريبة من المنتج", "خلفية نظيفة عالية التباين"]
+        : ["Product close-up details", "Clean high-contrast background"],
+    },
     imagePlacement: isArabic ? "left" : "right",
+    layoutVariant:
+      preset.theme === "bold"
+        ? "product-showcase"
+        : preset.theme === "luxury"
+          ? "editorial"
+          : "split",
     sectionStyles: {
       cta: {
         align: "center",
@@ -292,6 +309,16 @@ function createDesignPreset(
         textScale: 102,
       },
     },
+    sectionOrder: [
+      "hero",
+      preset.theme === "bold" ? "benefits" : "features",
+      preset.theme === "bold" ? "features" : "benefits",
+      "pricing",
+      "lead-form",
+      "faq",
+      "testimonials",
+      "cta",
+    ],
     textScale: 108,
     theme: preset.theme,
     typographyStyle: preset.typographyStyle,

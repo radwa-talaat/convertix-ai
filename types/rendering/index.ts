@@ -80,9 +80,17 @@ export type NavbarSectionData = {
 };
 
 export type HeroSectionData = {
+  badge?: string;
   headline: string;
   imageAlt?: string;
   imageUrl?: string;
+  layoutVariant?:
+    | "split"
+    | "centered"
+    | "product-showcase"
+    | "editorial"
+    | "stacked";
+  visualPrompt?: string;
   subheadline: string;
   cta: string;
   secondaryCta?: string;

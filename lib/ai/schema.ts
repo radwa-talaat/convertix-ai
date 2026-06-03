@@ -78,9 +78,27 @@ const designSectionStyleSchema = z.object({
   textScale: z.number().int().min(80).max(150),
 });
 
+const landingSectionTypeSchema = z.enum([
+  "hero",
+  "features",
+  "benefits",
+  "pricing",
+  "testimonials",
+  "faq",
+  "lead-form",
+  "cta",
+]);
+
 export const aiLandingPageDesignSchema = z.object({
   theme: z.enum(["luxury", "medical", "bold", "minimal", "organic", "tech"]),
   backgroundStyle: z.string().trim().min(4).max(120),
+  layoutVariant: z.enum([
+    "split",
+    "centered",
+    "product-showcase",
+    "editorial",
+    "stacked",
+  ]),
   imagePlacement: z.enum(["right", "left", "center", "floating"]),
   heroBadge: z.string().trim().min(2).max(60),
   colors: z.object({
@@ -100,6 +118,12 @@ export const aiLandingPageDesignSchema = z.object({
     features: designSectionStyleSchema,
     pricing: designSectionStyleSchema,
     cta: designSectionStyleSchema,
+  }),
+  sectionOrder: z.array(landingSectionTypeSchema).min(6).max(8),
+  imagePrompts: z.object({
+    heroBackground: z.string().trim().min(12).max(220),
+    productScene: z.string().trim().min(12).max(220),
+    sectionMotifs: z.array(z.string().trim().min(8).max(120)).min(2).max(5),
   }),
   designNotes: z.array(z.string().trim().min(4).max(120)).min(2).max(5),
 });
@@ -207,12 +231,15 @@ export const aiLandingPageJsonSchema = {
       required: [
         "theme",
         "backgroundStyle",
+        "layoutVariant",
         "imagePlacement",
         "heroBadge",
         "colors",
         "typographyStyle",
         "textScale",
         "sectionStyles",
+        "sectionOrder",
+        "imagePrompts",
         "designNotes",
       ],
       properties: {
@@ -221,6 +248,16 @@ export const aiLandingPageJsonSchema = {
           enum: ["luxury", "medical", "bold", "minimal", "organic", "tech"],
         },
         backgroundStyle: { type: "string" },
+        layoutVariant: {
+          type: "string",
+          enum: [
+            "split",
+            "centered",
+            "product-showcase",
+            "editorial",
+            "stacked",
+          ],
+        },
         imagePlacement: {
           type: "string",
           enum: ["right", "left", "center", "floating"],
@@ -267,6 +304,39 @@ export const aiLandingPageJsonSchema = {
             features: sectionStyleJsonSchema(),
             pricing: sectionStyleJsonSchema(),
             cta: sectionStyleJsonSchema(),
+          },
+        },
+        sectionOrder: {
+          type: "array",
+          minItems: 6,
+          maxItems: 8,
+          items: {
+            type: "string",
+            enum: [
+              "hero",
+              "features",
+              "benefits",
+              "pricing",
+              "testimonials",
+              "faq",
+              "lead-form",
+              "cta",
+            ],
+          },
+        },
+        imagePrompts: {
+          type: "object",
+          additionalProperties: false,
+          required: ["heroBackground", "productScene", "sectionMotifs"],
+          properties: {
+            heroBackground: { type: "string" },
+            productScene: { type: "string" },
+            sectionMotifs: {
+              type: "array",
+              minItems: 2,
+              maxItems: 5,
+              items: { type: "string" },
+            },
           },
         },
         designNotes: {
