@@ -85,6 +85,10 @@ export function AiGenerationForm({
   const [error, setError] = React.useState<string | null>(null);
   const [savedPageId, setSavedPageId] = React.useState<string | null>(null);
   const [savedPageSlug, setSavedPageSlug] = React.useState<string | null>(null);
+  const [generatedHeroImageUrl, setGeneratedHeroImageUrl] = React.useState<
+    string | null
+  >(null);
+  const [isGeneratingImage, setIsGeneratingImage] = React.useState(false);
   const [imageName, setImageName] = React.useState<string | null>(null);
 
   const isLoading =
@@ -129,6 +133,7 @@ export function AiGenerationForm({
 
       setStatus("parsing");
       setResult(payload as AiGenerationResult);
+      setGeneratedHeroImageUrl(null);
       setSavedPageId(null);
       setSavedPageSlug(null);
       setStatus("success");
@@ -166,6 +171,7 @@ export function AiGenerationForm({
         input.language,
         input.productImageUrl,
         result.design,
+        generatedHeroImageUrl ?? undefined,
       );
       setSavedPageId(page.id);
       setSavedPageSlug(page.slug);
@@ -212,6 +218,63 @@ export function AiGenerationForm({
       setError(null);
     };
     reader.readAsDataURL(file);
+  }
+
+  async function generateHeroImage() {
+    if (!result) {
+      return;
+    }
+
+    setError(null);
+    setIsGeneratingImage(true);
+
+    try {
+      const response = await fetch(createApiPath("/ai/images"), {
+        body: JSON.stringify({
+          prompt: [
+            result.design.imagePrompts.heroBackground,
+            result.design.imagePrompts.productScene,
+            `Business: ${input.businessName}`,
+            `Category: ${input.productCategory || input.businessType}`,
+            `Brand style: ${input.brandStyle}`,
+          ].join(". "),
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+      const payload = (await response.json()) as
+        | { dataUrl: string; model: string }
+        | { message?: string };
+
+      if (!response.ok || !("dataUrl" in payload)) {
+        throw new Error(
+          "message" in payload && payload.message
+            ? payload.message
+            : "Image generation failed.",
+        );
+      }
+
+      setGeneratedHeroImageUrl(payload.dataUrl);
+      toast({
+        description: `Hero image generated with ${payload.model}.`,
+        title: "AI image ready",
+      });
+    } catch (imageError) {
+      const message =
+        imageError instanceof Error
+          ? imageError.message
+          : "Image generation failed.";
+      setError(message);
+      toast({
+        description: message,
+        title: "Image generation failed",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingImage(false);
+    }
   }
 
   return (
@@ -446,7 +509,10 @@ export function AiGenerationForm({
         </Card>
 
         <AiPreviewPanel
+          generatedImageUrl={generatedHeroImageUrl}
+          isGeneratingImage={isGeneratingImage}
           isSaving={status === "saving"}
+          onGenerateImage={result ? generateHeroImage : undefined}
           onSaveDraft={projectId && result ? saveDraftPage : undefined}
           result={result}
           savedPageId={savedPageId}

@@ -29,6 +29,7 @@ type BuildLandingPageTemplateOptions = {
   content: AiLandingPageContent;
   design?: AiLandingPageDesign;
   direction?: LandingPageDirection;
+  heroBackgroundImageUrl?: string;
   heroImageUrl?: string;
   sectionVisibility?: Partial<Record<LandingPageSection["type"], boolean>>;
   slug: string;
@@ -76,6 +77,7 @@ export function buildLandingPageTemplate({
   content,
   design,
   direction = "ltr",
+  heroBackgroundImageUrl,
   heroImageUrl,
   sectionVisibility = {},
   slug,
@@ -175,6 +177,7 @@ export function buildLandingPageTemplate({
         design,
         direction,
         heroImageUrl,
+        heroBackgroundImageUrl,
       )
     : undefined;
 
@@ -222,6 +225,7 @@ function createEditorStateFromDesign(
   design: AiLandingPageDesign,
   direction: LandingPageDirection,
   heroImageUrl?: string,
+  heroBackgroundImageUrl?: string,
 ): LandingPageTemplate["editorState"] {
   const sectionStyles = Object.fromEntries(
     sections.map((section) => [section.id, createDefaultSectionStyle()]),
@@ -236,6 +240,7 @@ function createEditorStateFromDesign(
     sectionStyles[heroId] = {
       ...sectionStyles[heroId],
       ...mapDesignSectionStyle(design.sectionStyles.hero),
+      backgroundImageUrl: heroBackgroundImageUrl,
       customTexts: design.heroBadge
         ? [
             {

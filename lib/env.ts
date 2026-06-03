@@ -7,6 +7,7 @@ export const env = {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "",
   supabaseSecretKey: process.env.SUPABASE_SECRET_KEY ?? "",
   openaiApiKey: process.env.OPENAI_API_KEY ?? "",
+  openaiImageModel: process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-1",
   openaiModel: process.env.OPENAI_MODEL ?? "gpt-4.1-mini",
   aiRateLimitMaxRequests: Number(
     process.env.AI_RATE_LIMIT_MAX_REQUESTS ?? "10",

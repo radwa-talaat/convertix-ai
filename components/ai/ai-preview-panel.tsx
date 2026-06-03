@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, FileText, Loader2, Save } from "lucide-react";
+import { CheckCircle2, FileText, ImagePlus, Loader2, Save } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 
@@ -13,6 +13,9 @@ import type { AiGenerationResult } from "@/types/ai";
 
 type AiPreviewPanelProps = {
   isSaving?: boolean;
+  generatedImageUrl?: string | null;
+  isGeneratingImage?: boolean;
+  onGenerateImage?: () => void;
   onSaveDraft?: () => void;
   result: AiGenerationResult | null;
   savedPageId?: string | null;
@@ -21,6 +24,9 @@ type AiPreviewPanelProps = {
 
 export function AiPreviewPanel({
   isSaving,
+  generatedImageUrl,
+  isGeneratingImage,
+  onGenerateImage,
   onSaveDraft,
   result,
   savedPageId,
@@ -175,6 +181,42 @@ export function AiPreviewPanel({
               </p>
             ))}
           </div>
+          {onGenerateImage ? (
+            <div className="mt-4 rounded-md border border-border bg-background p-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-medium">
+                    {isArabic ? "صورة الهيرو" : "Hero image"}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {design.imagePrompts.heroBackground}
+                  </p>
+                </div>
+                <Button
+                  disabled={isGeneratingImage}
+                  onClick={onGenerateImage}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  {isGeneratingImage ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <ImagePlus />
+                  )}
+                  {isArabic ? "توليد صورة" : "Generate image"}
+                </Button>
+              </div>
+              {generatedImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  alt="Generated landing page hero visual"
+                  className="mt-3 aspect-video w-full rounded-md border border-border object-cover"
+                  src={generatedImageUrl}
+                />
+              ) : null}
+            </div>
+          ) : null}
         </section>
 
         <PreviewList

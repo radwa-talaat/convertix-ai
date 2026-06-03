@@ -176,6 +176,7 @@ export async function createLandingPageFromAiAction(
   language: "ar" | "en" = "en",
   heroImageUrl?: string,
   design?: AiLandingPageDesign,
+  heroBackgroundImageUrl?: string,
 ) {
   const user = await requireUser();
   const supabase = createClient();
@@ -201,6 +202,7 @@ export async function createLandingPageFromAiAction(
     content: safeContent,
     design: safeDesign,
     direction: language === "ar" ? "rtl" : "ltr",
+    heroBackgroundImageUrl,
     heroImageUrl,
     slug: pageSlug,
   });
