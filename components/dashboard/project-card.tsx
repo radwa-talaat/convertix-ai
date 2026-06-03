@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   ExternalLink,
   Files,
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLocalizedPathname } from "@/hooks/i18n";
 import type { DashboardProject } from "@/types/project";
 
 const statusVariant = {
@@ -52,6 +54,9 @@ export function ProjectCard({
   onRename,
   project,
 }: ProjectCardProps) {
+  const commonT = useTranslations("common");
+  const t = useTranslations("dashboard.projects");
+  const localizedPath = useLocalizedPathname();
   const [isEditing, setIsEditing] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [name, setName] = React.useState(project.name);
@@ -74,7 +79,7 @@ export function ProjectCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                aria-label="Project actions"
+                aria-label={t("projectActions")}
                 disabled={disabled}
                 size="icon"
                 variant="ghost"
@@ -84,21 +89,21 @@ export function ProjectCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/projects/${project.id}`}>
+                <Link href={localizedPath(`/dashboard/projects/${project.id}`)}>
                   <ExternalLink />
-                  Open builder
+                  {t("builder")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/projects/${project.id}`}>
+                <Link href={localizedPath(`/dashboard/projects/${project.id}`)}>
                   <Sparkles />
-                  Generate with AI
+                  {t("generateWithAi")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setIsEditing(true)}>
                 <Pencil />
-                Edit name
+                {t("editName")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -106,42 +111,46 @@ export function ProjectCard({
                 onClick={() => setIsDeleting(true)}
               >
                 <Trash2 />
-                Delete project
+                {t("delete")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </CardHeader>
         <CardContent className="space-y-4">
           <Link
-            aria-label={`Open ${project.name} builder`}
+            aria-label={`${t("builder")}: ${project.name}`}
             className="block rounded-md outline-none ring-ring transition hover:bg-secondary/30 focus-visible:ring-2"
-            href={`/dashboard/projects/${project.id}`}
+            href={localizedPath(`/dashboard/projects/${project.id}`)}
           >
             <div className="flex items-center justify-between px-1 pt-1">
               <Badge variant={statusVariant[project.status]}>
                 {project.status}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                Updated {project.updatedAt}
+                {t("updated")} {project.updatedAt}
               </span>
             </div>
             <div className="mt-6 grid grid-cols-3 gap-3 rounded-md bg-secondary/40 p-3">
-              <ProjectMetric label="Pages" value={String(project.pages)} />
-              <ProjectMetric label="Visitors" value={project.visitors} />
-              <ProjectMetric label="CVR" value={project.conversionRate} />
+              <ProjectMetric label={t("pages")} value={String(project.pages)} />
+              <ProjectMetric label={t("visitors")} value={project.visitors} />
+              <ProjectMetric label={t("cvr")} value={project.conversionRate} />
             </div>
           </Link>
           <div className="flex gap-2">
             <Button asChild className="flex-1" size="sm">
-              <Link href={`/dashboard/projects/${project.id}`}>
+              <Link href={localizedPath(`/dashboard/projects/${project.id}`)}>
                 <Sparkles />
-                Generate
+                {t("generate")}
               </Link>
             </Button>
             <Button asChild className="flex-1" size="sm" variant="outline">
-              <Link href={`/dashboard/projects/${project.id}#landing-pages`}>
+              <Link
+                href={localizedPath(
+                  `/dashboard/projects/${project.id}#landing-pages`,
+                )}
+              >
                 <Files />
-                Pages
+                {t("pages")}
               </Link>
             </Button>
           </div>
@@ -151,13 +160,13 @@ export function ProjectCard({
       <Dialog onOpenChange={setIsEditing} open={isEditing}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit project name</DialogTitle>
-            <DialogDescription>
-              Rename the project label used across your dashboard.
-            </DialogDescription>
+            <DialogTitle>{t("editName")}</DialogTitle>
+            <DialogDescription>{t("renameDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor={`project-name-${project.id}`}>Project name</Label>
+            <Label htmlFor={`project-name-${project.id}`}>
+              {t("projectName")}
+            </Label>
             <Input
               disabled={disabled}
               id={`project-name-${project.id}`}
@@ -167,10 +176,10 @@ export function ProjectCard({
           </div>
           <DialogFooter>
             <Button onClick={() => setIsEditing(false)} variant="outline">
-              Cancel
+              {commonT("cancel")}
             </Button>
             <Button disabled={disabled} onClick={submitRename}>
-              Save changes
+              {t("saveChanges")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -179,15 +188,12 @@ export function ProjectCard({
       <Dialog onOpenChange={setIsDeleting} open={isDeleting}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete project</DialogTitle>
-            <DialogDescription>
-              This permanently removes the project and its pages from your
-              workspace.
-            </DialogDescription>
+            <DialogTitle>{t("delete")}</DialogTitle>
+            <DialogDescription>{t("deleteDescription")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button onClick={() => setIsDeleting(false)} variant="outline">
-              Cancel
+              {commonT("cancel")}
             </Button>
             <Button
               disabled={disabled}
@@ -197,7 +203,7 @@ export function ProjectCard({
               }}
               variant="destructive"
             >
-              Delete project
+              {t("delete")}
             </Button>
           </DialogFooter>
         </DialogContent>

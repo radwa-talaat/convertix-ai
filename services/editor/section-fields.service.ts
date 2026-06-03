@@ -7,6 +7,7 @@ import type {
   FooterSectionData,
   HeroSectionData,
   LandingPageSection,
+  LeadFormSectionData,
   NavbarSectionData,
   PricingSectionData,
   TestimonialsSectionData,
@@ -173,6 +174,43 @@ export function getEditableTextFields(
           value: data.description,
         },
         { label: "CTA", path: "cta", value: data.cta },
+      ];
+    }
+    case "lead-form": {
+      const data = section.data as LeadFormSectionData;
+
+      return [
+        { label: "Eyebrow", path: "eyebrow", value: data.eyebrow },
+        { label: "Title", multiline: true, path: "title", value: data.title },
+        {
+          label: "Description",
+          multiline: true,
+          path: "description",
+          value: data.description,
+        },
+        {
+          label: "Product name",
+          path: "productName",
+          value: data.productName ?? "",
+        },
+        { label: "Name label", path: "nameLabel", value: data.nameLabel },
+        { label: "Phone label", path: "phoneLabel", value: data.phoneLabel },
+        { label: "Email label", path: "emailLabel", value: data.emailLabel },
+        {
+          label: "Message label",
+          path: "messageLabel",
+          value: data.messageLabel,
+        },
+        {
+          label: "Submit button",
+          path: "submitLabel",
+          value: data.submitLabel,
+        },
+        {
+          label: "Success message",
+          path: "successMessage",
+          value: data.successMessage,
+        },
       ];
     }
     case "footer": {

@@ -7,6 +7,7 @@ import {
   FeaturesSection,
   FooterSection,
   HeroRenderSection,
+  LeadFormSection,
   NavbarSection,
   PricingSection,
   TestimonialsSection,
@@ -54,6 +55,12 @@ export const sectionRegistry: Record<
       LandingPageSectionProps<unknown>
     >,
     label: "Hero",
+  },
+  "lead-form": {
+    component: LeadFormSection as ComponentType<
+      LandingPageSectionProps<unknown>
+    >,
+    label: "Lead Form",
   },
   navbar: {
     component: NavbarSection as ComponentType<LandingPageSectionProps<unknown>>,

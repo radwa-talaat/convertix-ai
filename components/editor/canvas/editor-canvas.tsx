@@ -66,6 +66,7 @@ export function EditorCanvas() {
             "w-full overflow-hidden rounded-lg border border-border bg-background shadow-2xl transition-all duration-300",
             canvasWidth[deviceMode],
           )}
+          data-editor-export-root="true"
         >
           <DndContext
             collisionDetection={closestCenter}

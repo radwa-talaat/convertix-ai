@@ -1,4 +1,6 @@
 import { ProjectsView } from "@/components/dashboard/projects-view";
+import type { AppLocale } from "@/lib/i18n/config";
+import { getRequestLocale } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { DashboardProject } from "@/types/project";
@@ -13,14 +15,17 @@ type ProjectWithPageCount = {
   updated_at: string;
 };
 
-function formatUpdatedAt(value: string) {
-  return new Intl.DateTimeFormat("en", {
+function formatUpdatedAt(value: string, locale: AppLocale) {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
   }).format(new Date(value));
 }
 
-function mapProject(project: ProjectWithPageCount): DashboardProject {
+function mapProject(
+  project: ProjectWithPageCount,
+  locale: AppLocale,
+): DashboardProject {
   return {
     conversionRate: "0%",
     id: project.id,
@@ -28,12 +33,13 @@ function mapProject(project: ProjectWithPageCount): DashboardProject {
     pages: project.pages ?? 0,
     slug: project.slug,
     status: project.status,
-    updatedAt: formatUpdatedAt(project.updated_at),
+    updatedAt: formatUpdatedAt(project.updated_at, locale),
     visitors: "0",
   };
 }
 
 export default async function ProjectsPage() {
+  const locale = getRequestLocale();
   const user = await requireUser();
   const supabase = createClient();
   const { data, error } = await supabase
@@ -70,10 +76,13 @@ export default async function ProjectsPage() {
   return (
     <ProjectsView
       initialProjects={projects.map((project) =>
-        mapProject({
-          ...project,
-          pages: pageCounts.get(project.id) ?? 0,
-        }),
+        mapProject(
+          {
+            ...project,
+            pages: pageCounts.get(project.id) ?? 0,
+          },
+          locale,
+        ),
       )}
     />
   );

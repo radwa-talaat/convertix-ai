@@ -6,8 +6,9 @@ import {
   ensureValidSlug,
 } from "@/lib/publishing";
 import { buildPublishedPageStructuredData } from "@/lib/seo";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { SupabaseDatabaseClient } from "@/services/database/types";
-import { getPublishingDashboardSnapshot } from "@/services/publishing/publishing-fixtures";
+import { parseLandingPageTemplate } from "@/services/rendering";
 import type { Json, Tables } from "@/types/database";
 import type {
   PublishedPage,
@@ -147,8 +148,26 @@ export async function republishPage(
 
 export const getPublishedPageBySlug = unstable_cache(
   async (slug: string): Promise<PublishedPage | null> => {
-    const snapshot = getPublishingDashboardSnapshot();
-    return snapshot.pages.find((page) => page.slug === slug) ?? null;
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("pages")
+      .select("*")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .not("published_at", "is", null)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    const template = parseLandingPageTemplate(data.published_content);
+
+    if (!template) {
+      return null;
+    }
+
+    return mapPublishedPage(data, template, []);
   },
   ["published-page-by-slug"],
   {
@@ -158,10 +177,24 @@ export const getPublishedPageBySlug = unstable_cache(
 );
 
 export const listPublishedPages = unstable_cache(
-  async (): Promise<PublishedPage[]> =>
-    getPublishingDashboardSnapshot().pages.filter(
-      (page) => page.mode === "published",
-    ),
+  async (): Promise<PublishedPage[]> => {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from("pages")
+      .select("*")
+      .eq("status", "published")
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false });
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data.flatMap((row) => {
+      const template = parseLandingPageTemplate(row.published_content);
+      return template ? [mapPublishedPage(row, template, [])] : [];
+    });
+  },
   ["published-pages"],
   {
     revalidate: 60,

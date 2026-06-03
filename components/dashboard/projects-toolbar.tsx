@@ -1,6 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import {
   projectStatusOptions,
@@ -23,14 +24,22 @@ export function ProjectsToolbar({
   query,
   status,
 }: ProjectsToolbarProps) {
+  const t = useTranslations("dashboard.projects");
+  const statusLabels: Record<ProjectStatusFilter, string> = {
+    active: t("active"),
+    all: t("all"),
+    archived: t("archived"),
+    draft: t("statusDraft"),
+  };
+
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-3 shadow-luxury-sm md:flex-row md:items-center md:justify-between">
       <div className="relative w-full md:max-w-sm">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          className="pl-9"
+          className="ps-9"
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Search projects"
+          placeholder={t("search")}
           value={query}
         />
       </div>
@@ -45,7 +54,7 @@ export function ProjectsToolbar({
             onClick={() => onStatusChange(option)}
             type="button"
           >
-            {option[0].toUpperCase() + option.slice(1)}
+            {statusLabels[option]}
           </button>
         ))}
       </div>

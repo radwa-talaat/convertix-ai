@@ -1,6 +1,7 @@
 "use client";
 
 import { Check, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
 import { createCheckoutAction } from "@/app/dashboard/billing/actions";
@@ -26,6 +27,7 @@ export function PlanCard({
   current: boolean;
   plan: BillingPlan;
 }) {
+  const t = useTranslations("billing");
   const [pending, startTransition] = useTransition();
   const isCheckoutDisabled = plan.priceEgp <= 0;
 
@@ -49,7 +51,7 @@ export function PlanCard({
           <h3 className="text-lg font-semibold">{plan.name}</h3>
           {current ? (
             <span className="rounded bg-secondary px-2 py-1 text-xs font-medium">
-              Current
+              {t("currentPlan")}
             </span>
           ) : null}
         </div>
@@ -60,7 +62,7 @@ export function PlanCard({
           {formatEgp(plan.priceEgp * 100)}
           {plan.priceEgp > 0 ? (
             <span className="text-sm font-normal text-muted-foreground">
-              {plan.id === "free" ? " /landing page" : " /month"}
+              {plan.id === "free" ? ` /${t("landingPage")}` : ` /${t("month")}`}
             </span>
           ) : null}
         </p>
@@ -81,7 +83,7 @@ export function PlanCard({
         variant={current ? "outline" : "default"}
       >
         {pending ? <Loader2 className="size-4 animate-spin" /> : null}
-        {current ? "Current plan" : plan.cta}
+        {current ? t("currentPlan") : plan.cta}
       </Button>
     </article>
   );

@@ -9,6 +9,7 @@ export type Json =
 export type ProjectStatus = "draft" | "active" | "archived";
 export type PageStatus = "draft" | "published" | "archived";
 export type TemplateVisibility = "private" | "team" | "public";
+export type SupportedLocale = "en" | "ar";
 export type AiGenerationStatus = "queued" | "running" | "completed" | "failed";
 export type SubscriptionStatus =
   | "trialing"
@@ -39,6 +40,7 @@ export type AnalyticsEventType =
   | "performance";
 export type AnalyticsDeviceType = "desktop" | "mobile" | "tablet";
 export type TrafficSourceType = "direct" | "google" | "referral" | "social";
+export type LeadStatus = "new" | "contacted" | "converted" | "archived";
 
 export interface Database {
   public: {
@@ -49,6 +51,7 @@ export interface Database {
           email: string;
           full_name: string | null;
           avatar_url: string | null;
+          locale: SupportedLocale;
           created_at: string;
           updated_at: string;
         };
@@ -57,6 +60,7 @@ export interface Database {
           email: string;
           full_name?: string | null;
           avatar_url?: string | null;
+          locale?: SupportedLocale;
           created_at?: string;
           updated_at?: string;
         };
@@ -65,6 +69,7 @@ export interface Database {
           email?: string;
           full_name?: string | null;
           avatar_url?: string | null;
+          locale?: SupportedLocale;
           created_at?: string;
           updated_at?: string;
         };
@@ -84,6 +89,7 @@ export interface Database {
           name: string;
           slug: string;
           description: string | null;
+          locale: SupportedLocale;
           status: ProjectStatus;
           created_at: string;
           updated_at: string;
@@ -94,6 +100,7 @@ export interface Database {
           name: string;
           slug: string;
           description?: string | null;
+          locale?: SupportedLocale;
           status?: ProjectStatus;
           created_at?: string;
           updated_at?: string;
@@ -104,6 +111,7 @@ export interface Database {
           name?: string;
           slug?: string;
           description?: string | null;
+          locale?: SupportedLocale;
           status?: ProjectStatus;
           created_at?: string;
           updated_at?: string;
@@ -124,6 +132,7 @@ export interface Database {
           user_id: string;
           title: string;
           slug: string;
+          locale: SupportedLocale;
           status: PageStatus;
           content: Json;
           seo: Json;
@@ -140,6 +149,7 @@ export interface Database {
           user_id: string;
           title: string;
           slug: string;
+          locale?: SupportedLocale;
           status?: PageStatus;
           content?: Json;
           seo?: Json;
@@ -156,6 +166,7 @@ export interface Database {
           user_id?: string;
           title?: string;
           slug?: string;
+          locale?: SupportedLocale;
           status?: PageStatus;
           content?: Json;
           seo?: Json;
@@ -187,9 +198,11 @@ export interface Database {
           user_id: string | null;
           name: string;
           description: string | null;
+          locale: SupportedLocale;
           visibility: TemplateVisibility;
           thumbnail_path: string | null;
           content: Json;
+          translations: Json;
           created_at: string;
           updated_at: string;
         };
@@ -198,9 +211,11 @@ export interface Database {
           user_id?: string | null;
           name: string;
           description?: string | null;
+          locale?: SupportedLocale;
           visibility?: TemplateVisibility;
           thumbnail_path?: string | null;
           content?: Json;
+          translations?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -209,9 +224,11 @@ export interface Database {
           user_id?: string | null;
           name?: string;
           description?: string | null;
+          locale?: SupportedLocale;
           visibility?: TemplateVisibility;
           thumbnail_path?: string | null;
           content?: Json;
+          translations?: Json;
           created_at?: string;
           updated_at?: string;
         };
@@ -404,6 +421,82 @@ export interface Database {
             columns: ["page_id"];
             referencedRelation: "pages";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      leads: {
+        Row: {
+          id: string;
+          user_id: string;
+          project_id: string;
+          page_id: string;
+          page_slug: string;
+          landing_page_title: string;
+          product_name: string | null;
+          customer_name: string;
+          customer_email: string | null;
+          customer_phone: string | null;
+          message: string | null;
+          source: string;
+          status: LeadStatus;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          project_id: string;
+          page_id: string;
+          page_slug: string;
+          landing_page_title?: string;
+          product_name?: string | null;
+          customer_name: string;
+          customer_email?: string | null;
+          customer_phone?: string | null;
+          message?: string | null;
+          source?: string;
+          status?: LeadStatus;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          project_id?: string;
+          page_id?: string;
+          page_slug?: string;
+          landing_page_title?: string;
+          product_name?: string | null;
+          customer_name?: string;
+          customer_email?: string | null;
+          customer_phone?: string | null;
+          message?: string | null;
+          source?: string;
+          status?: LeadStatus;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "leads_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "leads_project_id_user_id_fkey";
+            columns: ["project_id", "user_id"];
+            referencedRelation: "projects";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
+            foreignKeyName: "leads_page_id_user_id_fkey";
+            columns: ["page_id", "user_id"];
+            referencedRelation: "pages";
+            referencedColumns: ["id", "user_id"];
           },
         ];
       };
@@ -972,6 +1065,7 @@ export interface Database {
       analytics_event_type: AnalyticsEventType;
       analytics_device_type: AnalyticsDeviceType;
       traffic_source_type: TrafficSourceType;
+      lead_status: LeadStatus;
     };
     CompositeTypes: Record<string, never>;
   };

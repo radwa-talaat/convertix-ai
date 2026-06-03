@@ -48,7 +48,15 @@ export default async function PublishedPageRoute({
         pageSlug={page.slug}
         projectId={page.projectId}
       />
-      <LayoutRenderer template={page.template} />
+      <LayoutRenderer
+        renderContext={{
+          landingPageTitle: page.title,
+          pageId: page.id,
+          pageSlug: page.slug,
+          projectId: page.projectId,
+        }}
+        template={page.template}
+      />
       <CookieConsent />
     </>
   );

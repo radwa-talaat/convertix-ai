@@ -59,10 +59,17 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
         isDragging && "z-30 scale-[0.99] opacity-80",
         (!section.visible || hiddenOnDevice) && "opacity-45",
       )}
+      data-editor-section-id={section.id}
       onClick={() => selectSection(section.id)}
       ref={setNodeRef}
       style={{
         backgroundColor: style.backgroundColor,
+        backgroundImage: style.backgroundImageUrl
+          ? `linear-gradient(hsl(var(--background) / 0.38), hsl(var(--background) / 0.38)), url("${style.backgroundImageUrl}")`
+          : undefined,
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
         paddingBottom: spacing?.value,
         paddingTop: spacing?.value,
         textAlign: style.align,
@@ -75,6 +82,7 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
           "pointer-events-none absolute inset-x-3 top-3 z-40 flex items-center justify-between opacity-0 transition-opacity group-hover:opacity-100",
           selected && "opacity-100",
         )}
+        data-editor-chrome="true"
       >
         <div className="pointer-events-auto inline-flex items-center gap-1 rounded-md border border-border bg-background/95 p-1 shadow-luxury-sm backdrop-blur">
           <button
@@ -160,12 +168,24 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
       </div>
 
       {!section.visible || hiddenOnDevice ? (
-        <div className="absolute left-4 top-16 z-40 rounded bg-background px-2 py-1 text-xs font-medium text-muted-foreground shadow-luxury-sm">
+        <div
+          className="absolute left-4 top-16 z-40 rounded bg-background px-2 py-1 text-xs font-medium text-muted-foreground shadow-luxury-sm"
+          data-editor-chrome="true"
+        >
           Hidden
         </div>
       ) : null}
 
       <EditorSectionRenderer section={section} />
+
+      {style.foregroundImageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          alt={`${section.type} media`}
+          className="pointer-events-none absolute bottom-8 end-8 z-10 max-h-56 w-40 rounded-lg border border-border bg-background object-contain p-2 shadow-2xl sm:w-52"
+          src={style.foregroundImageUrl}
+        />
+      ) : null}
     </div>
   );
 }

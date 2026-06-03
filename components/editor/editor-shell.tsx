@@ -35,7 +35,16 @@ export function EditorShell({ pageId, template }: EditorShellProps) {
         draft.selectedSectionId,
       );
     } else {
-      initialize(template);
+      initialize(
+        template,
+        template.editorState?.sectionStyles && template.editorState.themeTokens
+          ? {
+              sectionStyles: template.editorState.sectionStyles,
+              template,
+              themeTokens: template.editorState.themeTokens,
+            }
+          : undefined,
+      );
     }
 
     setReady(true);

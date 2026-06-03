@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Edit3, Eye, FileText, Sparkles } from "lucide-react";
+import { Edit3, Eye, FileText, Inbox, Phone, Sparkles } from "lucide-react";
 
 import { AiGenerationForm } from "@/components/ai";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -8,6 +8,8 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { createLocalizedPathname, type AppLocale } from "@/lib/i18n/config";
+import { getRequestLocale, getServerTranslator } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -25,14 +27,25 @@ type ProjectLandingPage = {
   updated_at: string;
 };
 
+type PageLead = {
+  id: string;
+  customer_email: string | null;
+  customer_name: string;
+  customer_phone: string | null;
+  message: string | null;
+  product_name: string | null;
+  status: "new" | "contacted" | "converted" | "archived";
+  created_at: string;
+};
+
 const statusVariant = {
   archived: "muted",
   draft: "secondary",
   published: "success",
 } as const;
 
-function formatUpdatedAt(value: string) {
-  return new Intl.DateTimeFormat("en", {
+function formatUpdatedAt(value: string, locale: AppLocale) {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -42,6 +55,8 @@ function formatUpdatedAt(value: string) {
 export default async function ProjectBuilderPage({
   params,
 }: ProjectBuilderPageProps) {
+  const locale = getRequestLocale();
+  const commonT = await getServerTranslator("common");
   const user = await requireUser();
   const supabase = createClient();
   const { data: project, error } = await supabase
@@ -66,6 +81,30 @@ export default async function ProjectBuilderPage({
     console.error("Project pages load failed", pagesError);
   }
 
+  const pageIds = (pages ?? []).map((page) => page.id);
+  const { data: leads, error: leadsError } = pageIds.length
+    ? await supabase
+        .from("leads")
+        .select(
+          "id, page_id, customer_name, customer_email, customer_phone, product_name, message, status, created_at",
+        )
+        .eq("user_id", user.id)
+        .in("page_id", pageIds)
+        .order("created_at", { ascending: false })
+    : { data: [], error: null };
+
+  if (leadsError) {
+    console.error("Project leads load failed", leadsError);
+  }
+
+  const leadsByPage = new Map<string, PageLead[]>();
+
+  for (const lead of leads ?? []) {
+    const current = leadsByPage.get(lead.page_id) ?? [];
+    current.push(lead);
+    leadsByPage.set(lead.page_id, current);
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
       <PageHeader
@@ -73,12 +112,16 @@ export default async function ProjectBuilderPage({
           <Button asChild>
             <a href="#ai-builder">
               <Sparkles />
-              Generate new
+              {commonT("generate")}
             </a>
           </Button>
         }
-        description="Choose an existing landing page to edit or generate a new draft for this project."
-        eyebrow="Project Workspace"
+        description={
+          locale === "ar"
+            ? "اختر صفحة هبوط موجودة لتعديلها أو أنشئ مسودة جديدة لهذا المشروع."
+            : "Choose an existing landing page to edit or generate a new draft for this project."
+        }
+        eyebrow={locale === "ar" ? "مساحة المشروع" : "Project Workspace"}
         title={project.name}
       />
 
@@ -86,11 +129,14 @@ export default async function ProjectBuilderPage({
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold tracking-normal">
-              Landing pages
+              {locale === "ar" ? "صفحات الهبوط" : "Landing pages"}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {pages?.length ?? 0} saved page
-              {(pages?.length ?? 0) === 1 ? "" : "s"} in this project.
+              {locale === "ar"
+                ? `${pages?.length ?? 0} صفحة محفوظة في هذا المشروع.`
+                : `${pages?.length ?? 0} saved page${
+                    (pages?.length ?? 0) === 1 ? "" : "s"
+                  } in this project.`}
             </p>
           </div>
         </div>
@@ -98,17 +144,27 @@ export default async function ProjectBuilderPage({
         {pages && pages.length > 0 ? (
           <div className="grid gap-3">
             {pages.map((page) => (
-              <LandingPageRow key={page.id} page={page} />
+              <LandingPageRow
+                key={page.id}
+                leads={leadsByPage.get(page.id) ?? []}
+                locale={locale}
+                page={page}
+              />
             ))}
           </div>
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="size-8 text-muted-foreground" />
-              <p className="mt-4 font-medium">No landing pages yet</p>
+              <p className="mt-4 font-medium">
+                {locale === "ar"
+                  ? "لا توجد صفحات هبوط بعد"
+                  : "No landing pages yet"}
+              </p>
               <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                Generate your first landing page below, then save it as a draft
-                to make it appear here.
+                {locale === "ar"
+                  ? "أنشئ أول صفحة هبوط بالأسفل ثم احفظها كمسودة لتظهر هنا."
+                  : "Generate your first landing page below, then save it as a draft to make it appear here."}
               </p>
             </CardContent>
           </Card>
@@ -116,14 +172,18 @@ export default async function ProjectBuilderPage({
       </section>
 
       <Alert className="border-border bg-secondary/40 text-sm text-muted-foreground">
-        This project is connected to Supabase. Add your OpenAI API key in
-        environment variables to generate live AI content.
+        {locale === "ar"
+          ? "هذا المشروع متصل بـ Supabase. تأكد من وجود مفتاح OpenAI في متغيرات البيئة لتوليد محتوى حي."
+          : "This project is connected to Supabase. Add your OpenAI API key in environment variables to generate live AI content."}
       </Alert>
       <section id="ai-builder">
         <AiGenerationForm
           initialInput={{
             businessName: project.name,
-            goal: "Create a conversion-ready landing page",
+            goal:
+              locale === "ar"
+                ? "إنشاء صفحة هبوط جاهزة للتحويل"
+                : "Create a conversion-ready landing page",
           }}
           projectId={project.id}
           projectName={project.name}
@@ -133,7 +193,18 @@ export default async function ProjectBuilderPage({
   );
 }
 
-function LandingPageRow({ page }: { page: ProjectLandingPage }) {
+function LandingPageRow({
+  leads,
+  locale,
+  page,
+}: {
+  leads: PageLead[];
+  locale: AppLocale;
+  page: ProjectLandingPage;
+}) {
+  const isArabic = locale === "ar";
+  const latestLeads = leads.slice(0, 3);
+
   return (
     <Card>
       <CardHeader className="gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -143,24 +214,86 @@ function LandingPageRow({ page }: { page: ProjectLandingPage }) {
             <Badge variant={statusVariant[page.status]}>{page.status}</Badge>
           </div>
           <p className="mt-2 truncate text-sm text-muted-foreground">
-            /{page.slug} · Updated {formatUpdatedAt(page.updated_at)}
+            /{page.slug} - {isArabic ? "آخر تحديث" : "Updated"}{" "}
+            {formatUpdatedAt(page.updated_at, locale)}
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button asChild size="sm">
-            <Link href={`/dashboard/editor?page=${page.id}`}>
+            <Link
+              href={createLocalizedPathname(
+                `/dashboard/editor?page=${page.id}`,
+                locale,
+              )}
+            >
               <Edit3 />
-              Edit
+              {isArabic ? "تعديل" : "Edit"}
             </Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <Link href={`/dashboard/preview?page=${page.id}`}>
+            <Link
+              href={createLocalizedPathname(
+                `/dashboard/preview?page=${page.id}`,
+                locale,
+              )}
+            >
               <Eye />
-              Preview
+              {isArabic ? "معاينة" : "Preview"}
             </Link>
           </Button>
         </div>
       </CardHeader>
+      <CardContent className="border-t border-border pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Inbox className="size-4 text-muted-foreground" />
+            {isArabic ? "طلبات العملاء لهذه الصفحة" : "Leads for this page"}
+          </div>
+          <Badge variant={leads.length ? "success" : "secondary"}>
+            {leads.length} {isArabic ? "طلب" : "lead"}
+          </Badge>
+        </div>
+
+        {latestLeads.length ? (
+          <div className="mt-4 grid gap-2">
+            {latestLeads.map((lead) => (
+              <div
+                className="rounded-md border border-border bg-secondary/30 p-3"
+                key={lead.id}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium">{lead.customer_name}</p>
+                    <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      {lead.customer_phone ? (
+                        <span className="inline-flex items-center gap-1">
+                          <Phone className="size-3" />
+                          {lead.customer_phone}
+                        </span>
+                      ) : null}
+                      {lead.customer_email ? (
+                        <span>{lead.customer_email}</span>
+                      ) : null}
+                    </p>
+                  </div>
+                  <Badge variant="secondary">{lead.status}</Badge>
+                </div>
+                {lead.message ? (
+                  <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">
+                    {lead.message}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted-foreground">
+            {isArabic
+              ? "لسه مفيش بيانات عملاء داخلة من الصفحة دي."
+              : "No customer details have been captured from this page yet."}
+          </p>
+        )}
+      </CardContent>
     </Card>
   );
 }

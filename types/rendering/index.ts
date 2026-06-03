@@ -4,6 +4,7 @@ import type {
   AiFeature,
   AiTestimonial,
 } from "@/types/ai";
+import type { EditorSectionStyle, EditorThemeTokens } from "@/types/editor";
 import type { ReactNode } from "react";
 
 export type LandingPageSectionType =
@@ -14,6 +15,7 @@ export type LandingPageSectionType =
   | "pricing"
   | "testimonials"
   | "faq"
+  | "lead-form"
   | "cta"
   | "footer";
 
@@ -41,6 +43,10 @@ export type LandingPageTemplate = {
   slug: string;
   name: string;
   direction: LandingPageDirection;
+  editorState?: {
+    sectionStyles?: Record<string, EditorSectionStyle>;
+    themeTokens?: EditorThemeTokens;
+  };
   themeId: LandingPageThemeId;
   seo: LandingPageSeo;
   sections: LandingPageSection[];
@@ -118,6 +124,19 @@ export type CtaSectionData = {
   cta: string;
 };
 
+export type LeadFormSectionData = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  productName?: string;
+  nameLabel: string;
+  phoneLabel: string;
+  emailLabel: string;
+  messageLabel: string;
+  submitLabel: string;
+  successMessage: string;
+};
+
 export type FooterSectionData = {
   brandName: string;
   description: string;
@@ -130,8 +149,16 @@ export type LandingPageSectionProps<TData = unknown> = {
   editor?: {
     renderText: (options: LandingPageEditableTextOptions) => ReactNode;
   };
+  renderContext?: LandingPageRenderContext;
   sectionId: string;
   theme: LandingPageTheme;
+};
+
+export type LandingPageRenderContext = {
+  landingPageTitle?: string;
+  pageId?: string;
+  pageSlug?: string;
+  projectId?: string;
 };
 
 export type LandingPageEditableTextOptions = {

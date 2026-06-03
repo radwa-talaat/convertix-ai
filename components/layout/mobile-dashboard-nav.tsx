@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
 import { dashboardNavSections } from "@/config/site";
+import { useLocalizedPathname } from "@/hooks/i18n";
+import { stripLocaleFromPathname } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
 const dashboardNavItems = dashboardNavSections.flatMap(
@@ -12,6 +15,9 @@ const dashboardNavItems = dashboardNavSections.flatMap(
 
 export function MobileDashboardNav() {
   const pathname = usePathname();
+  const t = useTranslations("dashboard");
+  const localizedPath = useLocalizedPathname();
+  const cleanPathname = stripLocaleFromPathname(pathname);
 
   return (
     <nav className="border-b border-border bg-background/80 px-4 py-3 backdrop-blur-xl lg:hidden">
@@ -20,8 +26,8 @@ export function MobileDashboardNav() {
           const Icon = item.icon;
           const isActive =
             item.href === "/dashboard"
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
+              ? cleanPathname === item.href
+              : cleanPathname.startsWith(item.href);
 
           return (
             <Link
@@ -30,11 +36,11 @@ export function MobileDashboardNav() {
                 isActive &&
                   "border-border bg-secondary text-foreground shadow-luxury-sm",
               )}
-              href={item.href}
+              href={localizedPath(item.href)}
               key={item.href}
             >
               {Icon ? <Icon className="size-4" /> : null}
-              {item.title}
+              {t(item.title.toLowerCase())}
             </Link>
           );
         })}

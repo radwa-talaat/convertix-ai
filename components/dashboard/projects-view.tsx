@@ -2,6 +2,7 @@
 
 import { FolderKanban } from "lucide-react";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 import { CreateProjectDialog } from "@/components/dashboard/create-project-dialog";
 import { EmptyState } from "@/components/dashboard/empty-state";
@@ -22,6 +23,7 @@ export function ProjectsView({
   databaseError,
   initialProjects,
 }: ProjectsViewProps) {
+  const t = useTranslations("dashboard.projects");
   const {
     createProject,
     deleteProject,
@@ -41,9 +43,9 @@ export function ProjectsView({
         actions={
           <CreateProjectDialog disabled={isMutating} onCreate={createProject} />
         }
-        description="Manage your landing page workspaces, organize campaigns, and keep launch surfaces tidy."
-        eyebrow="Project Management"
-        title="Projects"
+        description={t("description")}
+        eyebrow={t("management")}
+        title={t("title")}
       />
       <ProjectsToolbar
         onQueryChange={setQuery}
@@ -93,9 +95,9 @@ export function ProjectsView({
               onCreate={createProject}
             />
           }
-          description="Adjust your search or create a new project to start fresh."
+          description={t("emptyDescription")}
           icon={FolderKanban}
-          title="No projects found"
+          title={t("emptyTitle")}
         />
       )}
     </div>

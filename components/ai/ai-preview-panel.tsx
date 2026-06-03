@@ -2,10 +2,13 @@
 
 import { CheckCircle2, FileText, Loader2, Save } from "lucide-react";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLocalizedPathname } from "@/hooks/i18n";
+import type { AppLocale } from "@/lib/i18n/config";
 import type { AiGenerationResult } from "@/types/ai";
 
 type AiPreviewPanelProps = {
@@ -23,23 +26,30 @@ export function AiPreviewPanel({
   savedPageId,
   savedPageSlug,
 }: AiPreviewPanelProps) {
+  const locale = useLocale() as AppLocale;
+  const localizedPath = useLocalizedPathname();
+  const isArabic = locale === "ar";
+
   if (!result) {
     return (
       <Card className="h-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="size-4" />
-            AI Preview
+            {isArabic ? "معاينة الذكاء الاصطناعي" : "AI Preview"}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex min-h-96 flex-col items-center justify-center rounded-md border border-dashed border-border bg-secondary/30 p-6 text-center">
             <p className="text-sm font-medium">
-              Generated content appears here
+              {isArabic
+                ? "سيظهر المحتوى المولد هنا"
+                : "Generated content appears here"}
             </p>
             <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-              Submit a brief to preview structured landing page copy before it
-              moves into future editor workflows.
+              {isArabic
+                ? "اكتب بيانات المشروع لمعاينة محتوى صفحة الهبوط قبل حفظه وتعديله."
+                : "Submit a brief to preview structured landing page copy before it moves into future editor workflows."}
             </p>
           </div>
         </CardContent>
@@ -55,7 +65,7 @@ export function AiPreviewPanel({
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="flex items-center gap-2">
             <CheckCircle2 className="size-4 text-emerald-600" />
-            AI Preview
+            {isArabic ? "معاينة الذكاء الاصطناعي" : "AI Preview"}
           </CardTitle>
           <Badge variant={result.fallbackUsed ? "secondary" : "success"}>
             {result.fallbackUsed ? "Fallback" : result.model}
@@ -66,13 +76,17 @@ export function AiPreviewPanel({
         {onSaveDraft ? (
           <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary/30 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium">Ready to save</p>
+              <p className="text-sm font-medium">
+                {isArabic ? "جاهز للحفظ" : "Ready to save"}
+              </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Save this AI output as a draft landing page in the project.
+                {isArabic
+                  ? "احفظ هذا الناتج كمسودة صفحة هبوط داخل المشروع."
+                  : "Save this AI output as a draft landing page in the project."}
               </p>
               {savedPageSlug ? (
                 <p className="mt-2 text-xs text-emerald-600">
-                  Saved as /{savedPageSlug}
+                  {isArabic ? "تم الحفظ كـ" : "Saved as"} /{savedPageSlug}
                 </p>
               ) : null}
             </div>
@@ -82,12 +96,22 @@ export function AiPreviewPanel({
                 onClick={onSaveDraft}
               >
                 {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
-                {savedPageSlug ? "Saved" : "Save draft"}
+                {savedPageSlug
+                  ? isArabic
+                    ? "تم الحفظ"
+                    : "Saved"
+                  : isArabic
+                    ? "حفظ المسودة"
+                    : "Save draft"}
               </Button>
               {savedPageId ? (
                 <Button asChild variant="outline">
-                  <Link href={`/dashboard/editor?page=${savedPageId}`}>
-                    Open editor
+                  <Link
+                    href={localizedPath(
+                      `/dashboard/editor?page=${savedPageId}`,
+                    )}
+                  >
+                    {isArabic ? "فتح المحرر" : "Open editor"}
                   </Link>
                 </Button>
               ) : null}
@@ -97,7 +121,7 @@ export function AiPreviewPanel({
 
         <section>
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Hero
+            {isArabic ? "الهيرو" : "Hero"}
           </p>
           <h2 className="mt-3 text-2xl font-semibold tracking-normal">
             {content.headline}
@@ -112,11 +136,11 @@ export function AiPreviewPanel({
 
         <PreviewList
           items={content.features.map((item) => item.title)}
-          title="Features"
+          title={isArabic ? "المميزات" : "Features"}
         />
         <PreviewList
           items={content.benefits.map((item) => item.title)}
-          title="Benefits"
+          title={isArabic ? "الفوائد" : "Benefits"}
         />
         <PreviewList
           items={content.faq.map((item) => item.question)}
@@ -124,7 +148,9 @@ export function AiPreviewPanel({
         />
 
         <section className="rounded-md border border-border bg-secondary/30 p-4">
-          <p className="text-sm font-medium">Pricing Copy</p>
+          <p className="text-sm font-medium">
+            {isArabic ? "نص السعر" : "Pricing Copy"}
+          </p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             {content.pricingCopy}
           </p>
@@ -139,7 +165,8 @@ export function AiPreviewPanel({
         </section>
 
         <div className="rounded-md border border-border p-3 text-xs text-muted-foreground">
-          Tokens: {result.usage.totalTokens || 0} total
+          {isArabic ? "التوكنز" : "Tokens"}: {result.usage.totalTokens || 0}{" "}
+          {isArabic ? "إجمالي" : "total"}
         </div>
       </CardContent>
     </Card>

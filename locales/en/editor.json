@@ -1,0 +1,12 @@
+{
+  "title": "Landing Page Editor",
+  "description": "Edit generated landing pages with drag and drop sections, live text editing, style controls, responsive previews, and local draft autosave.",
+  "desktop": "Desktop",
+  "tablet": "Tablet",
+  "mobile": "Mobile",
+  "saveDraft": "Save draft",
+  "publish": "Publish",
+  "properties": "Properties",
+  "sections": "Sections",
+  "pageStructure": "Page structure"
+}

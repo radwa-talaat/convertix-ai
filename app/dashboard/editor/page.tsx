@@ -1,6 +1,7 @@
 import { EditorShell } from "@/components/editor";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert } from "@/components/ui/alert";
+import { getRequestLocale, getServerTranslator } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -22,20 +23,23 @@ type LoadedEditorPage = {
 };
 
 export default async function EditorPage({ searchParams }: EditorPageProps) {
+  const locale = getRequestLocale();
+  const t = await getServerTranslator("editor");
   const loadedPage = await loadRequestedEditorPage(searchParams);
   const template = loadedPage?.template ?? getSampleLandingPageTemplate();
 
   return (
     <div className="space-y-6">
       <PageHeader
-        description="Edit generated landing pages with drag and drop sections, live text editing, style controls, responsive previews, and draft saving."
-        eyebrow="Editor"
-        title="Landing Page Editor"
+        description={t("description")}
+        eyebrow={t("title")}
+        title={t("title")}
       />
       {!loadedPage ? (
         <Alert className="border-border bg-secondary/40 text-sm text-muted-foreground">
-          Showing the starter template. Open a project or generated draft to
-          edit your saved landing page.
+          {locale === "ar"
+            ? "نعرض القالب الافتراضي. افتح مشروعًا أو مسودة مولدة لتعديل صفحة محفوظة."
+            : "Showing the starter template. Open a project or generated draft to edit your saved landing page."}
         </Alert>
       ) : null}
       <EditorShell pageId={loadedPage?.id} template={template} />

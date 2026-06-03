@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +26,8 @@ export function CreateProjectDialog({
   disabled,
   onCreate,
 }: CreateProjectDialogProps) {
+  const commonT = useTranslations("common");
+  const t = useTranslations("dashboard.projects");
   const [open, setOpen] = React.useState(false);
   const [name, setName] = React.useState("");
 
@@ -40,19 +43,17 @@ export function CreateProjectDialog({
       <DialogTrigger asChild>
         <Button disabled={disabled}>
           <Plus />
-          New Project
+          {t("new")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={submitProject}>
           <DialogHeader>
-            <DialogTitle>Create project</DialogTitle>
-            <DialogDescription>
-              Start a new landing page workspace saved to Supabase.
-            </DialogDescription>
+            <DialogTitle>{t("new")}</DialogTitle>
+            <DialogDescription>{t("description")}</DialogDescription>
           </DialogHeader>
           <div className="mt-5 space-y-2">
-            <Label htmlFor="project-name">Project name</Label>
+            <Label htmlFor="project-name">{t("projectName")}</Label>
             <Input
               autoFocus
               disabled={disabled}
@@ -70,10 +71,10 @@ export function CreateProjectDialog({
               type="button"
               variant="outline"
             >
-              Cancel
+              {commonT("cancel")}
             </Button>
             <Button disabled={disabled} type="submit">
-              Create project
+              {t("new")}
             </Button>
           </DialogFooter>
         </form>

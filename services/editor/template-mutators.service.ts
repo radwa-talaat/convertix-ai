@@ -1,5 +1,6 @@
 import type { EditorSectionStyle } from "@/types/editor";
 import type {
+  LandingPageSectionType,
   LandingPageSection,
   LandingPageTemplate,
 } from "@/types/rendering";
@@ -135,9 +136,29 @@ export function moveTemplateSection(
   };
 }
 
+export function addTemplateSection(
+  template: LandingPageTemplate,
+  type: LandingPageSectionType,
+): LandingPageTemplate {
+  const section: LandingPageSection = {
+    data: createSectionData(type, template.name),
+    id: `${type}-${Date.now()}`,
+    order: template.sections.length,
+    type,
+    visible: true,
+  };
+
+  return {
+    ...template,
+    sections: withNormalizedOrder([...template.sections, section]),
+  };
+}
+
 export function createDefaultSectionStyle(): EditorSectionStyle {
   return {
     align: "start",
+    backgroundImageUrl: undefined,
+    foregroundImageUrl: undefined,
     hiddenOn: [],
     padding: "comfortable",
   };
@@ -200,4 +221,125 @@ function cloneData<T>(data: T): T {
   }
 
   return data;
+}
+
+function createSectionData(type: LandingPageSectionType, brandName: string) {
+  switch (type) {
+    case "navbar":
+      return {
+        brandName,
+        cta: "Start now",
+        links: [
+          { href: "#features", label: "Features" },
+          { href: "#pricing", label: "Pricing" },
+          { href: "#faq", label: "FAQ" },
+        ],
+      };
+    case "hero":
+      return {
+        cta: "Start now",
+        headline: "Your new landing page section",
+        imageAlt: "Product image",
+        imageUrl: "",
+        secondaryCta: "Learn more",
+        subheadline:
+          "Add your own copy, product image, background, and layout style from the editor.",
+      };
+    case "features":
+      return {
+        eyebrow: "Features",
+        items: [
+          {
+            description:
+              "Describe the feature in a clear customer-focused way.",
+            title: "Feature one",
+          },
+          {
+            description:
+              "Use concise text that helps visitors understand value.",
+            title: "Feature two",
+          },
+          {
+            description: "Keep the section editable and conversion-ready.",
+            title: "Feature three",
+          },
+        ],
+        title: "What makes this offer different",
+      };
+    case "benefits":
+      return {
+        eyebrow: "Benefits",
+        items: [
+          {
+            description: "Explain the outcome your customer gets.",
+            title: "Clear outcome",
+          },
+          {
+            description: "Tie the benefit to trust, speed, or conversion.",
+            title: "Better results",
+          },
+        ],
+        title: "Built around real customer benefits",
+      };
+    case "pricing":
+      return {
+        copy: "Simple pricing copy that explains the offer and reduces hesitation.",
+        cta: "Choose this offer",
+        eyebrow: "Pricing",
+        title: "A focused offer for your customers",
+      };
+    case "testimonials":
+      return {
+        eyebrow: "Testimonials",
+        items: [
+          {
+            author: "Customer name",
+            quote: "This helped us launch faster with a much clearer page.",
+            role: "Founder",
+          },
+        ],
+        title: "Trusted by customers",
+      };
+    case "faq":
+      return {
+        eyebrow: "FAQ",
+        items: [
+          {
+            answer:
+              "Add a direct answer that removes friction before purchase.",
+            question: "What should customers know?",
+          },
+        ],
+        title: "Questions before getting started",
+      };
+    case "cta":
+      return {
+        cta: "Get started",
+        description: "Give visitors one clear next step.",
+        title: "Ready to move forward?",
+      };
+    case "lead-form":
+      return {
+        description:
+          "Collect customer details directly from this landing page and keep every request linked to this product.",
+        emailLabel: "Email",
+        eyebrow: "Request details",
+        messageLabel: "Message",
+        nameLabel: "Name",
+        phoneLabel: "Phone",
+        productName: brandName,
+        submitLabel: "Send request",
+        successMessage: "Thanks. Your request has been received.",
+        title: "Get this offer",
+      };
+    case "footer":
+      return {
+        brandName,
+        description: "A concise footer description for the landing page.",
+        links: [
+          { href: "#features", label: "Features" },
+          { href: "#pricing", label: "Pricing" },
+        ],
+      };
+  }
 }

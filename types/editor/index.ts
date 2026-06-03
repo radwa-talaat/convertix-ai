@@ -31,6 +31,8 @@ export type EditorTextField = {
 export type EditorSectionStyle = {
   align: "start" | "center" | "end";
   backgroundColor?: string;
+  backgroundImageUrl?: string;
+  foregroundImageUrl?: string;
   hiddenOn: EditorDeviceMode[];
   padding: "compact" | "comfortable" | "spacious";
 };

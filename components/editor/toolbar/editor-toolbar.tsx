@@ -1,7 +1,10 @@
 "use client";
 
 import {
+  Code2,
+  FileJson,
   Eye,
+  Images,
   Laptop,
   Loader2,
   Redo2,
@@ -12,11 +15,17 @@ import {
   Undo2,
 } from "lucide-react";
 import Link from "next/link";
+import * as React from "react";
 
 import { updateLandingPageDraftAction } from "@/app/dashboard/projects/actions";
 import { SegmentedControl } from "@/components/editor/controls/segmented-control";
 import { Button } from "@/components/ui/button";
-import { saveEditorDraft } from "@/services/editor";
+import {
+  downloadEditorHtml,
+  downloadEditorJson,
+  downloadEditorLayerPngs,
+  saveEditorDraft,
+} from "@/services/editor";
 import { useEditorStore } from "@/store/editor";
 import type { Json } from "@/types/database";
 
@@ -43,6 +52,17 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
   const template = useEditorStore((state) => state.template);
   const themeTokens = useEditorStore((state) => state.themeTokens);
   const undo = useEditorStore((state) => state.undo);
+  const [exportStatus, setExportStatus] = React.useState<
+    "idle" | "html" | "json" | "png"
+  >("idle");
+
+  const snapshot = template
+    ? {
+        sectionStyles,
+        template,
+        themeTokens,
+      }
+    : null;
 
   async function handleSave() {
     if (!template) {
@@ -59,12 +79,20 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
       selectedSectionId,
     );
 
+    const persistedTemplate = {
+      ...template,
+      editorState: {
+        sectionStyles,
+        themeTokens,
+      },
+    };
+
     if (pageId) {
       try {
         await updateLandingPageDraftAction(
           pageId,
-          template as unknown as Json,
-          template.seo as unknown as Json,
+          persistedTemplate as unknown as Json,
+          persistedTemplate.seo as unknown as Json,
         );
       } catch {
         setSaveStatus("error");
@@ -73,6 +101,40 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
     }
 
     setSaveStatus("saved");
+  }
+
+  function handleJsonExport() {
+    if (!snapshot) {
+      return;
+    }
+
+    setExportStatus("json");
+    downloadEditorJson(snapshot);
+    setExportStatus("idle");
+  }
+
+  function handleHtmlExport() {
+    if (!snapshot) {
+      return;
+    }
+
+    setExportStatus("html");
+
+    try {
+      downloadEditorHtml(snapshot);
+    } finally {
+      setExportStatus("idle");
+    }
+  }
+
+  async function handlePngExport() {
+    setExportStatus("png");
+
+    try {
+      await downloadEditorLayerPngs();
+    } finally {
+      setExportStatus("idle");
+    }
   }
 
   return (
@@ -114,6 +176,43 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
       />
 
       <div className="flex items-center gap-2">
+        <Button
+          disabled={!snapshot || exportStatus !== "idle"}
+          onClick={handleJsonExport}
+          size="sm"
+          title="Download JSON"
+          type="button"
+          variant="outline"
+        >
+          <FileJson className="size-4" />
+          <span className="hidden xl:inline">JSON</span>
+        </Button>
+        <Button
+          disabled={!snapshot || exportStatus !== "idle"}
+          onClick={handleHtmlExport}
+          size="sm"
+          title="Download HTML"
+          type="button"
+          variant="outline"
+        >
+          <Code2 className="size-4" />
+          <span className="hidden xl:inline">HTML</span>
+        </Button>
+        <Button
+          disabled={exportStatus !== "idle"}
+          onClick={() => void handlePngExport()}
+          size="sm"
+          title="Download each layer as high-quality PNG"
+          type="button"
+          variant="outline"
+        >
+          {exportStatus === "png" ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Images className="size-4" />
+          )}
+          <span className="hidden xl:inline">PNG</span>
+        </Button>
         <Button
           onClick={handleSave}
           size="sm"

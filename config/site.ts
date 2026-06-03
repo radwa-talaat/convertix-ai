@@ -10,14 +10,14 @@ import {
   Settings2,
 } from "lucide-react";
 
-import { env } from "@/lib/env";
+import { getDeploymentAppUrl } from "@/lib/urls";
 import type { NavigationItem, NavigationSection } from "@/types/navigation";
 
 export const siteConfig = {
   name: "AI Landing Page Builder",
   description:
     "A polished SaaS foundation for generating, editing, and managing AI landing pages.",
-  url: env.appUrl,
+  url: getDeploymentAppUrl(),
   links: {
     dashboard: "/dashboard",
     github: "https://github.com",

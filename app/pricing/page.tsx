@@ -1,22 +1,21 @@
 import { PricingGrid } from "@/components/billing";
 import { Container } from "@/components/layout/container";
+import { getServerTranslator } from "@/lib/i18n/server";
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const t = await getServerTranslator("billing");
+
   return (
     <main className="min-h-screen bg-background py-16">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Pricing
+            {t("pricing")}
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-normal">
-            Build your landing page from 50 EGP
+            {t("headline")}
           </h1>
-          <p className="mt-4 text-muted-foreground">
-            Start with one AI-generated landing page for 50 EGP, then upgrade
-            monthly when you need more pages, templates, domains, and advanced
-            AI credits.
-          </p>
+          <p className="mt-4 text-muted-foreground">{t("description")}</p>
         </div>
         <div className="mt-10">
           <PricingGrid />

@@ -11,6 +11,7 @@ export * from "./database/types";
 export * from "./database/users.service";
 export * from "./domains";
 export * from "./editor";
+export * from "./leads";
 export * from "./payments";
 export * from "./paymob";
 export * from "./publishing";

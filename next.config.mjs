@@ -1,3 +1,5 @@
+import createNextIntlPlugin from "next-intl/plugin";
+
 const imageHosts = [
   process.env.NEXT_PUBLIC_APP_URL,
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -37,4 +39,6 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin();
+
+export default withNextIntl(nextConfig);

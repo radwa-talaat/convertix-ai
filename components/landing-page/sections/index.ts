@@ -4,6 +4,7 @@ export * from "./faq-section";
 export * from "./features-section";
 export * from "./footer-section";
 export * from "./hero-render-section";
+export * from "./lead-form-section";
 export * from "./navbar-section";
 export * from "./pricing-section";
 export * from "./section-shell";

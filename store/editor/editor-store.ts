@@ -3,6 +3,7 @@
 import { create } from "zustand";
 
 import {
+  addTemplateSection,
   createDefaultSectionStyle,
   defaultEditorThemeTokens,
   deleteTemplateSection,
@@ -21,7 +22,10 @@ import type {
   EditorSnapshot,
   EditorThemeTokens,
 } from "@/types/editor";
-import type { LandingPageTemplate } from "@/types/rendering";
+import type {
+  LandingPageSectionType,
+  LandingPageTemplate,
+} from "@/types/rendering";
 
 type EditorState = {
   canRedo: boolean;
@@ -47,6 +51,7 @@ type EditorState = {
   setPropertiesTab: (tab: EditorPropertiesTab) => void;
   setSaveStatus: (status: EditorSaveStatus) => void;
   markSaved: () => void;
+  addSection: (type: LandingPageSectionType) => void;
   reorderSections: (activeId: string, overId: string) => void;
   updateSectionText: (sectionId: string, path: string, value: string) => void;
   duplicateSection: (sectionId: string) => void;
@@ -119,6 +124,28 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setPropertiesTab: (propertiesTab) => set({ propertiesTab }),
   setSaveStatus: (saveStatus) => set({ saveStatus }),
   markSaved: () => set({ saveStatus: "saved" }),
+  addSection: (type) => {
+    const before = get().template;
+
+    applyTemplateMutation(set, get, (template) =>
+      addTemplateSection(template, type),
+    );
+
+    const after = get().template;
+    const added = after?.sections.find(
+      (section) => !before?.sections.some((item) => item.id === section.id),
+    );
+
+    if (added) {
+      set((state) => ({
+        sectionStyles: {
+          ...state.sectionStyles,
+          [added.id]: createDefaultSectionStyle(),
+        },
+        selectedSectionId: added.id,
+      }));
+    }
+  },
   reorderSections: (activeId, overId) => {
     applyTemplateMutation(set, get, (template) =>
       reorderTemplateSections(template, activeId, overId),

@@ -1,18 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
 import { BrandMark } from "@/components/layout/brand-mark";
 import { Separator } from "@/components/ui/separator";
 import { dashboardNavSections } from "@/config/site";
+import { useLocalizedPathname } from "@/hooks/i18n";
+import { stripLocaleFromPathname } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const t = useTranslations("dashboard");
+  const localizedPath = useLocalizedPathname();
+  const cleanPathname = stripLocaleFromPathname(pathname);
 
   return (
-    <aside className="hidden min-h-screen w-72 border-r border-border bg-secondary/30 lg:flex lg:flex-col">
+    <aside className="hidden min-h-screen w-72 border-e border-border bg-secondary/30 lg:flex lg:flex-col">
       <div className="px-6 py-5">
         <BrandMark />
       </div>
@@ -21,15 +27,15 @@ export function Sidebar() {
         {dashboardNavSections.map((section) => (
           <div key={section.title}>
             <p className="px-3 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              {section.title}
+              {t(section.title.toLowerCase())}
             </p>
             <div className="mt-3 space-y-1">
               {section.items.map((item) => {
                 const Icon = item.icon;
                 const isActive =
                   item.href === "/dashboard"
-                    ? pathname === item.href
-                    : pathname.startsWith(item.href);
+                    ? cleanPathname === item.href
+                    : cleanPathname.startsWith(item.href);
 
                 return (
                   <Link
@@ -38,11 +44,11 @@ export function Sidebar() {
                       isActive &&
                         "bg-background text-foreground shadow-luxury-sm",
                     )}
-                    href={item.href}
+                    href={localizedPath(item.href)}
                     key={item.href}
                   >
                     {Icon ? <Icon className="size-4" /> : null}
-                    {item.title}
+                    {t(item.title.toLowerCase())}
                   </Link>
                 );
               })}

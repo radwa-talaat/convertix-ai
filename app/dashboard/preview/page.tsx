@@ -5,6 +5,8 @@ import { LivePreview } from "@/components/dashboard/live-preview";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
+import { createLocalizedPathname } from "@/lib/i18n/config";
+import { getRequestLocale } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -22,6 +24,7 @@ type DashboardPreviewPageProps = {
 export default async function DashboardPreviewPage({
   searchParams,
 }: DashboardPreviewPageProps) {
+  const locale = getRequestLocale();
   const loadedPage = await loadRequestedPreviewPage(searchParams);
   const template = loadedPage?.template ?? getSampleLandingPageTemplate();
 
@@ -31,21 +34,34 @@ export default async function DashboardPreviewPage({
         actions={
           loadedPage ? (
             <Button asChild>
-              <Link href={`/dashboard/editor?page=${loadedPage.id}`}>
+              <Link
+                href={createLocalizedPathname(
+                  `/dashboard/editor?page=${loadedPage.id}`,
+                  locale,
+                )}
+              >
                 <Edit3 />
-                Edit page
+                {locale === "ar" ? "تعديل الصفحة" : "Edit page"}
               </Link>
             </Button>
           ) : undefined
         }
-        description="Preview structured AI landing page JSON across desktop, tablet, and mobile without entering editor mode."
-        eyebrow="Rendering System"
-        title={loadedPage?.title ?? "Live Preview"}
+        description={
+          locale === "ar"
+            ? "عاين صفحة الهبوط على سطح المكتب والتابلت والموبايل بدون دخول وضع التحرير."
+            : "Preview structured AI landing page JSON across desktop, tablet, and mobile without entering editor mode."
+        }
+        eyebrow={locale === "ar" ? "نظام المعاينة" : "Rendering System"}
+        title={
+          loadedPage?.title ??
+          (locale === "ar" ? "معاينة مباشرة" : "Live Preview")
+        }
       />
       {!loadedPage ? (
         <Alert className="border-border bg-secondary/40 text-sm text-muted-foreground">
-          Showing the starter preview. Open a saved landing page from a project
-          to preview the generated page.
+          {locale === "ar"
+            ? "نعرض المعاينة الافتراضية. افتح صفحة محفوظة من مشروعك لمعاينتها."
+            : "Showing the starter preview. Open a saved landing page from a project to preview the generated page."}
         </Alert>
       ) : null}
       <LivePreview template={template} />

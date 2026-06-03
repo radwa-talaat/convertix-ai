@@ -10,6 +10,7 @@ import type {
   LandingPageSection,
   LandingPageTemplate,
   LandingPageThemeId,
+  LeadFormSectionData,
   NavbarSectionData,
   PricingSectionData,
   TestimonialsSectionData,
@@ -33,6 +34,10 @@ const sectionCopy = {
     faqTitle: "Clear answers",
     features: "Features",
     featuresTitle: "Everything needed to launch",
+    leadForm: "Request",
+    leadFormDescription:
+      "Leave your details and the team will contact you with the right next step.",
+    leadFormTitle: "Request this offer",
     pricing: "Pricing",
     pricingTitle: "Simple path to scale",
     secondaryCta: "View details",
@@ -46,6 +51,9 @@ const sectionCopy = {
     faqTitle: "إجابات مباشرة",
     features: "المزايا",
     featuresTitle: "كل ما تحتاجه للانطلاق",
+    leadForm: "طلب",
+    leadFormDescription: "اترك بياناتك وسنتواصل معك بالخطوة المناسبة.",
+    leadFormTitle: "اطلب هذا العرض",
     pricing: "السعر",
     pricingTitle: "خطة واضحة للنمو",
     secondaryCta: "شاهد التفاصيل",
@@ -108,12 +116,27 @@ export function buildLandingPageTemplate({
       items: content.faq,
       title: copy.faqTitle,
     }),
-    createSection<CtaSectionData>("cta", 7, {
+    createSection<LeadFormSectionData>("lead-form", 7, {
+      description: copy.leadFormDescription,
+      emailLabel: direction === "rtl" ? "البريد الإلكتروني" : "Email",
+      eyebrow: copy.leadForm,
+      messageLabel: direction === "rtl" ? "الرسالة" : "Message",
+      nameLabel: direction === "rtl" ? "الاسم" : "Name",
+      phoneLabel: direction === "rtl" ? "رقم الموبايل" : "Phone",
+      productName: brandName,
+      submitLabel: content.cta,
+      successMessage:
+        direction === "rtl"
+          ? "تم استلام بياناتك بنجاح."
+          : "Your request has been received.",
+      title: copy.leadFormTitle,
+    }),
+    createSection<CtaSectionData>("cta", 8, {
       cta: content.cta,
       description: content.subheadline,
       title: content.headline,
     }),
-    createSection<FooterSectionData>("footer", 8, {
+    createSection<FooterSectionData>("footer", 9, {
       brandName,
       description: content.seo.description,
       links: [

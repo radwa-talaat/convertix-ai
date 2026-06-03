@@ -3,6 +3,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { AlertCircle, ImagePlus, Loader2, Sparkles } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 import { createLandingPageFromAiAction } from "@/app/dashboard/projects/actions";
 import { AiPreviewPanel } from "@/components/ai/ai-preview-panel";
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { createApiPath } from "@/lib/api/urls";
+import type { AppLocale } from "@/lib/i18n/config";
 import type { AiGenerationInput, AiGenerationResult } from "@/types/ai";
 
 type GenerationStatus =
@@ -56,6 +58,8 @@ export function AiGenerationForm({
   projectId,
   projectName,
 }: AiGenerationFormProps = {}) {
+  const locale = useLocale() as AppLocale;
+  const commonT = useTranslations("common");
   const { toast } = useToast();
   const [input, setInput] = React.useState<AiGenerationInput>({
     ...initialInput,
@@ -63,7 +67,7 @@ export function AiGenerationForm({
     brandStyle: initialInput?.brandStyle ?? initialInputDefaults.brandStyle,
     businessType: initialInput?.businessType ?? "",
     goal: initialInput?.goal ?? "",
-    language: initialInput?.language ?? initialInputDefaults.language,
+    language: initialInput?.language ?? locale,
     targetAudience: initialInput?.targetAudience ?? "",
     toneOfVoice: initialInput?.toneOfVoice ?? initialInputDefaults.toneOfVoice,
   });
@@ -203,17 +207,31 @@ export function AiGenerationForm({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
       <PageHeader
-        description="Generate structured landing page copy from a concise business brief. Output is JSON only and never HTML."
-        eyebrow="AI Engine"
-        title={projectName ? `${projectName} AI Builder` : "Content Generation"}
+        description={
+          locale === "ar"
+            ? "أنشئ محتوى صفحة هبوط منظم من وصف بسيط للمشروع. الناتج JSON فقط وليس HTML."
+            : "Generate structured landing page copy from a concise business brief. Output is JSON only and never HTML."
+        }
+        eyebrow={locale === "ar" ? "محرك الذكاء الاصطناعي" : "AI Engine"}
+        title={
+          projectName
+            ? locale === "ar"
+              ? `منشئ ${projectName} بالذكاء الاصطناعي`
+              : `${projectName} AI Builder`
+            : locale === "ar"
+              ? "إنشاء المحتوى"
+              : "Content Generation"
+        }
       />
 
       <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
-              <CardTitle>Generation Brief</CardTitle>
-              <GenerationProgress status={status} />
+              <CardTitle>
+                {locale === "ar" ? "بيانات التوليد" : "Generation Brief"}
+              </CardTitle>
+              <GenerationProgress locale={locale} status={status} />
             </div>
           </CardHeader>
           <CardContent>
@@ -225,28 +243,28 @@ export function AiGenerationForm({
             ) : null}
             <form className="space-y-4" onSubmit={submitGeneration}>
               <Field
-                label="Business Name"
+                label={locale === "ar" ? "اسم النشاط" : "Business Name"}
                 name="businessName"
                 onChange={(value) => updateInput("businessName", value)}
                 placeholder="Acme Growth"
                 value={input.businessName}
               />
               <Field
-                label="Business Type"
+                label={locale === "ar" ? "نوع النشاط" : "Business Type"}
                 name="businessType"
                 onChange={(value) => updateInput("businessType", value)}
                 placeholder="B2B SaaS analytics platform"
                 value={input.businessType}
               />
               <Field
-                label="Target Audience"
+                label={locale === "ar" ? "الجمهور المستهدف" : "Target Audience"}
                 name="targetAudience"
                 onChange={(value) => updateInput("targetAudience", value)}
                 placeholder="Marketing teams at mid-market SaaS companies"
                 value={input.targetAudience}
               />
               <Field
-                label="Goal"
+                label={locale === "ar" ? "الهدف" : "Goal"}
                 name="goal"
                 onChange={(value) => updateInput("goal", value)}
                 placeholder="Increase demo bookings"
@@ -254,27 +272,31 @@ export function AiGenerationForm({
               />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
-                  label="Brand Style"
+                  label={locale === "ar" ? "ستايل البراند" : "Brand Style"}
                   name="brandStyle"
                   onChange={(value) => updateInput("brandStyle", value)}
                   value={input.brandStyle}
                 />
                 <Field
-                  label="Tone of Voice"
+                  label={locale === "ar" ? "نبرة الصوت" : "Tone of Voice"}
                   name="toneOfVoice"
                   onChange={(value) => updateInput("toneOfVoice", value)}
                   value={input.toneOfVoice}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="productImage">Product image</Label>
+                <Label htmlFor="productImage">
+                  {locale === "ar" ? "صورة المنتج" : "Product image"}
+                </Label>
                 <div className="flex flex-col gap-3 rounded-md border border-dashed border-border bg-secondary/30 p-4">
                   <label
                     className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium shadow-luxury-sm transition-colors hover:bg-secondary"
                     htmlFor="productImage"
                   >
                     <ImagePlus className="size-4" />
-                    Upload product image
+                    {locale === "ar"
+                      ? "رفع صورة المنتج"
+                      : "Upload product image"}
                   </label>
                   <input
                     accept="image/*"
@@ -290,7 +312,11 @@ export function AiGenerationForm({
                       updateInput("productImageUrl", event.target.value);
                       setImageName(null);
                     }}
-                    placeholder="Or paste an image URL"
+                    placeholder={
+                      locale === "ar"
+                        ? "أو الصق رابط صورة"
+                        : "Or paste an image URL"
+                    }
                     value={
                       input.productImageUrl?.startsWith("data:image/")
                         ? ""
@@ -299,7 +325,7 @@ export function AiGenerationForm({
                   />
                   {imageName ? (
                     <p className="text-xs text-muted-foreground">
-                      Uploaded: {imageName}
+                      {locale === "ar" ? "تم الرفع" : "Uploaded"}: {imageName}
                     </p>
                   ) : null}
                   {input.productImageUrl ? (
@@ -313,7 +339,7 @@ export function AiGenerationForm({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
+                <Label htmlFor="language">{commonT("language")}</Label>
                 <select
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-luxury-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   id="language"
@@ -325,8 +351,8 @@ export function AiGenerationForm({
                   }
                   value={input.language}
                 >
-                  <option value="en">English</option>
-                  <option value="ar">Arabic</option>
+                  <option value="en">{commonT("english")}</option>
+                  <option value="ar">{commonT("arabic")}</option>
                 </select>
               </div>
               <Button className="w-full" disabled={isLoading} type="submit">
@@ -335,7 +361,7 @@ export function AiGenerationForm({
                 ) : (
                   <Sparkles />
                 )}
-                Generate Content
+                {commonT("generate")}
               </Button>
             </form>
           </CardContent>
@@ -381,8 +407,26 @@ function Field({
   );
 }
 
-function GenerationProgress({ status }: { status: GenerationStatus }) {
+function GenerationProgress({
+  locale,
+  status,
+}: {
+  locale: AppLocale;
+  status: GenerationStatus;
+}) {
   const active = status !== "idle" && status !== "error";
+  const labels: Record<GenerationStatus, string> =
+    locale === "ar"
+      ? {
+          error: "فشل التوليد",
+          generating: "جاري إنشاء المحتوى",
+          idle: "جاهز",
+          parsing: "مراجعة JSON",
+          saving: "حفظ المسودة",
+          success: "تم إنشاء المحتوى",
+          validating: "مراجعة البيانات",
+        }
+      : progressLabels;
 
   return (
     <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/40 px-3 py-1.5 text-xs text-muted-foreground">
@@ -395,7 +439,7 @@ function GenerationProgress({ status }: { status: GenerationStatus }) {
       ) : (
         <span className="size-2 rounded-full bg-muted-foreground/40" />
       )}
-      {progressLabels[status]}
+      {labels[status]}
     </div>
   );
 }
