@@ -11,10 +11,14 @@ import type { SupabaseDatabaseClient } from "@/services/database/types";
 import { parseLandingPageTemplate } from "@/services/rendering";
 import type { Json, Tables } from "@/types/database";
 import type {
+  CustomDomain,
+  DomainDnsRecord,
   PublishedPage,
+  PublishingDashboardSnapshot,
   PublishRequest,
   PublishResult,
   PublishVersion,
+  SeoSettings,
 } from "@/types/publishing";
 import type { LandingPageTemplate } from "@/types/rendering";
 
@@ -148,6 +152,63 @@ export async function republishPage(
   });
 }
 
+export async function getPublishingDashboardSnapshot(
+  supabase: SupabaseDatabaseClient,
+  userId: string,
+): Promise<PublishingDashboardSnapshot> {
+  const { data: pages } = await supabase
+    .from("pages")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("status", "published")
+    .not("published_at", "is", null)
+    .order("published_at", { ascending: false });
+
+  const pageIds = (pages ?? []).map((page) => page.id);
+  const { data: versions } = pageIds.length
+    ? await supabase
+        .from("publish_versions")
+        .select("*")
+        .eq("user_id", userId)
+        .in("page_id", pageIds)
+        .order("created_at", { ascending: false })
+    : { data: [] };
+
+  const { data: domains } = await supabase
+    .from("domains")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  const versionsByPageId = new Map<string, PublishVersion[]>();
+
+  for (const version of versions ?? []) {
+    const mapped = mapPublishVersion(version);
+    versionsByPageId.set(version.page_id, [
+      ...(versionsByPageId.get(version.page_id) ?? []),
+      mapped,
+    ]);
+  }
+
+  const publishedPages = (pages ?? []).flatMap((row) => {
+    const template = parseLandingPageTemplate(row.published_content);
+
+    if (!template) {
+      return [];
+    }
+
+    return [
+      mapPublishedPage(row, template, versionsByPageId.get(row.id) ?? []),
+    ];
+  });
+
+  return {
+    domains: (domains ?? []).map(mapCustomDomain),
+    pages: publishedPages,
+    seo: createDefaultSeoSettings(publishedPages[0]),
+  };
+}
+
 export const getPublishedPageBySlug = unstable_cache(
   async (slug: string): Promise<PublishedPage | null> => {
     const supabase = createAdminClient();
@@ -157,6 +218,8 @@ export const getPublishedPageBySlug = unstable_cache(
       .eq("slug", slug)
       .eq("status", "published")
       .not("published_at", "is", null)
+      .order("published_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (error || !data) {
@@ -238,5 +301,64 @@ function mapPublishVersion(row: Tables<"publish_versions">): PublishVersion {
     snapshot: row.snapshot as unknown as LandingPageTemplate,
     status: row.status,
     version: row.version,
+  };
+}
+
+function mapCustomDomain(row: Tables<"domains">): CustomDomain {
+  return {
+    dnsRecords: parseDnsRecords(row.dns_records),
+    hostname: row.hostname,
+    id: row.id,
+    projectId: row.project_id,
+    sslStatus: row.ssl_status,
+    status: row.status,
+    verificationToken: row.verification_token,
+    verifiedAt: row.verified_at,
+  };
+}
+
+function parseDnsRecords(value: Json): DomainDnsRecord[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.flatMap((record) => {
+    if (!record || typeof record !== "object") {
+      return [];
+    }
+
+    const candidate = record as Record<string, unknown>;
+
+    if (
+      typeof candidate.host !== "string" ||
+      typeof candidate.value !== "string" ||
+      !["A", "AAAA", "CNAME", "TXT"].includes(String(candidate.type))
+    ) {
+      return [];
+    }
+
+    return [
+      {
+        host: candidate.host,
+        priority:
+          typeof candidate.priority === "number"
+            ? candidate.priority
+            : undefined,
+        type: candidate.type as DomainDnsRecord["type"],
+        value: candidate.value,
+      },
+    ];
+  });
+}
+
+function createDefaultSeoSettings(page?: PublishedPage): SeoSettings {
+  return {
+    canonicalPath: page ? `/p/${page.slug}` : "/dashboard/publishing",
+    description:
+      page?.seo.description ??
+      "Published landing pages rendered by AI Landing Page Builder.",
+    indexing: true,
+    title: page?.seo.title ?? "Published landing pages",
+    twitterCard: "summary_large_image",
   };
 }

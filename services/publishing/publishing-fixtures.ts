@@ -7,7 +7,7 @@ import type {
   SeoSettings,
 } from "@/types/publishing";
 
-export function getPublishingDashboardSnapshot(): PublishingDashboardSnapshot {
+export function getDemoPublishingDashboardSnapshot(): PublishingDashboardSnapshot {
   const now = new Date().toISOString();
   const template = getSampleLandingPageTemplate();
   const publicUrl = createPathPublicUrl(template.slug);
