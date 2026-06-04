@@ -1,8 +1,13 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import { Badge } from "@/components/ui/badge";
-import { getPublishStatusLabel, getPublishStatusTone } from "@/lib/publishing";
+import { getPublishStatusTone } from "@/lib/publishing";
 import type { PagePublishStatus } from "@/types/publishing";
 
 export function PublishStatusBadge({ status }: { status: PagePublishStatus }) {
+  const t = useTranslations("dashboard.publishingPage.status");
   const tone = getPublishStatusTone(status);
 
   return (
@@ -18,7 +23,7 @@ export function PublishStatusBadge({ status }: { status: PagePublishStatus }) {
       }
       variant="outline"
     >
-      {getPublishStatusLabel(status)}
+      {t(status)}
     </Badge>
   );
 }

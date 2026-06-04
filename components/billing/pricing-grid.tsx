@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 
 import { PlanCard } from "@/components/billing/plan-card";
 import {
@@ -18,6 +19,7 @@ export function PricingGrid({
   currentPlanId?: BillingPlanId;
   initialCurrency?: BillingCurrency;
 }) {
+  const t = useTranslations("billing");
   const [currency, setCurrency] = React.useState<BillingCurrency>(
     initialCurrency ?? defaultBillingCurrency,
   );
@@ -35,9 +37,9 @@ export function PricingGrid({
     <div className="space-y-4">
       <div className="flex flex-col justify-between gap-3 rounded-lg border border-border bg-background p-4 sm:flex-row sm:items-center">
         <div>
-          <p className="text-sm font-semibold">Local currency</p>
+          <p className="text-sm font-semibold">{t("localCurrency")}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Prices start from USD and update by selected country currency.
+            {t("localCurrencyDescription")}
           </p>
         </div>
         <select

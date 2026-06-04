@@ -3,6 +3,7 @@
   "active": "نشط",
   "all": "الكل",
   "analytics": "التحليلات",
+  "arabic": "العربية",
   "archived": "مؤرشف",
   "billing": "الفوترة",
   "cancel": "إلغاء",
@@ -26,6 +27,5 @@
   "switchLanguage": "تغيير اللغة",
   "templates": "القوالب",
   "theme": "المظهر",
-  "workspace": "مساحة العمل",
-  "arabic": "العربية"
+  "workspace": "مساحة العمل"
 }

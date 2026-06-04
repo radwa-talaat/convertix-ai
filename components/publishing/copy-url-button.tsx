@@ -2,10 +2,12 @@
 
 import * as React from "react";
 import { Check, Copy } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 
 export function CopyUrlButton({ url }: { url: string }) {
+  const t = useTranslations("dashboard.publishingPage");
   const [copied, setCopied] = React.useState(false);
 
   async function handleCopy() {
@@ -17,7 +19,7 @@ export function CopyUrlButton({ url }: { url: string }) {
   return (
     <Button onClick={handleCopy} size="sm" type="button" variant="outline">
       {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-      {copied ? "Copied" : "Copy URL"}
+      {copied ? t("copied") : t("copyUrl")}
     </Button>
   );
 }

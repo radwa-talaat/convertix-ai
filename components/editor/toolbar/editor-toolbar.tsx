@@ -15,7 +15,7 @@ import {
   Undo2,
 } from "lucide-react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import * as React from "react";
 
 import { publishPageAction } from "@/app/dashboard/publishing/actions";
@@ -32,17 +32,12 @@ import {
 import { useEditorStore } from "@/store/editor";
 import type { Json } from "@/types/database";
 
-const deviceItems = [
-  { icon: Laptop, label: "Desktop", value: "desktop" },
-  { icon: Tablet, label: "Tablet", value: "tablet" },
-  { icon: Smartphone, label: "Mobile", value: "mobile" },
-] as const;
-
 type EditorToolbarProps = {
   pageId?: string;
 };
 
 export function EditorToolbar({ pageId }: EditorToolbarProps) {
+  const t = useTranslations("editor");
   const canRedo = useEditorStore((state) => state.canRedo);
   const canUndo = useEditorStore((state) => state.canUndo);
   const deviceMode = useEditorStore((state) => state.deviceMode);
@@ -62,6 +57,15 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
   const [publishStatus, setPublishStatus] = React.useState<
     "idle" | "publishing" | "published" | "error"
   >("idle");
+  const deviceItems = React.useMemo(
+    () =>
+      [
+        { icon: Laptop, label: t("desktop"), value: "desktop" },
+        { icon: Tablet, label: t("tablet"), value: "tablet" },
+        { icon: Smartphone, label: t("mobile"), value: "mobile" },
+      ] as const,
+    [t],
+  );
 
   const snapshot = template
     ? {
@@ -187,7 +191,7 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
           disabled={!canUndo}
           onClick={undo}
           size="icon"
-          title="Undo"
+          title={t("undo")}
           type="button"
           variant="ghost"
         >
@@ -197,18 +201,18 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
           disabled={!canRedo}
           onClick={redo}
           size="icon"
-          title="Redo"
+          title={t("redo")}
           type="button"
           variant="ghost"
         >
           <Redo2 className="size-4" />
         </Button>
         <span className="ml-2 hidden text-xs text-muted-foreground sm:inline">
-          {saveStatus === "saving" ? "Saving draft..." : null}
-          {saveStatus === "saved" ? "Draft saved" : null}
-          {saveStatus === "dirty" ? "Unsaved changes" : null}
-          {saveStatus === "error" ? "Draft save failed" : null}
-          {saveStatus === "idle" ? "Ready" : null}
+          {saveStatus === "saving" ? t("savingDraft") : null}
+          {saveStatus === "saved" ? t("draftSaved") : null}
+          {saveStatus === "dirty" ? t("unsavedChanges") : null}
+          {saveStatus === "error" ? t("draftSaveFailed") : null}
+          {saveStatus === "idle" ? t("ready") : null}
         </span>
       </div>
 
@@ -223,7 +227,7 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
           disabled={!snapshot || exportStatus !== "idle"}
           onClick={handleJsonExport}
           size="sm"
-          title="Download JSON"
+          title={t("downloadJson")}
           type="button"
           variant="outline"
         >
@@ -234,7 +238,7 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
           disabled={!snapshot || exportStatus !== "idle"}
           onClick={handleHtmlExport}
           size="sm"
-          title="Download HTML"
+          title={t("downloadHtml")}
           type="button"
           variant="outline"
         >
@@ -245,7 +249,7 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
           disabled={exportStatus !== "idle"}
           onClick={() => void handlePngExport()}
           size="sm"
-          title="Download each layer as high-quality PNG"
+          title={t("downloadPng")}
           type="button"
           variant="outline"
         >
@@ -259,7 +263,7 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
         <Button
           onClick={handleSave}
           size="sm"
-          title="Save draft"
+          title={t("saveDraft")}
           type="button"
           variant="outline"
         >
@@ -268,9 +272,9 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
           ) : (
             <Save className="size-4" />
           )}
-          <span className="hidden sm:inline">Save</span>
+          <span className="hidden sm:inline">{t("save")}</span>
         </Button>
-        <Button asChild size="sm" title="Preview" variant="ghost">
+        <Button asChild size="sm" title={t("preview")} variant="ghost">
           <Link
             href={createLocalizedPathname(
               pageId
@@ -282,14 +286,14 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
             target="_blank"
           >
             <Eye className="size-4" />
-            <span className="hidden sm:inline">Preview</span>
+            <span className="hidden sm:inline">{t("preview")}</span>
           </Link>
         </Button>
         <Button
           disabled={!pageId || !template || publishStatus === "publishing"}
           onClick={() => void handlePublish()}
           size="sm"
-          title={pageId ? "Publish page" : "Save this page before publishing"}
+          title={pageId ? t("publishPage") : t("saveBeforePublishing")}
           type="button"
         >
           {publishStatus === "publishing" ? (
@@ -298,7 +302,7 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
             <Rocket className="size-4" />
           )}
           <span className="hidden sm:inline">
-            {publishStatus === "publishing" ? "Publishing..." : "Publish"}
+            {publishStatus === "publishing" ? t("publishing") : t("publish")}
           </span>
         </Button>
       </div>

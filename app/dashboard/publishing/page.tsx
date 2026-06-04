@@ -1,16 +1,19 @@
+import { getTranslations } from "next-intl/server";
+
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PublishingDashboard } from "@/components/publishing";
 import { getPublishingDashboardSnapshot } from "@/services/publishing";
 
-export default function PublishingPage() {
+export default async function PublishingPage() {
+  const t = await getTranslations("dashboard.publishingPage");
   const snapshot = getPublishingDashboardSnapshot();
 
   return (
     <div className="space-y-6">
       <PageHeader
-        description="Publish landing pages, manage public URLs, configure custom domains, and tune SEO metadata for production delivery."
-        eyebrow="Publishing"
-        title="Publishing & Domains"
+        description={t("description")}
+        eyebrow={t("eyebrow")}
+        title={t("title")}
       />
       <PublishingDashboard snapshot={snapshot} />
     </div>

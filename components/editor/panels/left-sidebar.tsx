@@ -1,6 +1,7 @@
 "use client";
 
 import type * as React from "react";
+import { useTranslations } from "next-intl";
 
 import {
   Blocks,
@@ -21,13 +22,12 @@ import type { LandingPageSectionType } from "@/types/rendering";
 
 const tabs: Array<{
   icon: React.ComponentType<{ className?: string }>;
-  label: string;
   value: EditorLeftPanelTab;
 }> = [
-  { icon: Rows3, label: "Sections", value: "sections" },
-  { icon: Blocks, label: "Components", value: "components" },
-  { icon: LayoutTemplate, label: "Templates", value: "templates" },
-  { icon: Layers3, label: "Layers", value: "layers" },
+  { icon: Rows3, value: "sections" },
+  { icon: Blocks, value: "components" },
+  { icon: LayoutTemplate, value: "templates" },
+  { icon: Layers3, value: "layers" },
 ];
 
 const addableSections: Array<{
@@ -88,6 +88,7 @@ const addableSections: Array<{
 ];
 
 export function EditorLeftSidebar() {
+  const t = useTranslations("editor");
   const addSection = useEditorStore((state) => state.addSection);
   const duplicateSection = useEditorStore((state) => state.duplicateSection);
   const leftPanelTab = useEditorStore((state) => state.leftPanelTab);
@@ -116,7 +117,7 @@ export function EditorLeftSidebar() {
               )}
               key={tab.value}
               onClick={() => setLeftPanelTab(tab.value)}
-              title={tab.label}
+              title={t(tab.value)}
               type="button"
             >
               <Icon className="size-4" />
@@ -128,9 +129,9 @@ export function EditorLeftSidebar() {
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 [scrollbar-gutter:stable]">
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            {tabs.find((tab) => tab.value === leftPanelTab)?.label}
+            {t(leftPanelTab)}
           </p>
-          <h2 className="mt-2 text-sm font-semibold">Page structure</h2>
+          <h2 className="mt-2 text-sm font-semibold">{t("pageStructure")}</h2>
         </div>
 
         {leftPanelTab === "sections" || leftPanelTab === "layers" ? (
@@ -169,7 +170,7 @@ export function EditorLeftSidebar() {
                     <Button
                       onClick={() => duplicateSection(section.id)}
                       size="icon"
-                      title="Duplicate section"
+                      title={t("duplicateSection")}
                       type="button"
                       variant="ghost"
                     >
@@ -178,7 +179,7 @@ export function EditorLeftSidebar() {
                     <Button
                       onClick={() => toggleSectionVisibility(section.id)}
                       size="icon"
-                      title="Toggle visibility"
+                      title={t("toggleVisibility")}
                       type="button"
                       variant="ghost"
                     >
@@ -215,12 +216,9 @@ export function EditorLeftSidebar() {
         ) : (
           <div className="rounded-lg border border-dashed border-border bg-background p-4">
             <Plus className="size-4 text-muted-foreground" />
-            <p className="mt-3 text-sm font-medium">
-              Library prepared for the next component phase.
-            </p>
+            <p className="mt-3 text-sm font-medium">{t("libraryPrepared")}</p>
             <p className="mt-2 text-xs leading-5 text-muted-foreground">
-              This editor can already reorder, edit, style, duplicate, and hide
-              generated sections without starting publishing logic.
+              {t("libraryDescription")}
             </p>
           </div>
         )}

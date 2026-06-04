@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Download } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { AiInsights } from "@/components/analytics/ai-insights";
 import { AnalyticsStatCards } from "@/components/analytics/analytics-stat-cards";
@@ -25,6 +26,7 @@ export function AnalyticsDashboard({
 }: {
   snapshot: AnalyticsDashboardSnapshot;
 }) {
+  const t = useTranslations("dashboard.analyticsPage");
   const [range, setRange] = React.useState<AnalyticsDateRange>(
     snapshot.dateRange,
   );
@@ -70,7 +72,7 @@ export function AnalyticsDashboard({
         </div>
         <Button onClick={exportReport} type="button" variant="outline">
           <Download className="size-4" />
-          Export report
+          {t("exportReport")}
         </Button>
       </div>
       <RealtimeMetrics visitors={snapshot.realtimeVisitors} />

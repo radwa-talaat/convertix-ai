@@ -87,7 +87,7 @@ export function PlanCard({
         {isLandingPagePackage ? (
           <div className="mt-4 rounded-md border border-border bg-secondary/30 p-3">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-sm font-medium">Landing pages</span>
+              <span className="text-sm font-medium">{t("landingPages")}</span>
               <div className="inline-flex items-center rounded-md border border-border bg-background">
                 <Button
                   className="size-9 rounded-none border-0"
@@ -119,8 +119,8 @@ export function PlanCard({
               </div>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              {formatMoney(plan.priceUsd, currency)} each. Increase quantity to
-              buy more landing page credits.
+              {formatMoney(plan.priceUsd, currency)} {t("each")}.{" "}
+              {t("buyMoreCredits")}
             </p>
           </div>
         ) : null}

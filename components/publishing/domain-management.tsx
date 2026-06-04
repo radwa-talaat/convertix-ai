@@ -1,22 +1,33 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import { DomainSetupWizard } from "@/components/publishing/domain-setup-wizard";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CustomDomain } from "@/types/publishing";
 
 export function DomainManagement({ domains }: { domains: CustomDomain[] }) {
+  const t = useTranslations("dashboard.publishingPage");
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Custom domains</CardTitle>
+        <CardTitle>{t("customDomains")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {domains.length === 0 ? (
+          <p className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+            {t("emptyDomains")}
+          </p>
+        ) : null}
         {domains.map((domain) => (
           <div className="space-y-3" key={domain.id}>
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="font-medium">{domain.hostname}</p>
                 <p className="text-sm text-muted-foreground">
-                  SSL: {domain.sslStatus}
+                  {t("ssl")}: {domain.sslStatus}
                 </p>
               </div>
               <Badge variant="outline">{domain.status}</Badge>

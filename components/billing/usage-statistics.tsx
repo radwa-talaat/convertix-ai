@@ -1,11 +1,17 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { UsageRecord } from "@/types/billing";
 
 export function UsageStatistics({ usage }: { usage: UsageRecord[] }) {
+  const t = useTranslations("billing");
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Usage statistics</CardTitle>
+        <CardTitle>{t("usageStatistics")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {usage.map((item) => {

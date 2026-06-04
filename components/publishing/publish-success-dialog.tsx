@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import {
   Dialog,
   DialogContent,
@@ -20,14 +22,14 @@ export function PublishSuccessDialog({
   open,
   url,
 }: PublishSuccessDialogProps) {
+  const t = useTranslations("dashboard.publishingPage");
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Page published</DialogTitle>
-          <DialogDescription>
-            Your landing page is live and ready to share.
-          </DialogDescription>
+          <DialogTitle>{t("pagePublished")}</DialogTitle>
+          <DialogDescription>{t("pagePublishedDescription")}</DialogDescription>
         </DialogHeader>
         <div className="rounded-md border border-border bg-secondary/40 p-3 text-sm">
           {url}

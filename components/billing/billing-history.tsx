@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import { formatMinorUnits } from "@/lib/payments";
 import type { InvoiceRecord, PaymentRecord } from "@/types/billing";
 
@@ -8,12 +12,14 @@ export function BillingHistory({
   invoices: InvoiceRecord[];
   payments: PaymentRecord[];
 }) {
+  const t = useTranslations("billing");
+
   return (
     <div className="rounded-lg border border-border bg-background">
       <div className="border-b border-border p-4">
-        <h3 className="font-semibold">Billing history</h3>
+        <h3 className="font-semibold">{t("billingHistory")}</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Invoices and Paymob payment records.
+          {t("billingHistoryDescription")}
         </p>
       </div>
       <div className="divide-y divide-border">
@@ -23,7 +29,9 @@ export function BillingHistory({
             key={invoice.id}
           >
             <div>
-              <p className="font-medium">{invoice.planId} invoice</p>
+              <p className="font-medium">
+                {invoice.planId} {t("invoice")}
+              </p>
               <p className="text-xs text-muted-foreground">{invoice.status}</p>
             </div>
             <p>{formatMinorUnits(invoice.amountCents, invoice.currency)}</p>
@@ -35,7 +43,7 @@ export function BillingHistory({
             key={payment.id}
           >
             <div>
-              <p className="font-medium">Paymob payment</p>
+              <p className="font-medium">{t("paymobPayment")}</p>
               <p className="text-xs text-muted-foreground">{payment.status}</p>
             </div>
             <p>{formatMinorUnits(payment.amountCents, payment.currency)}</p>

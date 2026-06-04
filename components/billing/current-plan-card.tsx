@@ -1,4 +1,7 @@
+"use client";
+
 import { CreditCard, ShieldCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { SubscriptionStatusBadge } from "@/components/billing/subscription-status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,10 +21,12 @@ export function CurrentPlanCard({
   plan: BillingPlan;
   subscription: BillingSubscription;
 }) {
+  const t = useTranslations("billing");
+
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>Current plan</CardTitle>
+        <CardTitle>{t("currentPlan")}</CardTitle>
         <CreditCard className="size-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
@@ -30,9 +35,11 @@ export function CurrentPlanCard({
             <p className="text-3xl font-semibold">{plan.name}</p>
             <p className="mt-2 text-sm text-muted-foreground">
               {plan.priceUsd === 0
-                ? "No active paid subscription"
+                ? t("noActiveSubscription")
                 : `${formatMoney(plan.priceUsd, currency)}${
-                    plan.id === "free" ? " per landing page" : " per month"
+                    plan.id === "free"
+                      ? ` ${t("perLandingPage")}`
+                      : ` ${t("perMonth")}`
                   }`}
             </p>
           </div>
@@ -40,7 +47,7 @@ export function CurrentPlanCard({
         </div>
         <div className="mt-6 flex items-center gap-2 rounded-md border border-border bg-secondary/40 p-3 text-sm text-muted-foreground">
           <ShieldCheck className="size-4" />
-          Payments are processed by Paymob with server-side webhook validation.
+          {t("paymobSecurityNote")}
         </div>
       </CardContent>
     </Card>

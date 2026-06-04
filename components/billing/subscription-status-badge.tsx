@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
 import { Badge } from "@/components/ui/badge";
 import type { SubscriptionState } from "@/types/billing";
 
@@ -6,6 +10,7 @@ export function SubscriptionStatusBadge({
 }: {
   status: SubscriptionState;
 }) {
+  const t = useTranslations("billing");
   const variant =
     status === "active" || status === "trialing" || status === "free"
       ? "success"
@@ -13,7 +18,7 @@ export function SubscriptionStatusBadge({
         ? "outline"
         : "muted";
 
-  const label = status === "free" ? "starter" : status.replace("_", " ");
+  const label = status === "free" ? t("starter") : status.replace("_", " ");
 
   return <Badge variant={variant}>{label}</Badge>;
 }

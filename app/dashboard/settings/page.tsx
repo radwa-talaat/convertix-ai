@@ -3,28 +3,12 @@ import { Bell, Shield, UserRound } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { SettingsProfileForm } from "@/components/dashboard/settings-profile-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getServerTranslator } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 
-const settingsSections = [
-  {
-    title: "Profile",
-    description: "Manage account identity fields.",
-    icon: UserRound,
-  },
-  {
-    title: "Security",
-    description: "Session and access controls are protected by Supabase.",
-    icon: Shield,
-  },
-  {
-    title: "Notifications",
-    description: "Product updates and account alerts.",
-    icon: Bell,
-  },
-];
-
 export default async function SettingsPage() {
+  const t = await getServerTranslator("dashboard");
   const user = await requireUser();
   const supabase = createClient();
   const { data: profile } = await supabase
@@ -42,13 +26,29 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
       <PageHeader
-        description="Manage the account identity used across your dashboard."
-        eyebrow="Workspace"
-        title="Settings"
+        description={t("settingsPage.description")}
+        eyebrow={t("settingsPage.eyebrow")}
+        title={t("settingsPage.title")}
       />
       <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
         <div className="space-y-3">
-          {settingsSections.map((section) => {
+          {[
+            {
+              description: t("settingsPage.profileDescription"),
+              icon: UserRound,
+              title: t("settingsPage.profile"),
+            },
+            {
+              description: t("settingsPage.securityDescription"),
+              icon: Shield,
+              title: t("settingsPage.security"),
+            },
+            {
+              description: t("settingsPage.notificationsDescription"),
+              icon: Bell,
+              title: t("settingsPage.notifications"),
+            },
+          ].map((section) => {
             const Icon = section.icon;
 
             return (
@@ -70,7 +70,7 @@ export default async function SettingsPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Profile details</CardTitle>
+            <CardTitle>{t("settingsPage.profileDetails")}</CardTitle>
           </CardHeader>
           <CardContent>
             <SettingsProfileForm email={email} fullName={fullName} />

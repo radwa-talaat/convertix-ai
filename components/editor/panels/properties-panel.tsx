@@ -13,6 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { SegmentedControl } from "@/components/editor/controls/segmented-control";
 import { Button } from "@/components/ui/button";
@@ -44,13 +45,8 @@ const propertyTabs: EditorPropertiesTab[] = [
   "backgrounds",
 ];
 
-const hiddenDeviceOptions: Array<{ label: string; value: EditorDeviceMode }> = [
-  { label: "Desktop", value: "desktop" },
-  { label: "Tablet", value: "tablet" },
-  { label: "Mobile", value: "mobile" },
-];
-
 export function EditorPropertiesPanel() {
+  const t = useTranslations("editor");
   const propertiesTab = useEditorStore((state) => state.propertiesTab);
   const selectedSectionId = useEditorStore((state) => state.selectedSectionId);
   const sectionStyles = useEditorStore((state) => state.sectionStyles);
@@ -103,10 +99,10 @@ export function EditorPropertiesPanel() {
     <aside className="hidden h-full min-h-0 w-80 shrink-0 flex-col border-l border-border bg-secondary/20 xl:flex">
       <div className="shrink-0 border-b border-border p-4">
         <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-          Properties
+          {t("properties")}
         </p>
         <h2 className="mt-2 text-sm font-semibold capitalize">
-          {section?.type ?? "No section selected"}
+          {section?.type ?? t("noSectionSelected")}
         </h2>
       </div>
 
@@ -123,7 +119,7 @@ export function EditorPropertiesPanel() {
               onClick={() => setPropertiesTab(tab)}
               type="button"
             >
-              {tab}
+              {t(tab)}
             </button>
           ))}
         </div>
@@ -144,12 +140,12 @@ export function EditorPropertiesPanel() {
 
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold">Section content</p>
+            <p className="text-sm font-semibold">{t("sectionContent")}</p>
             {section ? (
               <Button
                 onClick={() => toggleSectionVisibility(section.id)}
                 size="icon"
-                title="Toggle section visibility"
+                title={t("toggleSectionVisibility")}
                 type="button"
                 variant="ghost"
               >
@@ -212,7 +208,7 @@ export function EditorPropertiesPanel() {
             ))
           ) : (
             <div className="rounded-md border border-dashed border-border bg-background p-4 text-sm text-muted-foreground">
-              Select a section with editable text to update its content.
+              {t("selectEditableSection")}
             </div>
           )}
         </div>
@@ -240,13 +236,23 @@ function ActivePropertiesTab({
   selectedStyle: EditorSectionStyle;
   themeTokens: ReturnType<typeof useEditorStore.getState>["themeTokens"];
 }) {
+  const t = useTranslations("editor");
+  const hiddenDeviceOptions: Array<{
+    label: string;
+    value: EditorDeviceMode;
+  }> = [
+    { label: t("desktop"), value: "desktop" },
+    { label: t("tablet"), value: "tablet" },
+    { label: t("mobile"), value: "mobile" },
+  ];
+
   if (propertiesTab === "colors") {
     return (
       <div className="space-y-5">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Palette className="size-4 text-muted-foreground" />
-            <p className="text-sm font-semibold">Color palette</p>
+            <p className="text-sm font-semibold">{t("colorPalette")}</p>
           </div>
           <div className="grid gap-2">
             {editorColorPalettes.map((palette) => (
@@ -278,34 +284,34 @@ function ActivePropertiesTab({
         </div>
 
         <div className="grid gap-3">
-          <p className="text-sm font-semibold">Theme colors</p>
+          <p className="text-sm font-semibold">{t("themeColors")}</p>
           <ColorField
-            label="Background"
+            label={t("background")}
             onChange={(value) => onUpdatePaletteColor("background", value)}
             value={themeTokens.colorPalette.background}
           />
           <ColorField
-            label="Surface"
+            label={t("surface")}
             onChange={(value) => onUpdatePaletteColor("surface", value)}
             value={themeTokens.colorPalette.surface}
           />
           <ColorField
-            label="Text"
+            label={t("text")}
             onChange={(value) => onUpdatePaletteColor("foreground", value)}
             value={themeTokens.colorPalette.foreground}
           />
           <ColorField
-            label="Primary"
+            label={t("primary")}
             onChange={(value) => onUpdatePaletteColor("primary", value)}
             value={themeTokens.colorPalette.primary}
           />
           <ColorField
-            label="Accent"
+            label={t("accent")}
             onChange={(value) => onUpdatePaletteColor("accent", value)}
             value={themeTokens.colorPalette.accent}
           />
           <ColorField
-            label="Border"
+            label={t("border")}
             onChange={(value) => onUpdatePaletteColor("border", value)}
             value={themeTokens.colorPalette.border}
           />
@@ -318,7 +324,7 @@ function ActivePropertiesTab({
     return (
       <div className="space-y-5">
         <div className="space-y-3">
-          <p className="text-sm font-semibold">Typography scale</p>
+          <p className="text-sm font-semibold">{t("typographyScale")}</p>
           <div className="grid gap-2">
             {[
               ...editorTypographyScales,
@@ -357,9 +363,9 @@ function ActivePropertiesTab({
         />
 
         <div className="space-y-3 rounded-md border border-border bg-background p-3">
-          <p className="text-sm font-semibold">Section text size</p>
+          <p className="text-sm font-semibold">{t("sectionTextSize")}</p>
           <RangeField
-            label="Text scale"
+            label={t("textScale")}
             max={180}
             min={70}
             onChange={(value) => onPatchStyle({ textScale: value })}
@@ -381,7 +387,7 @@ function ActivePropertiesTab({
   if (propertiesTab === "spacing") {
     return (
       <div className="space-y-3">
-        <p className="text-sm font-semibold">Section spacing</p>
+        <p className="text-sm font-semibold">{t("sectionSpacing")}</p>
         <div className="grid grid-cols-3 gap-2">
           {editorSpacingScale.map((spacing) => (
             <button
@@ -405,12 +411,12 @@ function ActivePropertiesTab({
   if (propertiesTab === "alignment") {
     return (
       <div className="space-y-3">
-        <p className="text-sm font-semibold">Alignment</p>
+        <p className="text-sm font-semibold">{t("alignment")}</p>
         <SegmentedControl
           items={[
-            { icon: AlignLeft, label: "Start", value: "start" },
-            { icon: AlignCenter, label: "Center", value: "center" },
-            { icon: AlignRight, label: "End", value: "end" },
+            { icon: AlignLeft, label: t("start"), value: "start" },
+            { icon: AlignCenter, label: t("center"), value: "center" },
+            { icon: AlignRight, label: t("end"), value: "end" },
           ]}
           onChange={(align) => onPatchStyle({ align })}
           value={selectedStyle.align}
@@ -422,7 +428,7 @@ function ActivePropertiesTab({
   if (propertiesTab === "visibility") {
     return (
       <div className="space-y-3">
-        <p className="text-sm font-semibold">Hide on device</p>
+        <p className="text-sm font-semibold">{t("hideOnDevice")}</p>
         <div className="grid gap-2">
           {hiddenDeviceOptions.map((device) => (
             <label
@@ -446,30 +452,30 @@ function ActivePropertiesTab({
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <Brush className="size-4 text-muted-foreground" />
-        <p className="text-sm font-semibold">Layer media</p>
+        <p className="text-sm font-semibold">{t("layerMedia")}</p>
       </div>
       <ColorField
-        label="Background color"
+        label={t("backgroundColor")}
         onChange={(value) => onPatchStyle({ backgroundColor: value })}
         value={
           selectedStyle.backgroundColor ?? themeTokens.colorPalette.background
         }
       />
       <ImageUrlField
-        label="Background image"
+        label={t("backgroundImage")}
         onChange={(value) => onPatchStyle({ backgroundImageUrl: value })}
         value={selectedStyle.backgroundImageUrl ?? ""}
       />
       <ImageUrlField
-        label="Image inside layer"
+        label={t("imageInsideLayer")}
         onChange={(value) => onPatchStyle({ foregroundImageUrl: value })}
         value={selectedStyle.foregroundImageUrl ?? ""}
       />
       {selectedStyle.foregroundImageUrl ? (
         <div className="space-y-3 rounded-md border border-border bg-background p-3">
-          <p className="text-sm font-semibold">Product image position</p>
+          <p className="text-sm font-semibold">{t("productImagePosition")}</p>
           <RangeField
-            label="Width"
+            label={t("width")}
             max={640}
             min={80}
             onChange={(value) => onPatchStyle({ foregroundImageWidth: value })}
@@ -478,7 +484,7 @@ function ActivePropertiesTab({
             value={selectedStyle.foregroundImageWidth ?? 220}
           />
           <RangeField
-            label="Horizontal"
+            label={t("horizontal")}
             max={100}
             min={0}
             onChange={(value) => onPatchStyle({ foregroundImageX: value })}
@@ -487,7 +493,7 @@ function ActivePropertiesTab({
             value={selectedStyle.foregroundImageX ?? 82}
           />
           <RangeField
-            label="Vertical"
+            label={t("vertical")}
             max={100}
             min={0}
             onChange={(value) => onPatchStyle({ foregroundImageY: value })}
@@ -536,6 +542,8 @@ function ImageUrlField({
   onChange: (value: string) => void;
   value: string;
 }) {
+  const t = useTranslations("editor");
+
   return (
     <div className="space-y-2 rounded-md border border-border bg-background p-3">
       <div className="flex items-center justify-between gap-3">
@@ -544,7 +552,7 @@ function ImageUrlField({
           <Button
             onClick={() => onChange("")}
             size="icon"
-            title={`Remove ${label}`}
+            title={`${t("remove")} ${label}`}
             type="button"
             variant="ghost"
           >
@@ -555,7 +563,7 @@ function ImageUrlField({
       <div className="flex gap-2">
         <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-secondary/40 px-3 text-xs font-medium transition-colors hover:bg-secondary">
           <ImagePlus className="size-4" />
-          Upload
+          {t("upload")}
           <input
             accept="image/*"
             className="sr-only"
@@ -573,7 +581,7 @@ function ImageUrlField({
         <Input
           className="h-9"
           onChange={(event) => onChange(event.target.value)}
-          placeholder="Paste image URL"
+          placeholder={t("pasteImageUrl")}
           value={value.startsWith("data:image/") ? "" : value}
         />
       </div>
@@ -594,12 +602,14 @@ function FontUploadField({
 }: {
   onUpload: (font: EditorCustomFont) => void;
 }) {
+  const t = useTranslations("editor");
+
   return (
     <div className="space-y-3 rounded-md border border-border bg-background p-3">
-      <p className="text-sm font-semibold">Upload font</p>
+      <p className="text-sm font-semibold">{t("uploadFont")}</p>
       <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-secondary/40 px-3 text-xs font-medium transition-colors hover:bg-secondary">
         <Plus className="size-4" />
-        Upload TTF / OTF / WOFF
+        {t("uploadFontTypes")}
         <input
           accept=".ttf,.otf,.woff,.woff2,font/*"
           className="sr-only"
@@ -623,8 +633,7 @@ function FontUploadField({
         />
       </label>
       <p className="text-xs leading-5 text-muted-foreground">
-        Uploaded fonts are saved with the landing page draft and used in preview
-        and publish.
+        {t("uploadedFontsNote")}
       </p>
     </div>
   );
@@ -639,6 +648,7 @@ function CustomTextControls({
   selectedStyle: EditorSectionStyle;
   themeTokens: ReturnType<typeof useEditorStore.getState>["themeTokens"];
 }) {
+  const t = useTranslations("editor");
   const customTexts = selectedStyle.customTexts ?? [];
 
   function updateText(
@@ -655,7 +665,7 @@ function CustomTextControls({
   return (
     <div className="space-y-3 rounded-md border border-border bg-background p-3">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-semibold">Extra text blocks</p>
+        <p className="text-sm font-semibold">{t("extraTextBlocks")}</p>
         <Button
           onClick={() =>
             onPatchStyle({
@@ -665,7 +675,7 @@ function CustomTextControls({
                   color: themeTokens.colorPalette.foreground,
                   fontSize: 34,
                   id: `text-${Date.now()}`,
-                  text: "New text",
+                  text: t("newText"),
                   x: 50,
                   y: 50,
                 },
@@ -677,7 +687,7 @@ function CustomTextControls({
           variant="outline"
         >
           <Plus className="size-4" />
-          Add
+          {t("add")}
         </Button>
       </div>
 
@@ -690,7 +700,7 @@ function CustomTextControls({
             >
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-medium text-muted-foreground">
-                  Text block {index + 1}
+                  {t("textBlock")} {index + 1}
                 </p>
                 <Button
                   onClick={() =>
@@ -701,7 +711,7 @@ function CustomTextControls({
                     })
                   }
                   size="icon"
-                  title="Delete text block"
+                  title={t("deleteTextBlock")}
                   type="button"
                   variant="ghost"
                 >
@@ -716,12 +726,12 @@ function CustomTextControls({
                 value={text.text}
               />
               <ColorField
-                label="Text color"
+                label={t("textColor")}
                 onChange={(value) => updateText(text.id, { color: value })}
                 value={text.color ?? themeTokens.colorPalette.foreground}
               />
               <RangeField
-                label="Size"
+                label={t("size")}
                 max={160}
                 min={12}
                 onChange={(value) => updateText(text.id, { fontSize: value })}
@@ -730,7 +740,7 @@ function CustomTextControls({
                 value={text.fontSize}
               />
               <RangeField
-                label="Horizontal"
+                label={t("horizontal")}
                 max={100}
                 min={0}
                 onChange={(value) => updateText(text.id, { x: value })}
@@ -739,7 +749,7 @@ function CustomTextControls({
                 value={text.x}
               />
               <RangeField
-                label="Vertical"
+                label={t("vertical")}
                 max={100}
                 min={0}
                 onChange={(value) => updateText(text.id, { y: value })}
@@ -752,8 +762,7 @@ function CustomTextControls({
         </div>
       ) : (
         <p className="rounded-md border border-dashed border-border p-3 text-xs leading-5 text-muted-foreground">
-          Add floating text on top of this layer for badges, offers, notes, or
-          product highlights.
+          {t("emptyCustomText")}
         </p>
       )}
     </div>

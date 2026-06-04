@@ -2,10 +2,12 @@ import { headers } from "next/headers";
 
 import { BillingDashboard } from "@/components/billing";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { getServerTranslator } from "@/lib/i18n/server";
 import { detectCurrencyFromCountry } from "@/lib/payments";
 import { getBillingDashboardSnapshot } from "@/services/subscriptions";
 
-export default function BillingPage() {
+export default async function BillingPage() {
+  const t = await getServerTranslator("billing");
   const snapshot = getBillingDashboardSnapshot();
   const country = headers().get("x-vercel-ip-country");
   const initialCurrency = detectCurrencyFromCountry(country);
@@ -13,9 +15,9 @@ export default function BillingPage() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
       <PageHeader
-        description="Manage Paymob subscriptions, Egyptian local payments, usage limits, invoices, and plan upgrades."
-        eyebrow="Account"
-        title="Billing"
+        description={t("dashboardDescription")}
+        eyebrow={t("account")}
+        title={t("pricing")}
       />
       <BillingDashboard initialCurrency={initialCurrency} snapshot={snapshot} />
     </div>

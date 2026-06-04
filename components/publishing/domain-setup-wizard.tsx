@@ -1,26 +1,30 @@
 "use client";
 
+"use client";
+
 import { CheckCircle2, Circle, Lock, Server } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import type { CustomDomain } from "@/types/publishing";
 
 export function DomainSetupWizard({ domain }: { domain: CustomDomain }) {
+  const t = useTranslations("dashboard.publishingPage");
   const steps = [
     {
       done: true,
       icon: Server,
-      title: "Add DNS records",
+      title: t("addDnsRecords"),
     },
     {
       done: domain.status === "active" || domain.status === "verified",
       icon: CheckCircle2,
-      title: "Verify ownership",
+      title: t("verifyOwnership"),
     },
     {
       done: domain.sslStatus === "issued",
       icon: Lock,
-      title: "Issue SSL certificate",
+      title: t("issueSsl"),
     },
   ];
 
@@ -30,11 +34,11 @@ export function DomainSetupWizard({ domain }: { domain: CustomDomain }) {
         <div>
           <p className="text-sm font-semibold">{domain.hostname}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Connection status: {domain.status}
+            {t("connectionStatus")}: {domain.status}
           </p>
         </div>
         <Button size="sm" type="button" variant="outline">
-          Check DNS
+          {t("checkDns")}
         </Button>
       </div>
       <div className="mt-4 grid gap-2">
