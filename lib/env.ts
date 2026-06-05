@@ -53,3 +53,9 @@ export function assertPaymobEnv() {
     );
   }
 }
+
+export function assertPaymobWalletEnv() {
+  if (!env.paymobApiKey || !env.paymobWalletIntegrationId) {
+    throw new Error("Missing PAYMOB_API_KEY or PAYMOB_WALLET_INTEGRATION_ID.");
+  }
+}

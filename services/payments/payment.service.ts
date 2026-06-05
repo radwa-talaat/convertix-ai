@@ -11,7 +11,10 @@ import {
   normalizeLandingPageQuantity,
 } from "@/lib/payments";
 import type { SupabaseDatabaseClient } from "@/services/database/types";
-import { createPaymobIntention } from "@/services/paymob";
+import {
+  createPaymobIntention,
+  createPaymobWalletPayment,
+} from "@/services/paymob";
 import { activateSubscriptionPlan } from "@/services/subscriptions";
 import type { Json } from "@/types/database";
 import type {
@@ -69,15 +72,23 @@ export async function createCheckoutSession(
   }
 
   const merchantOrderId = `sub_${userId}_${invoice.id}`;
-  const checkout = await createPaymobIntention({
-    amountCents,
-    billingData: input.billingData,
-    currency,
-    landingPageQuantity,
-    merchantOrderId,
-    plan,
-    userId,
-  });
+  const checkout =
+    input.paymentMethod === "wallet"
+      ? await createPaymobWalletPayment({
+          amountCents,
+          billingData: input.billingData,
+          currency,
+          merchantOrderId,
+        })
+      : await createPaymobIntention({
+          amountCents,
+          billingData: input.billingData,
+          currency,
+          landingPageQuantity,
+          merchantOrderId,
+          plan,
+          userId,
+        });
 
   const { error: paymentError } = await supabase.from("payments").insert({
     amount_cents: amountCents,
@@ -86,6 +97,8 @@ export async function createCheckoutSession(
     plan: plan.id,
     provider: "paymob",
     provider_intention_id: checkout.intentionId,
+    provider_order_id: checkout.orderId ?? null,
+    provider_transaction_id: checkout.transactionId ?? null,
     status: "pending",
     subscription_id: subscription?.id ?? null,
     user_id: userId,
@@ -109,15 +122,23 @@ export async function handlePaymobWebhook(
 
   const event = parsePaymobWebhook(payload, hmac);
 
-  if (!event.intentionId) {
-    throw new Error("Paymob webhook is missing intention id.");
+  let paymentQuery = supabase.from("payments").select("*");
+
+  if (event.intentionId) {
+    paymentQuery = paymentQuery.eq("provider_intention_id", event.intentionId);
+  } else if (event.transactionId) {
+    paymentQuery = paymentQuery.eq(
+      "provider_transaction_id",
+      event.transactionId,
+    );
+  } else if (event.orderId) {
+    paymentQuery = paymentQuery.eq("provider_order_id", event.orderId);
+  } else {
+    throw new Error("Paymob webhook is missing payment identifiers.");
   }
 
-  const { data: payment, error: paymentLookupError } = await supabase
-    .from("payments")
-    .select("*")
-    .eq("provider_intention_id", event.intentionId)
-    .maybeSingle();
+  const { data: payment, error: paymentLookupError } =
+    await paymentQuery.maybeSingle();
 
   if (paymentLookupError || !payment) {
     throw new Error(paymentLookupError?.message ?? "Payment not found.");

@@ -1,17 +1,26 @@
 "use client";
 
-import { Check, Loader2, Minus, Plus } from "lucide-react";
+import {
+  Check,
+  CreditCard,
+  Loader2,
+  Minus,
+  Plus,
+  WalletCards,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { createCheckoutAction } from "@/app/dashboard/billing/actions";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney, normalizeLandingPageQuantity } from "@/lib/payments";
 import type {
   BillingCurrency,
   BillingPlan,
   PaymobBillingData,
+  PaymobPaymentMethod,
 } from "@/types/billing";
 
 const defaultBillingData: PaymobBillingData = {
@@ -37,6 +46,9 @@ export function PlanCard({
   const t = useTranslations("billing");
   const { toast } = useToast();
   const [landingPageQuantity, setLandingPageQuantity] = useState(1);
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymobPaymentMethod>("card");
+  const [walletPhone, setWalletPhone] = useState("");
   const [pending, startTransition] = useTransition();
   const isLandingPagePackage = plan.id === "free";
   const quantity = isLandingPagePackage ? landingPageQuantity : 1;
@@ -48,11 +60,27 @@ export function PlanCard({
       return;
     }
 
+    if (paymentMethod === "wallet" && currency !== "EGP") {
+      toast({
+        description: "Mobile wallet payments are currently available in EGP.",
+        title: "Choose EGP",
+        variant: "destructive",
+      });
+      return;
+    }
+
     startTransition(async () => {
       const result = await createCheckoutAction({
-        billingData: defaultBillingData,
+        billingData: {
+          ...defaultBillingData,
+          phoneNumber:
+            paymentMethod === "wallet"
+              ? walletPhone
+              : defaultBillingData.phoneNumber,
+        },
         currency,
         landingPageQuantity: quantity,
+        paymentMethod,
         planId: plan.id,
       });
 
@@ -146,8 +174,38 @@ export function PlanCard({
           </li>
         ))}
       </ul>
+      <div className="mt-6 space-y-3">
+        <p className="text-sm font-medium">Payment method</p>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            onClick={() => setPaymentMethod("card")}
+            type="button"
+            variant={paymentMethod === "card" ? "default" : "outline"}
+          >
+            <CreditCard className="size-4" />
+            Card
+          </Button>
+          <Button
+            onClick={() => setPaymentMethod("wallet")}
+            type="button"
+            variant={paymentMethod === "wallet" ? "default" : "outline"}
+          >
+            <WalletCards className="size-4" />
+            Mobile wallet
+          </Button>
+        </div>
+        {paymentMethod === "wallet" ? (
+          <Input
+            inputMode="tel"
+            onChange={(event) => setWalletPhone(event.target.value)}
+            placeholder="Egyptian wallet number, e.g. 010..."
+            type="tel"
+            value={walletPhone}
+          />
+        ) : null}
+      </div>
       <Button
-        className="mt-6"
+        className="mt-3"
         disabled={current || isCheckoutDisabled || pending}
         onClick={handleUpgrade}
         type="button"
