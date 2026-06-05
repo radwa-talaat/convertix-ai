@@ -72,23 +72,34 @@ export async function createCheckoutSession(
   }
 
   const merchantOrderId = `sub_${userId}_${invoice.id}`;
-  const checkout =
-    input.paymentMethod === "wallet"
-      ? await createPaymobWalletPayment({
-          amountCents,
-          billingData: input.billingData,
-          currency,
-          merchantOrderId,
-        })
-      : await createPaymobIntention({
-          amountCents,
-          billingData: input.billingData,
-          currency,
-          landingPageQuantity,
-          merchantOrderId,
-          plan,
-          userId,
-        });
+  let checkout: CheckoutSession;
+
+  try {
+    checkout =
+      input.paymentMethod === "wallet"
+        ? await createPaymobWalletPayment({
+            amountCents,
+            billingData: input.billingData,
+            currency,
+            merchantOrderId,
+          })
+        : await createPaymobIntention({
+            amountCents,
+            billingData: input.billingData,
+            currency,
+            landingPageQuantity,
+            merchantOrderId,
+            plan,
+            userId,
+          });
+  } catch (error) {
+    await supabase
+      .from("invoices")
+      .update({ status: "failed" })
+      .eq("id", invoice.id);
+
+    throw error;
+  }
 
   const { error: paymentError } = await supabase.from("payments").insert({
     amount_cents: amountCents,

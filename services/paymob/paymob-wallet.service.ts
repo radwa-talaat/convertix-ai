@@ -9,7 +9,9 @@ type AuthResponse = { token: string };
 type OrderResponse = { id: number };
 type PaymentKeyResponse = { token: string };
 type WalletPaymentResponse = {
+  data?: { message?: string };
   id: number;
+  message?: string;
   order: number | { id?: number };
   redirect_url?: string;
 };
@@ -82,7 +84,12 @@ export async function createPaymobWalletPayment({
   );
 
   if (!payment.redirect_url) {
-    throw new Error("Paymob wallet did not return a verification page.");
+    const reason =
+      payment.data?.message ??
+      payment.message ??
+      "Paymob wallet did not return a verification page.";
+
+    throw new Error(`Paymob wallet rejected this number: ${reason}`);
   }
 
   return {
