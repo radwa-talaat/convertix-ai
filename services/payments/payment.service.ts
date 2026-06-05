@@ -11,10 +11,7 @@ import {
   normalizeLandingPageQuantity,
 } from "@/lib/payments";
 import type { SupabaseDatabaseClient } from "@/services/database/types";
-import {
-  createPaymobIntention,
-  createPaymobWalletPayment,
-} from "@/services/paymob";
+import { createPaymobIntention } from "@/services/paymob";
 import { activateSubscriptionPlan } from "@/services/subscriptions";
 import type { Json } from "@/types/database";
 import type {
@@ -75,23 +72,15 @@ export async function createCheckoutSession(
   let checkout: CheckoutSession;
 
   try {
-    checkout =
-      input.paymentMethod === "wallet"
-        ? await createPaymobWalletPayment({
-            amountCents,
-            billingData: input.billingData,
-            currency,
-            merchantOrderId,
-          })
-        : await createPaymobIntention({
-            amountCents,
-            billingData: input.billingData,
-            currency,
-            landingPageQuantity,
-            merchantOrderId,
-            plan,
-            userId,
-          });
+    checkout = await createPaymobIntention({
+      amountCents,
+      billingData: input.billingData,
+      currency,
+      landingPageQuantity,
+      merchantOrderId,
+      plan,
+      userId,
+    });
   } catch (error) {
     await supabase
       .from("invoices")

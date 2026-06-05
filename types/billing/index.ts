@@ -3,7 +3,6 @@ export type BillingPlanId = "free" | "pro" | "agency";
 export type BillingInterval = "month";
 
 export type PaymentProvider = "paymob";
-export type PaymobPaymentMethod = "card" | "wallet";
 
 export type BillingCurrency = "USD" | "EGP" | "SAR" | "AED" | "EUR" | "GBP";
 
@@ -126,7 +125,6 @@ export type CreateCheckoutInput = {
   billingData: PaymobBillingData;
   currency?: BillingCurrency;
   landingPageQuantity?: number;
-  paymentMethod?: PaymobPaymentMethod;
   planId: BillingPlanId;
 };
 

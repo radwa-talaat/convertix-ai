@@ -91,6 +91,11 @@ console.log(`Intention created: ${result.id ? "yes" : "no"}`);
 console.log(
   `Checkout client secret returned: ${result.client_secret ? "yes" : "no"}`,
 );
+console.log(
+  `Payment methods returned: ${
+    result.payment_methods?.map((method) => method.name).join(", ") || "none"
+  }`,
+);
 
 if (!result.client_secret) {
   process.exit(1);
