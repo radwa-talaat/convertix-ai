@@ -21,9 +21,26 @@ export async function paymobRequest<TResponse>(
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Paymob request failed: ${response.status} ${errorText}`);
+    const errorText = (await response.text()).trim();
+    const requestId =
+      response.headers.get("x-request-id") ??
+      response.headers.get("x-correlation-id");
+    const details = errorText || response.statusText || "No response details";
+
+    throw new Error(
+      `Paymob request failed (${response.status}): ${details}${requestId ? ` [request: ${requestId}]` : ""}`,
+    );
   }
 
-  return (await response.json()) as TResponse;
+  const responseText = await response.text();
+
+  if (!responseText) {
+    throw new Error("Paymob returned an empty successful response.");
+  }
+
+  try {
+    return JSON.parse(responseText) as TResponse;
+  } catch {
+    throw new Error("Paymob returned an invalid JSON response.");
+  }
 }

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Cairo, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 
@@ -12,14 +11,10 @@ import { getRequestLocale, getServerMessages } from "@/lib/i18n/server";
 
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const cairo = Cairo({
-  subsets: ["arabic", "latin"],
-  variable: "--font-cairo",
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+  weight: "100 900",
 });
 
 const geistMono = localFont({
@@ -86,7 +81,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body
-        className={`${inter.variable} ${cairo.variable} ${geistMono.variable}`}
+        className={`${geistSans.variable} ${geistMono.variable}`}
         data-default-locale={defaultLocale}
         data-locale={locale}
       >

@@ -17,12 +17,22 @@ export function parsePaymobWebhook(
     amountCents: Number(obj.amount_cents ?? 0),
     currency: String(obj.currency ?? "EGP"),
     hmac,
-    intentionId: readString(obj, "payment_key_claims.intention_id"),
+    intentionId: firstString(
+      readString(obj, "payment_key_claims.intention_id"),
+      readString(obj, "intention.id"),
+      readString(obj, "intention_id"),
+      readString(payload, "intention_id"),
+      readString(payload, "intention.id"),
+    ),
     isSuccess: obj.success === true || obj.success === "true",
     orderId: order ? String(order.id ?? "") : String(obj.order ?? ""),
     raw: payload,
     transactionId: String(obj.id ?? ""),
   };
+}
+
+function firstString(...values: Array<string | null>) {
+  return values.find(Boolean) ?? null;
 }
 
 function readString(payload: Record<string, unknown>, path: string) {
@@ -34,5 +44,7 @@ function readString(payload: Record<string, unknown>, path: string) {
     return (current as Record<string, unknown>)[key];
   }, payload);
 
-  return typeof value === "string" ? value : null;
+  return typeof value === "string" || typeof value === "number"
+    ? String(value)
+    : null;
 }

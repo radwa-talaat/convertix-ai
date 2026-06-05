@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 
 import { createCheckoutAction } from "@/app/dashboard/billing/actions";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { formatMoney, normalizeLandingPageQuantity } from "@/lib/payments";
 import type {
   BillingCurrency,
@@ -34,6 +35,7 @@ export function PlanCard({
   plan: BillingPlan;
 }) {
   const t = useTranslations("billing");
+  const { toast } = useToast();
   const [landingPageQuantity, setLandingPageQuantity] = useState(1);
   const [pending, startTransition] = useTransition();
   const isLandingPagePackage = plan.id === "free";
@@ -46,13 +48,24 @@ export function PlanCard({
       return;
     }
 
-    startTransition(() => {
-      void createCheckoutAction({
+    startTransition(async () => {
+      const result = await createCheckoutAction({
         billingData: defaultBillingData,
         currency,
         landingPageQuantity: quantity,
         planId: plan.id,
       });
+
+      if (!result.success) {
+        toast({
+          description: result.error,
+          title: "Payment could not start",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      window.location.assign(result.paymentUrl);
     });
   }
 

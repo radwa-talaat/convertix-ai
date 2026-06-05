@@ -96,5 +96,11 @@ export function getPaymentIntegrationIds() {
     env.paymobCardIntegrationId,
     env.paymobWalletIntegrationId,
     env.paymobApplePayIntegrationId,
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    .map(Number)
+    .filter(
+      (integrationId) =>
+        Number.isSafeInteger(integrationId) && integrationId > 0,
+    );
 }

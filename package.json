@@ -8,6 +8,7 @@
     "check:prod-env": "node scripts/check-production-env.mjs",
     "deploy": "node scripts/deploy.mjs",
     "test": "node --test tests/*.test.mjs",
+    "test:paymob": "node scripts/test-paymob.mjs",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",

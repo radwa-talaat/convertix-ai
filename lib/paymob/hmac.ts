@@ -27,8 +27,9 @@ export function createPaymobHmac(
   payload: Record<string, unknown>,
   hmacSecret: string,
 ) {
+  const transaction = unwrapPaymobObject(payload);
   const message = HMAC_FIELDS.map((field) =>
-    String(readPath(payload, field) ?? ""),
+    String(readPath(transaction, field) ?? ""),
   ).join("");
 
   return createHmac("sha512", hmacSecret).update(message).digest("hex");
@@ -52,6 +53,12 @@ export function verifyPaymobHmac(
   }
 
   return timingSafeEqual(expectedBuffer, providedBuffer);
+}
+
+function unwrapPaymobObject(payload: Record<string, unknown>) {
+  return payload.obj && typeof payload.obj === "object"
+    ? (payload.obj as Record<string, unknown>)
+    : payload;
 }
 
 function readPath(payload: Record<string, unknown>, path: string) {

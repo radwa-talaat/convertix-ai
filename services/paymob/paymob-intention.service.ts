@@ -35,6 +35,13 @@ export async function createPaymobIntention({
   const callbackUrl = createAppUrl("/billing/success", env.appUrl);
   const notificationUrl = createAppUrl("/api/paymob/webhook", env.appUrl);
   const integrationIds = getPaymentIntegrationIds();
+
+  if (integrationIds.length === 0) {
+    throw new Error(
+      "Paymob checkout is not ready. Add PAYMOB_CARD_INTEGRATION_ID from Paymob Payment Devices.",
+    );
+  }
+
   const itemDescription =
     plan.id === "free"
       ? `${landingPageQuantity} AI landing page package`

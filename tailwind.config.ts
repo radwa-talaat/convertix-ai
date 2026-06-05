@@ -66,7 +66,13 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "var(--font-cairo)"],
+        sans: [
+          "var(--font-geist-sans)",
+          '"Segoe UI"',
+          "Tahoma",
+          "Arial",
+          "sans-serif",
+        ],
         mono: ["var(--font-geist-mono)"],
       },
       boxShadow: {
