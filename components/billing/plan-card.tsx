@@ -1,11 +1,16 @@
 "use client";
 
-import { Check, ExternalLink, Loader2 } from "lucide-react";
+import { Check, ExternalLink, Loader2, Smartphone } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
 import { useTransition } from "react";
 
-import { createCheckoutAction } from "@/app/dashboard/billing/actions";
+import {
+  createCheckoutAction,
+  createWalletCheckoutAction,
+} from "@/app/dashboard/billing/actions";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { formatMoney } from "@/lib/payments";
 import type {
@@ -38,8 +43,11 @@ export function PlanCard({
   const t = useTranslations("billing");
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
+  const [walletPending, startWalletTransition] = useTransition();
+  const [walletPhoneNumber, setWalletPhoneNumber] = React.useState("");
   const quantity = plan.limits.landingPages;
   const isCheckoutDisabled = plan.priceUsd <= 0;
+  const canUseDirectWallet = currency === "EGP";
   const localizedPlan =
     locale === "ar"
       ? {
@@ -105,6 +113,52 @@ export function PlanCard({
     });
   }
 
+  function handleWalletPayment() {
+    if (isCheckoutDisabled || !canUseDirectWallet) {
+      return;
+    }
+
+    const digits = walletPhoneNumber.replace(/\D/g, "");
+    const normalizedDigits = digits.startsWith("20")
+      ? digits.slice(2)
+      : digits.startsWith("0")
+        ? digits.slice(1)
+        : digits;
+
+    if (!/^1[0125][0-9]{8}$/.test(normalizedDigits)) {
+      toast({
+        description: t("walletPhoneInvalid"),
+        title: t("walletPaymentFailed"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    startWalletTransition(async () => {
+      const result = await createWalletCheckoutAction({
+        billingData: {
+          ...defaultBillingData,
+          phoneNumber: walletPhoneNumber,
+        },
+        currency,
+        landingPageQuantity: quantity,
+        planId: plan.id,
+        walletPhoneNumber,
+      });
+
+      if (!result.success) {
+        toast({
+          description: result.error,
+          title: t("walletPaymentFailed"),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      window.location.assign(result.paymentUrl);
+    });
+  }
+
   return (
     <article className="flex h-full flex-col rounded-lg border border-border bg-background p-5 shadow-luxury-sm">
       <div>
@@ -147,6 +201,42 @@ export function PlanCard({
         {!pending && !current ? <ExternalLink className="size-4" /> : null}
         {current ? t("currentPlan") : t("securePayment")}
       </Button>
+      <div className="mt-4 rounded-lg border border-border/80 bg-muted/30 p-3">
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <Smartphone className="size-4" />
+          {t("directWallet")}
+        </div>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+          {t(
+            canUseDirectWallet
+              ? "directWalletDescription"
+              : "directWalletEgpOnly",
+          )}
+        </p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <Input
+            disabled={!canUseDirectWallet || current || walletPending}
+            inputMode="tel"
+            onChange={(event) => setWalletPhoneNumber(event.target.value)}
+            placeholder="01060650548"
+            value={walletPhoneNumber}
+          />
+          <Button
+            disabled={
+              current ||
+              isCheckoutDisabled ||
+              !canUseDirectWallet ||
+              walletPending
+            }
+            onClick={handleWalletPayment}
+            type="button"
+            variant="outline"
+          >
+            {walletPending ? <Loader2 className="size-4 animate-spin" /> : null}
+            {t("payWithWallet")}
+          </Button>
+        </div>
+      </div>
     </article>
   );
 }

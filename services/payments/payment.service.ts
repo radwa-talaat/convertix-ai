@@ -10,9 +10,16 @@ import {
   isBillingCurrency,
 } from "@/lib/payments";
 import type { SupabaseDatabaseClient } from "@/services/database/types";
-import { createPaymobIntention } from "@/services/paymob";
+import {
+  createPaymobIntention,
+  createPaymobWalletPayment,
+} from "@/services/paymob";
 import type { Json } from "@/types/database";
-import type { CheckoutSession, CreateCheckoutInput } from "@/types/billing";
+import type {
+  CheckoutSession,
+  CreateCheckoutInput,
+  CreateWalletCheckoutInput,
+} from "@/types/billing";
 
 export async function createCheckoutSession(
   supabase: SupabaseDatabaseClient,
@@ -71,6 +78,99 @@ export async function createCheckoutSession(
       merchantOrderId,
       plan,
       userId,
+    });
+  } catch (error) {
+    await supabase
+      .from("invoices")
+      .update({ status: "failed" })
+      .eq("id", invoice.id);
+
+    throw error;
+  }
+
+  const { error: paymentError } = await supabase.from("payments").insert({
+    amount_cents: amountCents,
+    currency,
+    invoice_id: invoice.id,
+    landing_page_quantity: landingPageQuantity,
+    plan: plan.id,
+    provider: "paymob",
+    provider_intention_id: checkout.intentionId,
+    provider_order_id: checkout.orderId ?? null,
+    provider_transaction_id: checkout.transactionId ?? null,
+    status: "pending",
+    subscription_id: subscription?.id ?? null,
+    user_id: userId,
+  });
+
+  if (paymentError) {
+    throw new Error(paymentError.message);
+  }
+
+  return checkout;
+}
+
+export async function createWalletCheckoutSession(
+  supabase: SupabaseDatabaseClient,
+  userId: string,
+  input: CreateWalletCheckoutInput,
+): Promise<CheckoutSession> {
+  const plan = getBillingPlan(input.planId);
+  const currency = isBillingCurrency(input.currency)
+    ? input.currency
+    : defaultBillingCurrency;
+  const landingPageQuantity = plan.limits.landingPages;
+
+  if (plan.priceUsd <= 0) {
+    throw new Error("This plan does not require checkout.");
+  }
+
+  if (currency !== "EGP") {
+    throw new Error("Mobile wallet payments are currently available in EGP.");
+  }
+
+  const amountCents = calculateCheckoutAmount({
+    currency,
+    planPriceUsd: plan.priceUsd,
+  });
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { data: invoice, error: invoiceError } = await supabase
+    .from("invoices")
+    .insert({
+      amount_cents: amountCents,
+      currency,
+      landing_page_quantity: landingPageQuantity,
+      plan: plan.id,
+      status: "open",
+      subscription_id: subscription?.id ?? null,
+      user_id: userId,
+    })
+    .select("*")
+    .single();
+
+  if (invoiceError || !invoice) {
+    throw new Error(invoiceError?.message ?? "Invoice creation failed.");
+  }
+
+  const merchantOrderId = `wallet_${userId}_${invoice.id}`;
+  let checkout: CheckoutSession;
+
+  try {
+    checkout = await createPaymobWalletPayment({
+      amountCents,
+      billingData: input.billingData,
+      currency,
+      landingPageQuantity,
+      merchantOrderId,
+      plan,
+      walletPhoneNumber: input.walletPhoneNumber,
     });
   } catch (error) {
     await supabase

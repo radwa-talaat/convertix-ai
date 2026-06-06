@@ -21,5 +21,11 @@
   "each": "للصفحة",
   "buyMoreCredits": "زود العدد لشراء رصيد صفحات هبوط أكثر.",
   "securePayment": "المتابعة إلى الدفع الآمن",
+  "directWallet": "الدفع بالمحفظة مباشرة",
+  "directWalletDescription": "اكتب رقم المحفظة وسيقوم Paymob بفتح صفحة تأكيد الدفع للمحفظة.",
+  "directWalletEgpOnly": "الدفع المباشر بالمحفظة متاح حالياً عند اختيار الجنيه المصري.",
+  "payWithWallet": "ادفع بالمحفظة",
+  "walletPaymentFailed": "تعذر بدء دفع المحفظة",
+  "walletPhoneInvalid": "أدخل رقم محفظة مصري صحيح.",
   "starter": "بداية"
 }

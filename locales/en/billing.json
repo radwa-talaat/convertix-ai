@@ -21,5 +21,11 @@
   "each": "each",
   "buyMoreCredits": "Increase quantity to buy more landing page credits.",
   "securePayment": "Continue to secure payment",
+  "directWallet": "Direct mobile wallet",
+  "directWalletDescription": "Enter the wallet phone number and Paymob will open the wallet confirmation page.",
+  "directWalletEgpOnly": "Direct mobile wallet payments are currently available when EGP is selected.",
+  "payWithWallet": "Pay with wallet",
+  "walletPaymentFailed": "Wallet payment could not start",
+  "walletPhoneInvalid": "Enter a valid Egyptian wallet number.",
   "starter": "starter"
 }

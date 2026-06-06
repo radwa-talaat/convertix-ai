@@ -128,6 +128,10 @@ export type CreateCheckoutInput = {
   planId: BillingPlanId;
 };
 
+export type CreateWalletCheckoutInput = CreateCheckoutInput & {
+  walletPhoneNumber: string;
+};
+
 export type CheckoutSession = {
   clientSecret: string;
   expiresAt: string | null;
