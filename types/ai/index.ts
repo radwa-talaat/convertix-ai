@@ -127,6 +127,7 @@ export type AiGenerationResult = {
 export type AiGenerationErrorCode =
   | "AI_AUTH_REQUIRED"
   | "AI_CONFIG_MISSING"
+  | "AI_PROJECT_REQUIRED"
   | "AI_RATE_LIMITED"
   | "AI_PROVIDER_ERROR"
   | "AI_VALIDATION_ERROR"

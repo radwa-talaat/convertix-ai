@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import { generateLandingPageContent } from "@/services/ai";
 import { createAiGenerationRecord } from "@/services/database/ai-generations.service";
+import { hasPaidProjectAccess } from "@/services/subscriptions";
 import type { Json } from "@/types/database";
 
 export const runtime = "nodejs";
@@ -32,6 +33,41 @@ export async function POST(request: NextRequest) {
     }
 
     const body = sanitizeObject((await request.json()) as unknown);
+    const projectId =
+      typeof body === "object" &&
+      body &&
+      "projectId" in body &&
+      typeof body.projectId === "string"
+        ? body.projectId
+        : null;
+
+    if (!projectId) {
+      throw new AiError(
+        "A paid project is required before generating content.",
+        "AI_PROJECT_REQUIRED",
+        402,
+      );
+    }
+
+    const supabase = createClient();
+    const { data: project } = await supabase
+      .from("projects")
+      .select("id")
+      .eq("id", projectId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (
+      !project ||
+      !(await hasPaidProjectAccess(supabase, user.id, project.id))
+    ) {
+      throw new AiError(
+        "A paid project is required before generating content.",
+        "AI_PROJECT_REQUIRED",
+        402,
+      );
+    }
+
     const result = await generateLandingPageContent({
       identifier: user.id,
       input: body,

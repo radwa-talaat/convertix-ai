@@ -112,7 +112,7 @@ export function AiGenerationForm({
     try {
       setStatus("generating");
       const response = await fetch(createApiPath("/ai/generate"), {
-        body: JSON.stringify(input),
+        body: JSON.stringify({ ...input, projectId }),
         headers: {
           "Content-Type": "application/json",
         },
@@ -231,6 +231,7 @@ export function AiGenerationForm({
     try {
       const response = await fetch(createApiPath("/ai/images"), {
         body: JSON.stringify({
+          projectId,
           prompt: [
             result.design.imagePrompts.heroBackground,
             result.design.imagePrompts.productScene,

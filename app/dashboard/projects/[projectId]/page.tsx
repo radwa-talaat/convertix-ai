@@ -12,6 +12,7 @@ import { createLocalizedPathname, type AppLocale } from "@/lib/i18n/config";
 import { getRequestLocale, getServerTranslator } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
+import { hasPaidProjectAccess } from "@/services/subscriptions";
 
 type ProjectBuilderPageProps = {
   params: {
@@ -70,6 +71,8 @@ export default async function ProjectBuilderPage({
     notFound();
   }
 
+  const canGenerate = await hasPaidProjectAccess(supabase, user.id, project.id);
+
   const { data: pages, error: pagesError } = await supabase
     .from("pages")
     .select("id, title, slug, status, updated_at")
@@ -110,10 +113,17 @@ export default async function ProjectBuilderPage({
       <PageHeader
         actions={
           <Button asChild>
-            <a href="#ai-builder">
-              <Sparkles />
-              {commonT("generate")}
-            </a>
+            {canGenerate ? (
+              <a href="#ai-builder">
+                <Sparkles />
+                {commonT("generate")}
+              </a>
+            ) : (
+              <Link href={createLocalizedPathname("/pricing", locale)}>
+                <Sparkles />
+                {locale === "ar" ? "شراء صفحة هبوط" : "Buy landing page"}
+              </Link>
+            )}
           </Button>
         }
         description={
@@ -177,17 +187,25 @@ export default async function ProjectBuilderPage({
           : "This project is connected to Supabase. Add your OpenAI API key in environment variables to generate live AI content."}
       </Alert>
       <section id="ai-builder">
-        <AiGenerationForm
-          initialInput={{
-            businessName: project.name,
-            goal:
-              locale === "ar"
-                ? "إنشاء صفحة هبوط جاهزة للتحويل"
-                : "Create a conversion-ready landing page",
-          }}
-          projectId={project.id}
-          projectName={project.name}
-        />
+        {canGenerate ? (
+          <AiGenerationForm
+            initialInput={{
+              businessName: project.name,
+              goal:
+                locale === "ar"
+                  ? "إنشاء صفحة هبوط جاهزة للتحويل"
+                  : "Create a conversion-ready landing page",
+            }}
+            projectId={project.id}
+            projectName={project.name}
+          />
+        ) : (
+          <Alert className="border-destructive/30 bg-destructive/10 text-destructive">
+            {locale === "ar"
+              ? "يجب شراء صفحة هبوط قبل إنشاء المحتوى أو الصور داخل هذا المشروع."
+              : "Buy a landing page before generating content or images in this project."}
+          </Alert>
+        )}
       </section>
     </div>
   );

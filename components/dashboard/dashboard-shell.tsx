@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { AiGenerationForm } from "@/components/ai/ai-generation-form";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { Button } from "@/components/ui/button";
@@ -105,7 +104,23 @@ export function DashboardShell() {
         </Card>
       </section>
 
-      <AiGenerationForm />
+      <Card>
+        <CardHeader>
+          <CardTitle>AI landing-page generation</CardTitle>
+          <CardDescription>
+            Create or open a paid project before generating landing-page content
+            and images.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild>
+            <Link href="/dashboard/projects">
+              Open projects
+              <ArrowUpRight />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

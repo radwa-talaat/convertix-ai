@@ -21,10 +21,7 @@ export function BillingDashboard({
         plan={snapshot.currentPlan}
         subscription={snapshot.subscription}
       />
-      <PricingGrid
-        currentPlanId={snapshot.currentPlan.id}
-        initialCurrency={initialCurrency}
-      />
+      <PricingGrid initialCurrency={initialCurrency} />
       <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
         <UsageStatistics usage={snapshot.usage} />
         <BillingHistory

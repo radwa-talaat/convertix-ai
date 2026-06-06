@@ -42,10 +42,7 @@ export async function createPaymobIntention({
     );
   }
 
-  const itemDescription =
-    plan.id === "free"
-      ? `${landingPageQuantity} AI landing page package`
-      : `${plan.name} monthly subscription`;
+  const itemDescription = `${landingPageQuantity} AI landing page package`;
 
   const response = await paymobRequest<PaymobIntentionResponse>(
     "/v1/intention/",
@@ -75,8 +72,8 @@ export async function createPaymobIntention({
           {
             amount: amountCents,
             description: itemDescription,
-            name: plan.id === "free" ? "Landing Page" : `${plan.name} Plan`,
-            quantity: landingPageQuantity,
+            name: `${plan.name} Package`,
+            quantity: 1,
           },
         ],
         notification_url: notificationUrl,

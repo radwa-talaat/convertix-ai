@@ -8,17 +8,11 @@ import {
   defaultBillingCurrency,
   getBillingPlan,
   isBillingCurrency,
-  normalizeLandingPageQuantity,
 } from "@/lib/payments";
 import type { SupabaseDatabaseClient } from "@/services/database/types";
 import { createPaymobIntention } from "@/services/paymob";
-import { activateSubscriptionPlan } from "@/services/subscriptions";
 import type { Json } from "@/types/database";
-import type {
-  BillingPlanId,
-  CheckoutSession,
-  CreateCheckoutInput,
-} from "@/types/billing";
+import type { CheckoutSession, CreateCheckoutInput } from "@/types/billing";
 
 export async function createCheckoutSession(
   supabase: SupabaseDatabaseClient,
@@ -29,10 +23,7 @@ export async function createCheckoutSession(
   const currency = isBillingCurrency(input.currency)
     ? input.currency
     : defaultBillingCurrency;
-  const landingPageQuantity =
-    plan.id === "free"
-      ? normalizeLandingPageQuantity(input.landingPageQuantity)
-      : 1;
+  const landingPageQuantity = plan.limits.landingPages;
 
   if (plan.priceUsd <= 0) {
     throw new Error("This plan does not require checkout.");
@@ -41,7 +32,6 @@ export async function createCheckoutSession(
   const amountCents = calculateCheckoutAmount({
     currency,
     planPriceUsd: plan.priceUsd,
-    quantity: landingPageQuantity,
   });
   const { data: subscription } = await supabase
     .from("subscriptions")
@@ -56,6 +46,7 @@ export async function createCheckoutSession(
     .insert({
       amount_cents: amountCents,
       currency,
+      landing_page_quantity: landingPageQuantity,
       plan: plan.id,
       status: "open",
       subscription_id: subscription?.id ?? null,
@@ -94,6 +85,7 @@ export async function createCheckoutSession(
     amount_cents: amountCents,
     currency,
     invoice_id: invoice.id,
+    landing_page_quantity: landingPageQuantity,
     plan: plan.id,
     provider: "paymob",
     provider_intention_id: checkout.intentionId,
@@ -144,6 +136,18 @@ export async function handlePaymobWebhook(
     throw new Error(paymentLookupError?.message ?? "Payment not found.");
   }
 
+  if (payment.status === "paid" && !event.isSuccess) {
+    return payment;
+  }
+
+  if (
+    event.isSuccess &&
+    (event.amountCents !== payment.amount_cents ||
+      event.currency.toUpperCase() !== payment.currency.toUpperCase())
+  ) {
+    throw new Error("Paymob payment amount or currency does not match.");
+  }
+
   const nextStatus = event.isSuccess ? "paid" : "failed";
 
   const { data: updatedPayment, error: updatePaymentError } = await supabase
@@ -174,14 +178,24 @@ export async function handlePaymobWebhook(
   }
 
   if (event.isSuccess) {
-    await activateSubscriptionPlan(
-      supabase,
-      payment.user_id,
-      payment.plan as BillingPlanId,
+    const { error: creditError } = await supabase.rpc(
+      "grant_landing_page_credits",
+      {
+        credit_quantity: payment.landing_page_quantity,
+        target_payment_id: payment.id,
+        target_user_id: payment.user_id,
+      },
     );
+
+    if (creditError) {
+      throw new Error(
+        `Landing page credit grant failed: ${creditError.message}`,
+      );
+    }
   }
 
   revalidatePath("/dashboard/billing");
+  revalidatePath("/dashboard/projects");
 
   return updatedPayment;
 }

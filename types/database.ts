@@ -616,6 +616,7 @@ export interface Database {
           user_id: string;
           subscription_id: string | null;
           invoice_id: string | null;
+          landing_page_quantity: number;
           provider: string;
           provider_intention_id: string | null;
           provider_order_id: string | null;
@@ -633,6 +634,7 @@ export interface Database {
           user_id: string;
           subscription_id?: string | null;
           invoice_id?: string | null;
+          landing_page_quantity?: number;
           provider?: string;
           provider_intention_id?: string | null;
           provider_order_id?: string | null;
@@ -650,6 +652,7 @@ export interface Database {
           user_id?: string;
           subscription_id?: string | null;
           invoice_id?: string | null;
+          landing_page_quantity?: number;
           provider?: string;
           provider_intention_id?: string | null;
           provider_order_id?: string | null;
@@ -689,6 +692,7 @@ export interface Database {
           user_id: string;
           subscription_id: string | null;
           payment_id: string | null;
+          landing_page_quantity: number;
           provider: string;
           plan: string;
           amount_cents: number;
@@ -704,6 +708,7 @@ export interface Database {
           user_id: string;
           subscription_id?: string | null;
           payment_id?: string | null;
+          landing_page_quantity?: number;
           provider?: string;
           plan: string;
           amount_cents: number;
@@ -719,6 +724,7 @@ export interface Database {
           user_id?: string;
           subscription_id?: string | null;
           payment_id?: string | null;
+          landing_page_quantity?: number;
           provider?: string;
           plan?: string;
           amount_cents?: number;
@@ -746,6 +752,154 @@ export interface Database {
             foreignKeyName: "invoices_payment_id_fkey";
             columns: ["payment_id"];
             referencedRelation: "payments";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      landing_page_credits: {
+        Row: {
+          consumed: number;
+          created_at: string;
+          purchased: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          consumed?: number;
+          created_at?: string;
+          purchased?: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          consumed?: number;
+          created_at?: string;
+          purchased?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_credits_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      payment_credit_grants: {
+        Row: {
+          created_at: string;
+          package_plan: string;
+          payment_id: string;
+          quantity: number;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          package_plan?: string;
+          payment_id: string;
+          quantity: number;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          package_plan?: string;
+          payment_id?: string;
+          quantity?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payment_credit_grants_payment_id_fkey";
+            columns: ["payment_id"];
+            referencedRelation: "payments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payment_credit_grants_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      project_entitlements: {
+        Row: {
+          created_at: string;
+          package_plan: string;
+          project_id: string;
+          source: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          package_plan?: string;
+          project_id: string;
+          source: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          package_plan?: string;
+          project_id?: string;
+          source?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "project_entitlements_project_id_fkey";
+            columns: ["project_id"];
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_entitlements_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      landing_page_credit_lots: {
+        Row: {
+          created_at: string;
+          package_plan: string;
+          payment_id: string;
+          remaining_quantity: number;
+          total_quantity: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          package_plan: string;
+          payment_id: string;
+          remaining_quantity: number;
+          total_quantity: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          package_plan?: string;
+          payment_id?: string;
+          remaining_quantity?: number;
+          total_quantity?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_credit_lots_payment_id_fkey";
+            columns: ["payment_id"];
+            referencedRelation: "payments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "landing_page_credit_lots_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
@@ -1051,7 +1205,24 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      create_paid_project: {
+        Args: {
+          project_locale?: string;
+          project_name: string;
+          project_slug: string;
+        };
+        Returns: string;
+      };
+      grant_landing_page_credits: {
+        Args: {
+          credit_quantity: number;
+          target_payment_id: string;
+          target_user_id: string;
+        };
+        Returns: boolean;
+      };
+    };
     Enums: {
       project_status: ProjectStatus;
       page_status: PageStatus;

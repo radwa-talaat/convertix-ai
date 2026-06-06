@@ -6,11 +6,13 @@ import {
   aiLandingPageContentSchema,
   aiLandingPageDesignSchema,
 } from "@/lib/ai/schema";
+import { getRequestLocale } from "@/lib/i18n/server";
 import { generateSlug } from "@/lib/publishing";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import { buildLandingPageTemplate } from "@/services/rendering";
+import { hasPaidProjectAccess } from "@/services/subscriptions";
 import type { AiLandingPageContent, AiLandingPageDesign } from "@/types/ai";
 import type { Json } from "@/types/database";
 
@@ -118,18 +120,25 @@ export async function createProjectAction(name: string) {
   const projectName = cleanProjectName(name);
   const slug = await createAvailableSlug(user.id, projectName);
 
-  const { error } = await supabase.from("projects").insert({
-    name: projectName,
-    slug,
-    status: "draft",
-    user_id: user.id,
+  const { data: projectId, error } = await supabase.rpc("create_paid_project", {
+    project_locale: getRequestLocale(),
+    project_name: projectName,
+    project_slug: slug,
   });
 
   if (error) {
+    if (error.message.includes("PAYMENT_REQUIRED")) {
+      throw new Error(
+        "You need to buy a landing page before creating a new project.",
+      );
+    }
+
     throw new Error(error.message);
   }
 
   revalidatePath("/dashboard/projects");
+
+  return projectId;
 }
 
 export async function updateProjectNameAction(projectId: string, name: string) {
@@ -195,6 +204,28 @@ export async function createLandingPageFromAiAction(
     throw new Error(projectError?.message ?? "Project not found.");
   }
 
+  if (!(await hasPaidProjectAccess(supabase, user.id, project.id))) {
+    throw new Error(
+      "Payment is required before creating a landing page in this project.",
+    );
+  }
+
+  const { count: existingPageCount, error: pageCountError } = await supabase
+    .from("pages")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", project.id)
+    .eq("user_id", user.id);
+
+  if (pageCountError) {
+    throw new Error(pageCountError.message);
+  }
+
+  if ((existingPageCount ?? 0) > 0) {
+    throw new Error(
+      "This paid project already has a landing page. Open it in the editor instead.",
+    );
+  }
+
   const title = safeContent.seo.title || project.name;
   const pageSlug = await createAvailablePageSlug(project.id, title);
   const template = buildLandingPageTemplate({
@@ -207,7 +238,8 @@ export async function createLandingPageFromAiAction(
     slug: pageSlug,
   });
 
-  const { data: page, error } = await supabase
+  const admin = createAdminClient();
+  const { data: page, error } = await admin
     .from("pages")
     .insert({
       content: template as unknown as Json,

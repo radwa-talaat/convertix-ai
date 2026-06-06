@@ -10,13 +10,11 @@ import {
   defaultBillingCurrency,
   detectCurrencyFromLocale,
 } from "@/lib/payments";
-import type { BillingCurrency, BillingPlanId } from "@/types/billing";
+import type { BillingCurrency } from "@/types/billing";
 
 export function PricingGrid({
-  currentPlanId,
   initialCurrency,
 }: {
-  currentPlanId?: BillingPlanId;
   initialCurrency?: BillingCurrency;
 }) {
   const t = useTranslations("billing");
@@ -61,7 +59,7 @@ export function PricingGrid({
         {billingPlans.map((plan) => (
           <PlanCard
             currency={currency}
-            current={plan.id !== "free" && plan.id === currentPlanId}
+            current={false}
             key={plan.id}
             plan={plan}
           />

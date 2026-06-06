@@ -3,6 +3,7 @@ import type { AppLocale } from "@/lib/i18n/config";
 import { getRequestLocale } from "@/lib/i18n/server";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
+import { getProjectCreationEntitlement } from "@/services/subscriptions";
 import type { DashboardProject } from "@/types/project";
 
 type ProjectWithPageCount = {
@@ -50,7 +51,17 @@ export default async function ProjectsPage() {
 
   if (error) {
     console.error("Projects load failed", error);
-    return <ProjectsView databaseError={error.message} initialProjects={[]} />;
+    return (
+      <ProjectsView
+        databaseError={error.message}
+        entitlement={{
+          canCreate: false,
+          isUnlimited: false,
+          remainingCredits: 0,
+        }}
+        initialProjects={[]}
+      />
+    );
   }
 
   const projects = data ?? [];
@@ -75,6 +86,7 @@ export default async function ProjectsPage() {
 
   return (
     <ProjectsView
+      entitlement={await getProjectCreationEntitlement(supabase, user.id)}
       initialProjects={projects.map((project) =>
         mapProject(
           {

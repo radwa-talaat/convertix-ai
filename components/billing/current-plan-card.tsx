@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, ShieldCheck } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { SubscriptionStatusBadge } from "@/components/billing/subscription-status-badge";
@@ -44,10 +44,6 @@ export function CurrentPlanCard({
             </p>
           </div>
           <SubscriptionStatusBadge status={subscription.status} />
-        </div>
-        <div className="mt-6 flex items-center gap-2 rounded-md border border-border bg-secondary/40 p-3 text-sm text-muted-foreground">
-          <ShieldCheck className="size-4" />
-          {t("paymobSecurityNote")}
         </div>
       </CardContent>
     </Card>
