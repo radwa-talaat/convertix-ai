@@ -13,6 +13,7 @@ import type { Json, Tables } from "@/types/database";
 import type {
   CustomDomain,
   DomainDnsRecord,
+  MetaPixelPage,
   PublishedPage,
   PublishingDashboardSnapshot,
   PublishRequest,
@@ -160,11 +161,12 @@ export async function getPublishingDashboardSnapshot(
     .from("pages")
     .select("*")
     .eq("user_id", userId)
-    .eq("status", "published")
-    .not("published_at", "is", null)
-    .order("published_at", { ascending: false });
+    .order("updated_at", { ascending: false });
 
-  const pageIds = (pages ?? []).map((page) => page.id);
+  const publishedRows = (pages ?? []).filter(
+    (page) => page.status === "published" && page.published_at,
+  );
+  const pageIds = publishedRows.map((page) => page.id);
   const { data: versions } = pageIds.length
     ? await supabase
         .from("publish_versions")
@@ -190,7 +192,7 @@ export async function getPublishingDashboardSnapshot(
     ]);
   }
 
-  const publishedPages = (pages ?? []).flatMap((row) => {
+  const publishedPages = publishedRows.flatMap((row) => {
     const template = parseLandingPageTemplate(row.published_content);
 
     if (!template) {
@@ -204,8 +206,22 @@ export async function getPublishingDashboardSnapshot(
 
   return {
     domains: (domains ?? []).map(mapCustomDomain),
+    metaPixelPages: (pages ?? []).map(mapMetaPixelPage),
     pages: publishedPages,
     seo: createDefaultSeoSettings(publishedPages[0]),
+  };
+}
+
+function mapMetaPixelPage(row: Tables<"pages">): MetaPixelPage {
+  return {
+    id: row.id,
+    metaPixel: {
+      enabled: row.meta_pixel_enabled,
+      pixelId: row.meta_pixel_id,
+    },
+    slug: row.slug,
+    status: row.status === "published" ? "published" : "draft",
+    title: row.title,
   };
 }
 
@@ -279,6 +295,10 @@ function mapPublishedPage(
   return {
     id: row.id,
     mode: row.status === "published" ? "published" : "draft",
+    metaPixel: {
+      enabled: row.meta_pixel_enabled,
+      pixelId: row.meta_pixel_id,
+    },
     projectId: row.project_id,
     publicUrl: row.published_url ?? createPathPublicUrl(row.slug),
     publishedAt: row.published_at,

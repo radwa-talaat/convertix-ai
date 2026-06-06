@@ -24,6 +24,10 @@ export function getDemoPublishingDashboardSnapshot(): PublishingDashboardSnapsho
     customDomain: "launch.example.com",
     id: "11111111-1111-4111-8111-111111111111",
     mode: "published",
+    metaPixel: {
+      enabled: false,
+      pixelId: null,
+    },
     projectId: "22222222-2222-4222-8222-222222222222",
     publicUrl,
     publishedAt: now,
@@ -63,6 +67,15 @@ export function getDemoPublishingDashboardSnapshot(): PublishingDashboardSnapsho
         status: "active",
         verificationToken: "demo-token",
         verifiedAt: now,
+      },
+    ],
+    metaPixelPages: [
+      {
+        id: page.id,
+        metaPixel: page.metaPixel,
+        slug: page.slug,
+        status: page.status,
+        title: page.title,
       },
     ],
     pages: [page],

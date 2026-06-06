@@ -39,8 +39,23 @@ export type PublishedPage = {
   publishedAt: string | null;
   updatedAt: string;
   publicUrl: string;
+  metaPixel: {
+    enabled: boolean;
+    pixelId: string | null;
+  };
   customDomain?: string;
   versions: PublishVersion[];
+};
+
+export type MetaPixelPage = {
+  id: string;
+  metaPixel: {
+    enabled: boolean;
+    pixelId: string | null;
+  };
+  slug: string;
+  status: PagePublishStatus;
+  title: string;
 };
 
 export type DomainDnsRecord = {
@@ -80,6 +95,7 @@ export type PublishResult = {
 
 export type PublishingDashboardSnapshot = {
   pages: PublishedPage[];
+  metaPixelPages: MetaPixelPage[];
   domains: CustomDomain[];
   seo: SeoSettings;
 };

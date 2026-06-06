@@ -5,6 +5,7 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { trackMetaPixelEvent } from "@/lib/analytics/meta-pixel";
 import type {
   LandingPageSectionProps,
   LeadFormSectionData,
@@ -68,6 +69,11 @@ export function LeadFormSection({
 
       form.reset();
       setState("success");
+      trackMetaPixelEvent("Lead", {
+        content_name: renderContext.landingPageTitle,
+        content_type: "landing_page_form",
+        page_id: renderContext.pageId,
+      });
     } catch {
       setErrorMessage(
         direction === "rtl"

@@ -18,6 +18,9 @@ export function setAnalyticsConsent(
   consent: Exclude<AnalyticsConsentState, "unknown">,
 ) {
   window.localStorage.setItem(CONSENT_KEY, consent);
+  window.dispatchEvent(
+    new CustomEvent("convertix:analytics-consent", { detail: consent }),
+  );
 }
 
 export function shouldTrackAnalytics() {

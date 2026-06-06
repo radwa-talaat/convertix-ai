@@ -139,6 +139,8 @@ export interface Database {
           published_content: Json;
           published_url: string | null;
           published_at: string | null;
+          meta_pixel_enabled: boolean;
+          meta_pixel_id: string | null;
           version: number;
           created_at: string;
           updated_at: string;
@@ -156,6 +158,8 @@ export interface Database {
           published_content?: Json;
           published_url?: string | null;
           published_at?: string | null;
+          meta_pixel_enabled?: boolean;
+          meta_pixel_id?: string | null;
           version?: number;
           created_at?: string;
           updated_at?: string;
@@ -173,6 +177,8 @@ export interface Database {
           published_content?: Json;
           published_url?: string | null;
           published_at?: string | null;
+          meta_pixel_enabled?: boolean;
+          meta_pixel_id?: string | null;
           version?: number;
           created_at?: string;
           updated_at?: string;

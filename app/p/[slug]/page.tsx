@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 
-import { AnalyticsTracker, CookieConsent } from "@/components/analytics";
+import {
+  AnalyticsTracker,
+  CookieConsent,
+  MetaPixelTracker,
+} from "@/components/analytics";
 import { LayoutRenderer } from "@/components/landing-page";
 import {
   buildPublishedPageMetadata,
@@ -48,6 +52,13 @@ export default async function PublishedPageRoute({
         pageSlug={page.slug}
         projectId={page.projectId}
       />
+      {page.metaPixel.enabled && page.metaPixel.pixelId ? (
+        <MetaPixelTracker
+          pageId={page.id}
+          pageSlug={page.slug}
+          pixelId={page.metaPixel.pixelId}
+        />
+      ) : null}
       <LayoutRenderer
         renderContext={{
           landingPageTitle: page.title,
