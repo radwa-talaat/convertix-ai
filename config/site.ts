@@ -6,7 +6,6 @@ import {
   PanelsTopLeft,
   PenTool,
   RadioTower,
-  Settings2,
 } from "lucide-react";
 
 import { getDeploymentAppUrl } from "@/lib/urls";
@@ -73,11 +72,6 @@ export const dashboardNavSections: NavigationSection[] = [
         title: "Billing",
         href: "/dashboard/billing",
         icon: CreditCard,
-      },
-      {
-        title: "Settings",
-        href: "/dashboard/settings",
-        icon: Settings2,
       },
     ],
   },

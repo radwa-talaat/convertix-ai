@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { LogOut, Settings2, UserRound } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 import { signOutAction } from "@/app/(auth)/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -54,19 +53,6 @@ export function UserProfileDropdown({ user }: { user: DashboardUser }) {
             {user.email}
           </span>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/dashboard/settings">
-            <UserRound />
-            Profile
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/dashboard/settings">
-            <Settings2 />
-            Settings
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <form action={signOutAction}>
           <DropdownMenuItem asChild>

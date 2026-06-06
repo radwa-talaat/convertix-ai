@@ -181,11 +181,6 @@ export default async function ProjectBuilderPage({
         )}
       </section>
 
-      <Alert className="border-border bg-secondary/40 text-sm text-muted-foreground">
-        {locale === "ar"
-          ? "هذا المشروع متصل بـ Supabase. تأكد من وجود مفتاح OpenAI في متغيرات البيئة لتوليد محتوى حي."
-          : "This project is connected to Supabase. Add your OpenAI API key in environment variables to generate live AI content."}
-      </Alert>
       <section id="ai-builder">
         {canGenerate ? (
           <AiGenerationForm
