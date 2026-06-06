@@ -1,8 +1,10 @@
 import {
-  Activity,
   ArrowUpRight,
+  FileText,
   MousePointerClick,
   PanelsTopLeft,
+  RadioTower,
+  UsersRound,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -16,46 +18,171 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { createLocalizedPathname } from "@/lib/i18n/config";
+import { getRequestLocale, getServerTranslator } from "@/lib/i18n/server";
+import { requireUser } from "@/lib/supabase/auth";
+import { createClient } from "@/lib/supabase/server";
+import { getProjectCreationEntitlement } from "@/services/subscriptions";
 
-const metrics = [
-  {
-    label: "Landing Pages",
-    value: "24",
-    detail: "Draft, live, and archived surfaces",
-    icon: PanelsTopLeft,
-  },
-  {
-    label: "Conversion",
-    value: "8.4%",
-    detail: "Across active campaigns",
-    icon: MousePointerClick,
-  },
-  {
-    label: "Velocity",
-    value: "3.2x",
-    detail: "Average creation lift",
-    icon: Activity,
-  },
-];
+type RecentProject = {
+  id: string;
+  name: string;
+  status: string;
+  updated_at: string;
+};
 
-export function DashboardShell() {
+function formatNumber(value: number, locale: string) {
+  return new Intl.NumberFormat(locale).format(value);
+}
+
+function formatPercent(value: number, locale: string) {
+  return new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: value > 0 && value < 1 ? 1 : 0,
+    style: "percent",
+  }).format(value / 100);
+}
+
+function formatDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+  }).format(new Date(value));
+}
+
+export async function DashboardShell() {
+  const locale = getRequestLocale();
+  const t = await getServerTranslator("dashboard");
+  const user = await requireUser();
+  const supabase = createClient();
+  const projectsHref = createLocalizedPathname("/dashboard/projects", locale);
+
+  const { data: projects, error: projectsError } = await supabase
+    .from("projects")
+    .select("id, name, status, updated_at")
+    .eq("user_id", user.id)
+    .order("updated_at", { ascending: false });
+
+  if (projectsError) {
+    console.error("Dashboard project summary failed", projectsError);
+  }
+
+  const workspaceProjects = (projects ?? []) as RecentProject[];
+  const projectIds = workspaceProjects.map((project) => project.id);
+
+  const { data: pages, error: pagesError } = projectIds.length
+    ? await supabase
+        .from("pages")
+        .select("id, status, project_id")
+        .eq("user_id", user.id)
+        .in("project_id", projectIds)
+    : { data: [], error: null };
+
+  if (pagesError) {
+    console.error("Dashboard page summary failed", pagesError);
+  }
+
+  const pageRows = pages ?? [];
+  const publishedPageCount = pageRows.filter(
+    (page) => page.status === "published",
+  ).length;
+
+  const {
+    data: pageViews,
+    count: totalViews,
+    error: pageViewsError,
+  } = projectIds.length
+    ? await supabase
+        .from("page_views")
+        .select("visitor_id", { count: "exact" })
+        .in("project_id", projectIds)
+    : { count: 0, data: [], error: null };
+
+  if (pageViewsError) {
+    console.error("Dashboard page views summary failed", pageViewsError);
+  }
+
+  const { count: conversionCount, error: conversionsError } = projectIds.length
+    ? await supabase
+        .from("conversions")
+        .select("id", { count: "exact", head: true })
+        .in("project_id", projectIds)
+    : { count: 0, error: null };
+
+  if (conversionsError) {
+    console.error("Dashboard conversion summary failed", conversionsError);
+  }
+
+  const { count: leadCount, error: leadsError } = await supabase
+    .from("leads")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  if (leadsError) {
+    console.error("Dashboard lead summary failed", leadsError);
+  }
+
+  const entitlement = await getProjectCreationEntitlement(supabase, user.id);
+  const viewCount = totalViews ?? 0;
+  const conversions = conversionCount ?? 0;
+  const conversionRate = viewCount > 0 ? (conversions / viewCount) * 100 : 0;
+  const uniqueVisitors = new Set(
+    (pageViews ?? []).map((view) => view.visitor_id),
+  ).size;
+
+  const metrics = [
+    {
+      detail: t("overviewPage.metrics.projectsDetail"),
+      icon: PanelsTopLeft,
+      label: t("overviewPage.metrics.projects"),
+      value: formatNumber(workspaceProjects.length, locale),
+    },
+    {
+      detail: t("overviewPage.metrics.pagesDetail").replace(
+        "{published}",
+        formatNumber(publishedPageCount, locale),
+      ),
+      icon: FileText,
+      label: t("overviewPage.metrics.pages"),
+      value: formatNumber(pageRows.length, locale),
+    },
+    {
+      detail: t("overviewPage.metrics.viewsDetail").replace(
+        "{visitors}",
+        formatNumber(uniqueVisitors, locale),
+      ),
+      icon: UsersRound,
+      label: t("overviewPage.metrics.views"),
+      value: formatNumber(viewCount, locale),
+    },
+    {
+      detail: t("overviewPage.metrics.conversionsDetail").replace(
+        "{leads}",
+        formatNumber(leadCount ?? 0, locale),
+      ),
+      icon: MousePointerClick,
+      label: t("overviewPage.metrics.conversions"),
+      value: formatPercent(conversionRate, locale),
+    },
+  ];
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
       <PageHeader
         actions={
           <Button asChild>
-            <Link href="/dashboard/projects">
-              Manage Projects
+            <Link href={projectsHref}>
+              {t("overviewPage.manageProjects")}
               <ArrowUpRight />
             </Link>
           </Button>
         }
-        description="Track the core workspace health and move quickly into the project surface."
-        eyebrow="Workspace Overview"
-        title="Build and ship polished pages from one command center."
+        description={t("overviewPage.description")}
+        eyebrow={t("overviewPage.eyebrow")}
+        title={t("overviewPage.title")}
       />
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}
@@ -64,63 +191,83 @@ export function DashboardShell() {
       <section className="grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Production Pipeline</CardTitle>
+            <CardTitle>{t("overviewPage.recentProjects")}</CardTitle>
             <CardDescription>
-              A calm operations view for planning, review, and launch.
+              {t("overviewPage.recentProjectsDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3">
-              {["Brief", "Content", "Review", "Publish"].map((item, index) => (
-                <div
-                  className="flex items-center justify-between rounded-md border border-border bg-secondary/40 px-4 py-3"
-                  key={item}
-                >
-                  <span className="text-sm font-medium">{item}</span>
-                  <span className="text-xs text-muted-foreground">
-                    Step {index + 1}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {workspaceProjects.length > 0 ? (
+              <div className="grid gap-3">
+                {workspaceProjects.slice(0, 4).map((project) => (
+                  <Link
+                    className="flex items-center justify-between gap-3 rounded-md border border-border bg-secondary/40 px-4 py-3 transition-colors hover:bg-secondary"
+                    href={createLocalizedPathname(
+                      `/dashboard/projects/${project.id}`,
+                      locale,
+                    )}
+                    key={project.id}
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{project.name}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {formatDate(project.updated_at, locale)}
+                      </p>
+                    </div>
+                    <span className="rounded bg-background px-2 py-1 text-xs text-muted-foreground">
+                      {t(`overviewPage.status.${project.status}`)}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-md border border-dashed border-border p-6 text-center">
+                <p className="font-medium">{t("overviewPage.emptyTitle")}</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {t("overviewPage.emptyDescription")}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>System Status</CardTitle>
+            <CardTitle>{t("overviewPage.accountCapacity")}</CardTitle>
             <CardDescription>
-              Foundation signals for a healthy SaaS workspace.
+              {t("overviewPage.accountCapacityDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {["TypeScript strict", "Dark mode", "Reusable UI"].map((item) => (
-              <div className="flex items-center gap-3" key={item}>
-                <span className="size-2 rounded-full bg-accent" />
-                <span className="text-sm text-muted-foreground">{item}</span>
-              </div>
-            ))}
+            <div className="flex items-center justify-between rounded-md border border-border bg-secondary/40 px-4 py-3">
+              <span className="text-sm text-muted-foreground">
+                {t("overviewPage.remainingCredits")}
+              </span>
+              <span className="font-semibold">
+                {entitlement.isUnlimited
+                  ? t("overviewPage.unlimited")
+                  : formatNumber(entitlement.remainingCredits, locale)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-md border border-border bg-secondary/40 px-4 py-3">
+              <span className="text-sm text-muted-foreground">
+                {t("overviewPage.publishedPages")}
+              </span>
+              <span className="font-semibold">
+                {formatNumber(publishedPageCount, locale)}
+              </span>
+            </div>
+            <Button asChild className="w-full" variant="outline">
+              <Link
+                href={createLocalizedPathname("/dashboard/publishing", locale)}
+              >
+                {t("overviewPage.openPublishing")}
+                <RadioTower />
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       </section>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>AI landing-page generation</CardTitle>
-          <CardDescription>
-            Create or open a paid project before generating landing-page content
-            and images.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild>
-            <Link href="/dashboard/projects">
-              Open projects
-              <ArrowUpRight />
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
     </div>
   );
 }

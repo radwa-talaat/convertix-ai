@@ -9,6 +9,38 @@
   "settings": "الإعدادات",
   "templates": "القوالب",
   "workspace": "مساحة العمل",
+  "overviewPage": {
+    "eyebrow": "نظرة عامة على مساحة العمل",
+    "title": "مساحة صفحات الهبوط الخاصة بك",
+    "description": "تابع المشاريع والصفحات والزيارات والتحويلات ورصيد صفحات الهبوط الحقيقي لهذا الحساب.",
+    "manageProjects": "إدارة المشاريع",
+    "metrics": {
+      "projects": "المشاريع",
+      "projectsDetail": "مشاريع نشطة أو مسودة أو مؤرشفة",
+      "pages": "صفحات الهبوط",
+      "pagesDetail": "{published} صفحة منشورة",
+      "views": "زيارات الصفحات",
+      "viewsDetail": "{visitors} زائر فريد",
+      "conversions": "معدل التحويل",
+      "conversionsDetail": "{leads} طلب عميل محفوظ"
+    },
+    "recentProjects": "آخر المشاريع",
+    "recentProjectsDescription": "أحدث مساحات عمل صفحات الهبوط في هذا الحساب.",
+    "emptyTitle": "لا توجد مشاريع بعد",
+    "emptyDescription": "اشتر رصيد صفحة هبوط ثم أنشئ أول مشروع.",
+    "accountCapacity": "رصيد الحساب",
+    "accountCapacityDescription": "الصلاحيات المدفوعة الحالية وجاهزية النشر.",
+    "remainingCredits": "الرصيد المتبقي",
+    "publishedPages": "الصفحات المنشورة",
+    "openPublishing": "فتح النشر",
+    "unlimited": "غير محدود",
+    "status": {
+      "active": "نشط",
+      "archived": "مؤرشف",
+      "draft": "مسودة",
+      "published": "منشور"
+    }
+  },
   "projects": {
     "active": "نشط",
     "archived": "مؤرشف",

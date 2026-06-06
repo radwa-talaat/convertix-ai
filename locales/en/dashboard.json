@@ -9,6 +9,38 @@
   "settings": "Settings",
   "templates": "Templates",
   "workspace": "Workspace",
+  "overviewPage": {
+    "eyebrow": "Workspace overview",
+    "title": "Your landing page workspace",
+    "description": "Track real projects, pages, visitors, conversions, and available landing-page credits for this account.",
+    "manageProjects": "Manage projects",
+    "metrics": {
+      "projects": "Projects",
+      "projectsDetail": "Active, draft, and archived workspaces",
+      "pages": "Landing pages",
+      "pagesDetail": "{published} published pages",
+      "views": "Page views",
+      "viewsDetail": "{visitors} unique visitors",
+      "conversions": "Conversion rate",
+      "conversionsDetail": "{leads} captured leads"
+    },
+    "recentProjects": "Recent projects",
+    "recentProjectsDescription": "The latest landing page workspaces in this account.",
+    "emptyTitle": "No projects yet",
+    "emptyDescription": "Buy a landing page credit, then create your first project.",
+    "accountCapacity": "Account capacity",
+    "accountCapacityDescription": "Current paid access and launch readiness.",
+    "remainingCredits": "Remaining credits",
+    "publishedPages": "Published pages",
+    "openPublishing": "Open publishing",
+    "unlimited": "Unlimited",
+    "status": {
+      "active": "Active",
+      "archived": "Archived",
+      "draft": "Draft",
+      "published": "Published"
+    }
+  },
   "projects": {
     "active": "Active",
     "archived": "Archived",
