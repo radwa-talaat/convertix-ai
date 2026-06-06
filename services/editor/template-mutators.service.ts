@@ -1,5 +1,6 @@
 import type { EditorSectionStyle } from "@/types/editor";
 import type {
+  CtaSectionData,
   LandingPageSectionType,
   LandingPageSection,
   LandingPageTemplate,
@@ -133,6 +134,62 @@ export function moveTemplateSection(
   return {
     ...template,
     sections: withNormalizedOrder(nextSections),
+  };
+}
+
+export function addCtaFieldToSection(
+  template: LandingPageTemplate,
+  sectionId: string,
+): LandingPageTemplate {
+  return {
+    ...template,
+    sections: template.sections.map((section) => {
+      if (section.id !== sectionId || section.type !== "cta") {
+        return section;
+      }
+
+      const data = cloneData(section.data as CtaSectionData);
+
+      return {
+        ...section,
+        data: {
+          ...data,
+          fields: [
+            ...(data.fields ?? []),
+            {
+              id: `cta-field-${Date.now()}`,
+              label: "New detail",
+              value: "Add a short detail that supports the final action.",
+            },
+          ],
+        },
+      };
+    }),
+  };
+}
+
+export function deleteCtaFieldFromSection(
+  template: LandingPageTemplate,
+  sectionId: string,
+  fieldId: string,
+): LandingPageTemplate {
+  return {
+    ...template,
+    sections: template.sections.map((section) => {
+      if (section.id !== sectionId || section.type !== "cta") {
+        return section;
+      }
+
+      const data = cloneData(section.data as CtaSectionData);
+
+      return {
+        ...section,
+        data: {
+          ...data,
+          fields: (data.fields ?? []).filter((field) => field.id !== fieldId),
+        },
+      };
+    }),
   };
 }
 
@@ -321,6 +378,18 @@ function createSectionData(type: LandingPageSectionType, brandName: string) {
       return {
         cta: "Get started",
         description: "Give visitors one clear next step.",
+        fields: [
+          {
+            id: "cta-field-1",
+            label: "Offer",
+            value: "Add the price, bonus, or urgency message here.",
+          },
+          {
+            id: "cta-field-2",
+            label: "Next step",
+            value: "Explain what happens after the customer submits.",
+          },
+        ],
         title: "Ready to move forward?",
       };
     case "lead-form":

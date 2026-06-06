@@ -3,9 +3,11 @@
 import { create } from "zustand";
 
 import {
+  addCtaFieldToSection,
   addTemplateSection,
   createDefaultSectionStyle,
   defaultEditorThemeTokens,
+  deleteCtaFieldFromSection,
   deleteTemplateSection,
   duplicateTemplateSection,
   moveTemplateSection,
@@ -52,6 +54,8 @@ type EditorState = {
   setSaveStatus: (status: EditorSaveStatus) => void;
   markSaved: () => void;
   addSection: (type: LandingPageSectionType) => void;
+  addCtaField: (sectionId: string) => void;
+  deleteCtaField: (sectionId: string, fieldId: string) => void;
   reorderSections: (activeId: string, overId: string) => void;
   updateSectionText: (sectionId: string, path: string, value: string) => void;
   duplicateSection: (sectionId: string) => void;
@@ -149,6 +153,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   reorderSections: (activeId, overId) => {
     applyTemplateMutation(set, get, (template) =>
       reorderTemplateSections(template, activeId, overId),
+    );
+  },
+  addCtaField: (sectionId) => {
+    applyTemplateMutation(set, get, (template) =>
+      addCtaFieldToSection(template, sectionId),
+    );
+  },
+  deleteCtaField: (sectionId, fieldId) => {
+    applyTemplateMutation(set, get, (template) =>
+      deleteCtaFieldFromSection(template, sectionId, fieldId),
     );
   },
   updateSectionText: (sectionId, path, value) => {

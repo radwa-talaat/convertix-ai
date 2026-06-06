@@ -18,6 +18,7 @@ export function createFallbackLandingPageContent(
   input: AiGenerationInput,
 ): AiLandingPageContent {
   const isArabic = input.language === "ar";
+  const offerCopy = createFallbackOfferCopy(input, isArabic);
 
   if (isArabic) {
     return {
@@ -78,8 +79,7 @@ export function createFallbackLandingPageContent(
           role: "Growth Team",
         },
       ],
-      pricingCopy:
-        "ابدأ بخطة مرنة تناسب المرحلة الحالية، ثم وسع الاستخدام عند الحاجة.",
+      pricingCopy: offerCopy,
       seo: {
         title: `${input.businessName} | ${input.goal}`,
         description: `${input.businessName} يقدم حلاً واضحاً لـ ${input.targetAudience} بأسلوب ${input.brandStyle}.`,
@@ -151,13 +151,28 @@ export function createFallbackLandingPageContent(
         role: "Marketing",
       },
     ],
-    pricingCopy:
-      "Start with a flexible plan built for your current stage, then scale when the campaign grows.",
+    pricingCopy: offerCopy,
     seo: {
       title: `${input.businessName} | ${input.goal}`,
       description: `${input.businessName} helps ${input.targetAudience} achieve ${input.goal} with a focused ${input.businessType} solution.`,
     },
   };
+}
+
+function createFallbackOfferCopy(input: AiGenerationInput, isArabic: boolean) {
+  const suppliedOffer = [input.productPrice, input.offer]
+    .filter(Boolean)
+    .join(isArabic ? " مع " : " with ");
+
+  if (suppliedOffer) {
+    return isArabic
+      ? `العرض واضح: ${suppliedOffer}. اطلب الآن وسيتم التواصل معك بالطريقة المناسبة.`
+      : `Offer: ${suppliedOffer}. Order now and the team will follow up with the right next step.`;
+  }
+
+  return isArabic
+    ? "عرض واضح ومباشر يساعد العميل على اتخاذ القرار بثقة."
+    : "A clear, direct offer designed to help customers decide with confidence.";
 }
 
 export function createFallbackLandingPageDesign(

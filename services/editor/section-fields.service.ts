@@ -174,6 +174,19 @@ export function getEditableTextFields(
           value: data.description,
         },
         { label: "CTA", path: "cta", value: data.cta },
+        ...(data.fields ?? []).flatMap((field, index) => [
+          {
+            label: `CTA field ${index + 1} label`,
+            path: `fields.${index}.label`,
+            value: field.label,
+          },
+          {
+            label: `CTA field ${index + 1} value`,
+            multiline: true,
+            path: `fields.${index}.value`,
+            value: field.value,
+          },
+        ]),
       ];
     }
     case "lead-form": {

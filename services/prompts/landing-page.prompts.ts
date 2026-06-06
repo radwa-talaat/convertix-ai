@@ -73,7 +73,7 @@ Requirements:
 - content.benefits: 3 to 5 benefit objects tied to the customer's problem.
 - content.faq: 3 to 5 question/answer objects that reduce objections.
 - content.testimonials: 2 to 3 plausible placeholder testimonial objects.
-- content.pricingCopy: concise pricing or offer copy. Mention price/offer only if supplied.
+- content.pricingCopy: concise pricing or offer copy. If Product Price is supplied, include that exact price clearly. If Offer is supplied, include that exact offer clearly.
 - content.seo.title: max 70 characters.
 - content.seo.description: max 160 characters.
 - design.theme: choose one of luxury, medical, bold, minimal, organic, tech.
@@ -90,6 +90,10 @@ Requirements:
 - design.imagePrompts.productScene: prompt for a product scene or ad visual.
 - design.imagePrompts.sectionMotifs: 2 to 5 short visual motif prompts for supporting sections.
 - design.designNotes: 2 to 5 practical notes for placing product imagery and background.
+- Every section must be specific to the product category, audience, price, offer, order method, sales country, and customer problem supplied.
+- Do not use generic SaaS, launch campaign, foundation, workspace, dashboard, template, software team, or page-builder language unless the business is actually a SaaS/page-builder.
+- For perfume or fragrance products, write about scent impression, bottle/presentation, gifting, confidence, audience fit, price, delivery/order method, and objections. Do not mention dashboards, campaigns, software teams, or templates.
+- Put the supplied price or offer near the hero badge, pricing section, and final CTA when available.
 - If a product image is provided, design around it; do not invent a different product image.
 - Do not invent medical, financial, or guaranteed claims.
 - Make the page feel visually different for different product categories. A perfume page, men's supplement page, clinic page, and SaaS page must not share the same layout rhythm or palette.

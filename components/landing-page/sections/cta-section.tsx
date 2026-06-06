@@ -55,6 +55,40 @@ export function CtaSection({
             value: data.description,
           }) ?? data.description}
         </p>
+        {data.fields?.length ? (
+          <div className="mx-auto mt-6 grid max-w-3xl gap-3 text-start sm:grid-cols-2">
+            {data.fields.map((field, index) => (
+              <div
+                className="rounded-md border p-4"
+                key={field.id}
+                style={{
+                  backgroundColor: `${theme.colors.primaryForeground}14`,
+                  borderColor: `${theme.colors.primaryForeground}33`,
+                }}
+              >
+                <p
+                  className="text-xs font-semibold uppercase tracking-[0.16em] opacity-70"
+                  style={{ fontSize: `calc(0.75rem * ${textScale})` }}
+                >
+                  {renderText?.({
+                    path: `fields.${index}.label`,
+                    value: field.label,
+                  }) ?? field.label}
+                </p>
+                <p
+                  className="mt-2 text-sm leading-6 opacity-90"
+                  style={{ fontSize: `calc(0.875rem * ${textScale})` }}
+                >
+                  {renderText?.({
+                    multiline: true,
+                    path: `fields.${index}.value`,
+                    value: field.value,
+                  }) ?? field.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        ) : null}
         <a
           className="mt-8 inline-flex h-11 items-center justify-center rounded-md px-5 text-sm font-medium"
           href="#"

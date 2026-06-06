@@ -13,7 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { SegmentedControl } from "@/components/editor/controls/segmented-control";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ import type {
   EditorPropertiesTab,
   EditorSectionStyle,
 } from "@/types/editor";
+import type { CtaSectionData } from "@/types/rendering";
 
 const propertyTabs: EditorPropertiesTab[] = [
   "typography",
@@ -53,6 +54,8 @@ export function EditorPropertiesPanel() {
   const setPropertiesTab = useEditorStore((state) => state.setPropertiesTab);
   const template = useEditorStore((state) => state.template);
   const themeTokens = useEditorStore((state) => state.themeTokens);
+  const addCtaField = useEditorStore((state) => state.addCtaField);
+  const deleteCtaField = useEditorStore((state) => state.deleteCtaField);
   const toggleSectionVisibility = useEditorStore(
     (state) => state.toggleSectionVisibility,
   );
@@ -158,6 +161,14 @@ export function EditorPropertiesPanel() {
             ) : null}
           </div>
 
+          {section?.type === "cta" ? (
+            <CtaFieldControls
+              fields={(section.data as CtaSectionData).fields ?? []}
+              onAdd={() => addCtaField(section.id)}
+              onDelete={(fieldId) => deleteCtaField(section.id, fieldId)}
+            />
+          ) : null}
+
           {fields.length ? (
             fields.map((field) => (
               <div className="space-y-2" key={field.path}>
@@ -215,6 +226,109 @@ export function EditorPropertiesPanel() {
       </div>
     </aside>
   );
+}
+
+function CtaFieldControls({
+  fields,
+  onAdd,
+  onDelete,
+}: {
+  fields: NonNullable<CtaSectionData["fields"]>;
+  onAdd: () => void;
+  onDelete: (fieldId: string) => void;
+}) {
+  const t = useTranslations("editor");
+  const locale = useLocale();
+  const isArabic = locale === "ar";
+  const labels = {
+    ctaField: safeTranslate(t, "ctaField", isArabic ? "خانة CTA" : "CTA field"),
+    ctaFields: safeTranslate(
+      t,
+      "ctaFields",
+      isArabic ? "خانات الدعوة للإجراء" : "CTA fields",
+    ),
+    ctaFieldsDescription: safeTranslate(
+      t,
+      "ctaFieldsDescription",
+      isArabic
+        ? "أضف أو احذف تفاصيل العرض التي تظهر فوق زر الإجراء النهائي."
+        : "Add or remove the small offer/details shown above the final CTA button.",
+    ),
+    deleteCtaField: safeTranslate(
+      t,
+      "deleteCtaField",
+      isArabic ? "حذف خانة CTA" : "Delete CTA field",
+    ),
+    emptyCtaFields: safeTranslate(
+      t,
+      "emptyCtaFields",
+      isArabic
+        ? "أضف خانات للسعر أو التوصيل أو الهدية أو الضمان أو الخطوة التالية."
+        : "Add fields for price, delivery, bonus, guarantee, or the next step.",
+    ),
+  };
+
+  return (
+    <div className="space-y-3 rounded-md border border-border bg-background p-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold">{labels.ctaFields}</p>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            {labels.ctaFieldsDescription}
+          </p>
+        </div>
+        <Button onClick={onAdd} size="sm" type="button" variant="outline">
+          <Plus className="size-4" />
+          {t("add")}
+        </Button>
+      </div>
+
+      {fields.length ? (
+        <div className="space-y-2">
+          {fields.map((field, index) => (
+            <div
+              className="flex items-center justify-between gap-3 rounded-md border border-border bg-secondary/20 p-2"
+              key={field.id}
+            >
+              <div className="min-w-0">
+                <p className="truncate text-xs font-medium">
+                  {field.label || `${labels.ctaField} ${index + 1}`}
+                </p>
+                <p className="mt-1 truncate text-xs text-muted-foreground">
+                  {field.value}
+                </p>
+              </div>
+              <Button
+                onClick={() => onDelete(field.id)}
+                size="icon"
+                title={labels.deleteCtaField}
+                type="button"
+                variant="ghost"
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="rounded-md border border-dashed border-border p-3 text-xs leading-5 text-muted-foreground">
+          {labels.emptyCtaFields}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function safeTranslate(
+  t: ReturnType<typeof useTranslations>,
+  key: string,
+  fallback: string,
+) {
+  try {
+    return t(key);
+  } catch {
+    return fallback;
+  }
 }
 
 function ActivePropertiesTab({

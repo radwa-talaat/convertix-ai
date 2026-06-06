@@ -127,10 +127,17 @@ export type FaqSectionData = {
   items: AiFaqItem[];
 };
 
+export type CtaSectionField = {
+  id: string;
+  label: string;
+  value: string;
+};
+
 export type CtaSectionData = {
   title: string;
   description: string;
   cta: string;
+  fields?: CtaSectionField[];
 };
 
 export type LeadFormSectionData = {

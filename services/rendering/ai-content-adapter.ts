@@ -39,20 +39,20 @@ type BuildLandingPageTemplateOptions = {
 const sectionCopy = {
   ltr: {
     benefits: "Benefits",
-    benefitsTitle: "Why this offer matters",
+    benefitsTitle: "Why customers choose it",
     faq: "FAQ",
     faqTitle: "Clear answers",
     features: "Features",
-    featuresTitle: "Everything needed to launch",
+    featuresTitle: "What makes this product worth choosing",
     leadForm: "Request",
     leadFormDescription:
       "Leave your details and the team will contact you with the right next step.",
     leadFormTitle: "Request this offer",
     pricing: "Pricing",
-    pricingTitle: "Simple path to scale",
+    pricingTitle: "Offer and price",
     secondaryCta: "View details",
     testimonials: "Testimonials",
-    testimonialsTitle: "Trusted by teams moving fast",
+    testimonialsTitle: "Customer impressions",
   },
   rtl: {
     benefits: "الفوائد",
@@ -72,6 +72,23 @@ const sectionCopy = {
   },
 } as const;
 
+const arabicSectionCopy = {
+  benefits: "الفوائد",
+  benefitsTitle: "لماذا يختاره العملاء",
+  faq: "الأسئلة",
+  faqTitle: "إجابات واضحة",
+  features: "المميزات",
+  featuresTitle: "ما الذي يجعل هذا المنتج مناسبًا لك",
+  leadForm: "طلب",
+  leadFormDescription: "اترك بياناتك وسنتواصل معك بالخطوة المناسبة.",
+  leadFormTitle: "اطلب هذا العرض",
+  pricing: "السعر",
+  pricingTitle: "العرض والسعر",
+  secondaryCta: "شاهد التفاصيل",
+  testimonials: "آراء العملاء",
+  testimonialsTitle: "انطباعات العملاء",
+} as const;
+
 export function buildLandingPageTemplate({
   brandName,
   content,
@@ -83,7 +100,7 @@ export function buildLandingPageTemplate({
   slug,
   themeId = "linear",
 }: BuildLandingPageTemplateOptions): LandingPageTemplate {
-  const copy = sectionCopy[direction];
+  const copy = direction === "rtl" ? arabicSectionCopy : sectionCopy.ltr;
   const sections: LandingPageSection[] = [
     createSection<NavbarSectionData>("navbar", 0, {
       brandName,
@@ -149,6 +166,7 @@ export function buildLandingPageTemplate({
     createSection<CtaSectionData>("cta", 8, {
       cta: content.cta,
       description: content.subheadline,
+      fields: createCtaFields(content, direction),
       title: content.headline,
     }),
     createSection<FooterSectionData>("footer", 9, {
@@ -195,6 +213,37 @@ export function buildLandingPageTemplate({
     slug,
     themeId,
   };
+}
+
+function createCtaFields(
+  content: AiLandingPageContent,
+  direction: LandingPageDirection,
+): CtaSectionData["fields"] {
+  const isRtl = direction === "rtl";
+  const firstBenefit = content.benefits[0];
+  const secondBenefit = content.benefits[1];
+
+  return [
+    {
+      id: "cta-offer",
+      label: isRtl ? "العرض" : "Offer",
+      value: content.pricingCopy,
+    },
+    {
+      id: "cta-next-step",
+      label: isRtl ? "الخطوة التالية" : "Next step",
+      value: content.cta,
+    },
+    {
+      id: "cta-reason",
+      label: isRtl ? "لماذا الآن" : "Why now",
+      value:
+        firstBenefit?.description ??
+        firstBenefit?.title ??
+        secondBenefit?.description ??
+        content.subheadline,
+    },
+  ];
 }
 
 function applyAiSectionOrder(

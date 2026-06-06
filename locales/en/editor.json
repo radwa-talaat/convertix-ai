@@ -79,5 +79,10 @@
   "deleteTextBlock": "Delete text block",
   "textColor": "Text color",
   "size": "Size",
-  "emptyCustomText": "Add floating text on top of this layer for badges, offers, notes, or product highlights."
+  "emptyCustomText": "Add floating text on top of this layer for badges, offers, notes, or product highlights.",
+  "ctaFields": "CTA fields",
+  "ctaFieldsDescription": "Add or remove the small offer/details shown above the final CTA button.",
+  "ctaField": "CTA field",
+  "deleteCtaField": "Delete CTA field",
+  "emptyCtaFields": "Add fields for price, delivery, bonus, guarantee, or the next step."
 }
