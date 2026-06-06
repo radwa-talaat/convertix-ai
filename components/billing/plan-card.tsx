@@ -218,7 +218,7 @@ export function PlanCard({
             disabled={!canUseDirectWallet || current || walletPending}
             inputMode="tel"
             onChange={(event) => setWalletPhoneNumber(event.target.value)}
-            placeholder="01060650548"
+            placeholder="01000000000"
             value={walletPhoneNumber}
           />
           <Button
