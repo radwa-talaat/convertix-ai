@@ -19,13 +19,21 @@ type PaymobPaymentKeyResponse = {
 };
 
 type PaymobWalletPaymentResponse = {
+  detail?: string;
+  error_occured?: boolean;
   id?: number;
-  pending?: boolean;
-  redirect_url?: string;
-  success?: boolean;
   iframe_redirection_url?: string;
+  message?: string;
+  pending?: boolean;
+  redirectUrl?: string;
+  redirect_url?: string;
+  redirection_url?: string;
+  success?: boolean;
   data?: {
+    message?: string;
+    redirectUrl?: string;
     redirect_url?: string;
+    redirection_url?: string;
   };
 };
 
@@ -97,25 +105,35 @@ export async function createPaymobWalletPayment({
     },
   );
 
-  const walletPayment = await legacyPaymobRequest<PaymobWalletPaymentResponse>(
-    "/api/acceptance/payments/pay",
-    {
-      payment_token: paymentKey.token,
-      source: {
-        identifier: normalizeEgyptWalletIdentifier(walletPhoneNumber),
-        subtype: "WALLET",
+  const walletIdentifiers = getEgyptWalletIdentifierVariants(walletPhoneNumber);
+  let walletPayment: PaymobWalletPaymentResponse | null = null;
+  let paymentUrl = "";
+  let lastWalletMessage = "";
+
+  for (const identifier of walletIdentifiers) {
+    walletPayment = await legacyPaymobRequest<PaymobWalletPaymentResponse>(
+      "/api/acceptance/payments/pay",
+      {
+        payment_token: paymentKey.token,
+        source: {
+          identifier,
+          subtype: "WALLET",
+        },
       },
-    },
-  );
-  const paymentUrl =
-    walletPayment.redirect_url ??
-    walletPayment.iframe_redirection_url ??
-    walletPayment.data?.redirect_url ??
-    "";
+    );
+    paymentUrl = extractPaymobWalletUrl(walletPayment);
+
+    if (paymentUrl) {
+      break;
+    }
+
+    lastWalletMessage = extractPaymobWalletMessage(walletPayment);
+  }
 
   if (!paymentUrl) {
     throw new Error(
-      "Paymob wallet did not return a verification page. Check that the wallet number is registered.",
+      lastWalletMessage ||
+        "Paymob wallet did not return a verification page. Check that the wallet number is registered.",
     );
   }
 
@@ -125,7 +143,7 @@ export async function createPaymobWalletPayment({
     intentionId: `wallet:${order.id}`,
     orderId: String(order.id),
     paymentUrl,
-    transactionId: walletPayment.id ? String(walletPayment.id) : null,
+    transactionId: walletPayment?.id ? String(walletPayment.id) : null,
   };
 }
 
@@ -179,6 +197,13 @@ function toLegacyBillingData(
   };
 }
 
+function getEgyptWalletIdentifierVariants(value: string) {
+  const localNumber = normalizeEgyptWalletIdentifier(value);
+  const countryNumber = `20${localNumber.slice(1)}`;
+
+  return Array.from(new Set([localNumber, countryNumber, `+${countryNumber}`]));
+}
+
 function normalizeEgyptWalletIdentifier(value: string) {
   const digits = value.replace(/\D/g, "");
 
@@ -197,4 +222,26 @@ function normalizeEgyptPhoneInternational(value: string) {
   const localNumber = normalizeEgyptWalletIdentifier(value);
 
   return `+20${localNumber.slice(1)}`;
+}
+
+function extractPaymobWalletUrl(response: PaymobWalletPaymentResponse) {
+  return (
+    response.redirect_url ??
+    response.redirection_url ??
+    response.redirectUrl ??
+    response.iframe_redirection_url ??
+    response.data?.redirect_url ??
+    response.data?.redirection_url ??
+    response.data?.redirectUrl ??
+    ""
+  );
+}
+
+function extractPaymobWalletMessage(response: PaymobWalletPaymentResponse) {
+  return (
+    response.data?.message ??
+    response.message ??
+    response.detail ??
+    ""
+  ).trim();
 }

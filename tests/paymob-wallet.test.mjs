@@ -13,5 +13,7 @@ test("Paymob wallet service uses the legacy direct wallet flow", async () => {
   assert.match(source, /\/api\/acceptance\/payment_keys/);
   assert.match(source, /\/api\/acceptance\/payments\/pay/);
   assert.match(source, /subtype:\s*"WALLET"/);
+  assert.match(source, /getEgyptWalletIdentifierVariants/);
+  assert.match(source, /Array\.from\(new Set\(\[localNumber, countryNumber/);
   assert.match(source, /PAYMOB_WALLET_INTEGRATION_ID/);
 });
