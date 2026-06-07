@@ -25,11 +25,10 @@ const geistMono = localFont({
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = getRequestLocale();
-  const title =
-    locale === "ar" ? "منشئ صفحات هبوط بالذكاء الاصطناعي" : siteConfig.name;
+  const title = siteConfig.name;
   const description =
     locale === "ar"
-      ? "منصة SaaS لإنشاء وتعديل ونشر صفحات هبوط احترافية بالذكاء الاصطناعي."
+      ? "منصة Convertix لإنشاء وتعديل ونشر صفحات هبوط احترافية بالذكاء الاصطناعي."
       : siteConfig.description;
 
   return {

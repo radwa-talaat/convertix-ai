@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Layers3, WandSparkles } from "lucide-react";
 
@@ -10,7 +11,16 @@ export function HeroSection() {
     <section className="relative overflow-hidden">
       <Container className="grid min-h-[calc(100vh-4rem)] items-center gap-12 py-20 lg:grid-cols-[1fr_0.86fr] lg:py-24">
         <div className="max-w-3xl">
-          <Eyebrow>AI Landing Page Builder</Eyebrow>
+          <div className="mb-6 max-w-md">
+            <Image
+              alt="Convertix"
+              className="h-auto w-full object-contain"
+              height={120}
+              src="/brand/convertix-wordmark.png"
+              width={720}
+            />
+          </div>
+          <Eyebrow>AI landing pages that convert</Eyebrow>
           <DisplayText className="mt-5">
             A premium workspace for faster campaign pages.
           </DisplayText>

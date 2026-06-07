@@ -73,7 +73,7 @@ export const sampleAiContent: AiLandingPageContent = {
   pricingCopy:
     "Start with a focused launch workflow, then scale into templates and publishing when your team is ready.",
   seo: {
-    title: "AI Landing Page Builder Preview",
+    title: "Convertix Preview",
     description:
       "Preview structured AI landing page content rendered through reusable responsive React sections.",
   },

@@ -375,8 +375,7 @@ function createDefaultSeoSettings(page?: PublishedPage): SeoSettings {
   return {
     canonicalPath: page ? `/p/${page.slug}` : "/dashboard/publishing",
     description:
-      page?.seo.description ??
-      "Published landing pages rendered by AI Landing Page Builder.",
+      page?.seo.description ?? "Published landing pages rendered by Convertix.",
     indexing: true,
     title: page?.seo.title ?? "Published landing pages",
     twitterCard: "summary_large_image",

@@ -12,6 +12,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
 import { buildLandingPageTemplate } from "@/services/rendering";
+import { isAdminUser } from "@/services/admin";
 import { hasPaidProjectAccess } from "@/services/subscriptions";
 import type { AiLandingPageContent, AiLandingPageDesign } from "@/types/ai";
 import type { Json } from "@/types/database";
@@ -119,12 +120,19 @@ export async function createProjectAction(name: string) {
   const supabase = createClient();
   const projectName = cleanProjectName(name);
   const slug = await createAvailableSlug(user.id, projectName);
+  const isAdmin = await isAdminUser(user.id);
 
-  const { data: projectId, error } = await supabase.rpc("create_paid_project", {
-    project_locale: getRequestLocale(),
-    project_name: projectName,
-    project_slug: slug,
-  });
+  const { data: projectId, error } = isAdmin
+    ? await supabase.rpc("create_admin_project", {
+        project_locale: getRequestLocale(),
+        project_name: projectName,
+        project_slug: slug,
+      })
+    : await supabase.rpc("create_paid_project", {
+        project_locale: getRequestLocale(),
+        project_name: projectName,
+        project_slug: slug,
+      });
 
   if (error) {
     if (error.message.includes("PAYMENT_REQUIRED")) {
@@ -193,6 +201,7 @@ export async function createLandingPageFromAiAction(
   const safeDesign = design
     ? aiLandingPageDesignSchema.parse(design)
     : undefined;
+  const isAdmin = await isAdminUser(user.id);
   const { data: project, error: projectError } = await supabase
     .from("projects")
     .select("id, name, slug")
@@ -204,7 +213,10 @@ export async function createLandingPageFromAiAction(
     throw new Error(projectError?.message ?? "Project not found.");
   }
 
-  if (!(await hasPaidProjectAccess(supabase, user.id, project.id))) {
+  if (
+    !isAdmin &&
+    !(await hasPaidProjectAccess(supabase, user.id, project.id))
+  ) {
     throw new Error(
       "Payment is required before creating a landing page in this project.",
     );
@@ -220,7 +232,7 @@ export async function createLandingPageFromAiAction(
     throw new Error(pageCountError.message);
   }
 
-  if ((existingPageCount ?? 0) > 0) {
+  if (!isAdmin && (existingPageCount ?? 0) > 0) {
     throw new Error(
       "This paid project already has a landing page. Open it in the editor instead.",
     );

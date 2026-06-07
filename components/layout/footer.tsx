@@ -25,7 +25,7 @@ export function Footer() {
         </div>
         <Separator className="my-8" />
         <p className="text-sm text-muted-foreground">
-          {siteConfig.name} foundation. Built for a focused SaaS product team.
+          {siteConfig.name}. AI landing pages that convert.
         </p>
       </Container>
     </footer>

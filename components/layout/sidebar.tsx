@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 
 import { BrandMark } from "@/components/layout/brand-mark";
@@ -11,7 +11,12 @@ import { useLocalizedPathname } from "@/hooks/i18n";
 import { stripLocaleFromPathname } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
-export function Sidebar() {
+type SidebarProps = {
+  isAdmin?: boolean;
+};
+
+export function Sidebar({ isAdmin = false }: SidebarProps) {
+  const locale = useLocale();
   const pathname = usePathname();
   const t = useTranslations("dashboard");
   const localizedPath = useLocalizedPathname();
@@ -30,28 +35,30 @@ export function Sidebar() {
               {t(section.title.toLowerCase())}
             </p>
             <div className="mt-3 space-y-1">
-              {section.items.map((item) => {
-                const Icon = item.icon;
-                const isActive =
-                  item.href === "/dashboard"
-                    ? cleanPathname === item.href
-                    : cleanPathname.startsWith(item.href);
+              {section.items
+                .filter((item) => !item.adminOnly || isAdmin)
+                .map((item) => {
+                  const Icon = item.icon;
+                  const isActive =
+                    item.href === "/dashboard"
+                      ? cleanPathname === item.href
+                      : cleanPathname.startsWith(item.href);
 
-                return (
-                  <Link
-                    className={cn(
-                      "flex h-10 items-center gap-3 rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
-                      isActive &&
-                        "bg-background text-foreground shadow-luxury-sm",
-                    )}
-                    href={localizedPath(item.href)}
-                    key={item.href}
-                  >
-                    {Icon ? <Icon className="size-4" /> : null}
-                    {getDashboardNavLabel(t, item.title)}
-                  </Link>
-                );
-              })}
+                  return (
+                    <Link
+                      className={cn(
+                        "flex h-10 items-center gap-3 rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
+                        isActive &&
+                          "bg-background text-foreground shadow-luxury-sm",
+                      )}
+                      href={localizedPath(item.href)}
+                      key={item.href}
+                    >
+                      {Icon ? <Icon className="size-4" /> : null}
+                      {getDashboardNavLabel(t, item.title, locale)}
+                    </Link>
+                  );
+                })}
             </div>
           </div>
         ))}
@@ -63,8 +70,13 @@ export function Sidebar() {
 function getDashboardNavLabel(
   t: ReturnType<typeof useTranslations>,
   title: string,
+  locale: string,
 ) {
   const key = title.toLowerCase();
+
+  if (key === "admin") {
+    return locale === "ar" ? "الإدارة" : "Admin";
+  }
 
   if (key === "projects") {
     return t("projects.title");

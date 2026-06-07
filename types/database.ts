@@ -10,6 +10,7 @@ export type ProjectStatus = "draft" | "active" | "archived";
 export type PageStatus = "draft" | "published" | "archived";
 export type TemplateVisibility = "private" | "team" | "public";
 export type SupportedLocale = "en" | "ar";
+export type UserRole = "user" | "admin";
 export type AiGenerationStatus = "queued" | "running" | "completed" | "failed";
 export type SubscriptionStatus =
   | "trialing"
@@ -52,6 +53,7 @@ export interface Database {
           full_name: string | null;
           avatar_url: string | null;
           locale: SupportedLocale;
+          role: UserRole;
           created_at: string;
           updated_at: string;
         };
@@ -61,6 +63,7 @@ export interface Database {
           full_name?: string | null;
           avatar_url?: string | null;
           locale?: SupportedLocale;
+          role?: UserRole;
           created_at?: string;
           updated_at?: string;
         };
@@ -70,6 +73,7 @@ export interface Database {
           full_name?: string | null;
           avatar_url?: string | null;
           locale?: SupportedLocale;
+          role?: UserRole;
           created_at?: string;
           updated_at?: string;
         };
@@ -1212,6 +1216,14 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: {
+      create_admin_project: {
+        Args: {
+          project_locale?: string;
+          project_name: string;
+          project_slug: string;
+        };
+        Returns: string;
+      };
       create_paid_project: {
         Args: {
           project_locale?: string;
@@ -1225,6 +1237,12 @@ export interface Database {
           credit_quantity: number;
           target_payment_id: string;
           target_user_id: string;
+        };
+        Returns: boolean;
+      };
+      is_admin: {
+        Args: {
+          target_user_id?: string;
         };
         Returns: boolean;
       };
