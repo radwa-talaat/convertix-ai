@@ -43,8 +43,20 @@ export type PublishedPage = {
     enabled: boolean;
     pixelId: string | null;
   };
+  trackingPixels: TrackingPixels;
   customDomain?: string;
   versions: PublishVersion[];
+};
+
+export type TrackingPixelSettings = {
+  enabled: boolean;
+  pixelId: string | null;
+};
+
+export type TrackingPixels = {
+  meta: TrackingPixelSettings;
+  snapchat: TrackingPixelSettings;
+  tiktok: TrackingPixelSettings;
 };
 
 export type MetaPixelPage = {
@@ -68,6 +80,7 @@ export type DomainDnsRecord = {
 export type CustomDomain = {
   id: string;
   projectId: string;
+  pageId: string | null;
   hostname: string;
   status: DomainConnectionStatus;
   verificationToken: string;
@@ -98,6 +111,11 @@ export type PublishingDashboardSnapshot = {
   metaPixelPages: MetaPixelPage[];
   domains: CustomDomain[];
   seo: SeoSettings;
+};
+
+export type PagePublishingSettingsSnapshot = {
+  domains: CustomDomain[];
+  page: PublishedPage;
 };
 
 export type PublishVersionRow = Tables<"publish_versions"> & {

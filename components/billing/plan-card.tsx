@@ -2,6 +2,7 @@
 
 import { Check, ExternalLink, Loader2, Smartphone } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useTransition } from "react";
 
@@ -12,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { createLocalizedPathname, type AppLocale } from "@/lib/i18n/config";
 import { formatMoney } from "@/lib/payments";
 import type {
   BillingCurrency,
@@ -33,13 +35,16 @@ const defaultBillingData: PaymobBillingData = {
 export function PlanCard({
   currency,
   current,
+  isAuthenticated = false,
   plan,
 }: {
   currency: BillingCurrency;
   current: boolean;
+  isAuthenticated?: boolean;
   plan: BillingPlan;
 }) {
-  const locale = useLocale();
+  const locale = useLocale() as AppLocale;
+  const router = useRouter();
   const t = useTranslations("billing");
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
@@ -87,8 +92,19 @@ export function PlanCard({
         }[plan.id]
       : plan;
 
+  function redirectToLogin() {
+    const pricingPath = createLocalizedPathname("/pricing", locale);
+    const loginPath = createLocalizedPathname("/login", locale);
+    router.push(`${loginPath}?next=${encodeURIComponent(pricingPath)}`);
+  }
+
   function handleUpgrade() {
     if (isCheckoutDisabled) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      redirectToLogin();
       return;
     }
 
@@ -115,6 +131,11 @@ export function PlanCard({
 
   function handleWalletPayment() {
     if (isCheckoutDisabled || !canUseDirectWallet) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      redirectToLogin();
       return;
     }
 

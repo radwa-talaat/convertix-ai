@@ -145,6 +145,10 @@ export interface Database {
           published_at: string | null;
           meta_pixel_enabled: boolean;
           meta_pixel_id: string | null;
+          snapchat_pixel_enabled: boolean;
+          snapchat_pixel_id: string | null;
+          tiktok_pixel_enabled: boolean;
+          tiktok_pixel_id: string | null;
           version: number;
           created_at: string;
           updated_at: string;
@@ -164,6 +168,10 @@ export interface Database {
           published_at?: string | null;
           meta_pixel_enabled?: boolean;
           meta_pixel_id?: string | null;
+          snapchat_pixel_enabled?: boolean;
+          snapchat_pixel_id?: string | null;
+          tiktok_pixel_enabled?: boolean;
+          tiktok_pixel_id?: string | null;
           version?: number;
           created_at?: string;
           updated_at?: string;
@@ -183,6 +191,10 @@ export interface Database {
           published_at?: string | null;
           meta_pixel_enabled?: boolean;
           meta_pixel_id?: string | null;
+          snapchat_pixel_enabled?: boolean;
+          snapchat_pixel_id?: string | null;
+          tiktok_pixel_enabled?: boolean;
+          tiktok_pixel_id?: string | null;
           version?: number;
           created_at?: string;
           updated_at?: string;
@@ -515,6 +527,7 @@ export interface Database {
           id: string;
           user_id: string;
           project_id: string;
+          page_id: string | null;
           hostname: string;
           status: DomainStatus;
           ssl_status: "pending" | "issued" | "failed";
@@ -528,6 +541,7 @@ export interface Database {
           id?: string;
           user_id: string;
           project_id: string;
+          page_id?: string | null;
           hostname: string;
           status?: DomainStatus;
           ssl_status?: "pending" | "issued" | "failed";
@@ -541,6 +555,7 @@ export interface Database {
           id?: string;
           user_id?: string;
           project_id?: string;
+          page_id?: string | null;
           hostname?: string;
           status?: DomainStatus;
           ssl_status?: "pending" | "issued" | "failed";
@@ -562,6 +577,12 @@ export interface Database {
             columns: ["project_id"];
             referencedRelation: "projects";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "domains_page_id_user_id_fkey";
+            columns: ["page_id", "user_id"];
+            referencedRelation: "pages";
+            referencedColumns: ["id", "user_id"];
           },
         ];
       };

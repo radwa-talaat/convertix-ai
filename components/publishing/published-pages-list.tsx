@@ -1,6 +1,13 @@
 "use client";
 
-import { ExternalLink, Eye, RefreshCw, Rocket, RotateCcw } from "lucide-react";
+import {
+  ExternalLink,
+  Eye,
+  RefreshCw,
+  Rocket,
+  RotateCcw,
+  Settings2,
+} from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -80,6 +87,14 @@ export function PublishedPagesList({
                   <Link href={`/preview/${page.slug}`}>
                     <Eye className="size-4" />
                     {t("preview")}
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <Link
+                    href={`/${locale}/dashboard/publishing/${page.id}/settings`}
+                  >
+                    <Settings2 className="size-4" />
+                    {t("privateSettings")}
                   </Link>
                 </Button>
                 <CopyUrlButton url={page.publicUrl} />

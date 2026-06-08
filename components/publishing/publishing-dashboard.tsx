@@ -2,8 +2,6 @@
 
 import * as React from "react";
 
-import { DomainManagement } from "@/components/publishing/domain-management";
-import { MetaPixelSettingsPanel } from "@/components/publishing/meta-pixel-settings-panel";
 import { PublishHistory } from "@/components/publishing/publish-history";
 import { PublishedPagesList } from "@/components/publishing/published-pages-list";
 import { PublishSuccessDialog } from "@/components/publishing/publish-success-dialog";
@@ -36,8 +34,6 @@ export function PublishingDashboard({
           <SeoSettingsPanel seo={snapshot.seo} />
         </div>
         <div className="space-y-6">
-          <MetaPixelSettingsPanel pages={snapshot.metaPixelPages} />
-          <DomainManagement domains={snapshot.domains} />
           <PublishHistory versions={latestVersions} />
         </div>
       </div>

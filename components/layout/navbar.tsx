@@ -24,7 +24,7 @@ export function Navbar() {
           {marketingNavItems.map((item) => (
             <Link
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              href={item.href}
+              href={localizedPath(item.href)}
               key={item.href}
             >
               {t(item.title.toLowerCase())}

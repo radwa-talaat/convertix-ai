@@ -4,6 +4,8 @@ import {
   AnalyticsTracker,
   CookieConsent,
   MetaPixelTracker,
+  SnapchatPixelTracker,
+  TikTokPixelTracker,
 } from "@/components/analytics";
 import { LayoutRenderer } from "@/components/landing-page";
 import {
@@ -57,6 +59,22 @@ export default async function PublishedPageRoute({
           pageId={page.id}
           pageSlug={page.slug}
           pixelId={page.metaPixel.pixelId}
+        />
+      ) : null}
+      {page.trackingPixels.tiktok.enabled &&
+      page.trackingPixels.tiktok.pixelId ? (
+        <TikTokPixelTracker
+          pageId={page.id}
+          pageSlug={page.slug}
+          pixelId={page.trackingPixels.tiktok.pixelId}
+        />
+      ) : null}
+      {page.trackingPixels.snapchat.enabled &&
+      page.trackingPixels.snapchat.pixelId ? (
+        <SnapchatPixelTracker
+          pageId={page.id}
+          pageSlug={page.slug}
+          pixelId={page.trackingPixels.snapchat.pixelId}
         />
       ) : null}
       <LayoutRenderer

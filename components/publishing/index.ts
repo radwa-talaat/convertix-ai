@@ -2,6 +2,7 @@ export * from "./copy-url-button";
 export * from "./domain-management";
 export * from "./domain-setup-wizard";
 export * from "./meta-pixel-settings-panel";
+export * from "./page-private-settings";
 export * from "./publish-history";
 export * from "./publish-status-badge";
 export * from "./publish-success-dialog";

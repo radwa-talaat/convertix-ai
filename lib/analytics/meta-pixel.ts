@@ -19,6 +19,10 @@ export function isValidMetaPixelId(value: string) {
   return /^[0-9]{5,32}$/.test(value.trim());
 }
 
+export function isValidExternalPixelId(value: string) {
+  return /^[A-Za-z0-9_-]{5,80}$/.test(value.trim());
+}
+
 export function trackMetaPixelEvent(
   eventName: MetaPixelEventName,
   parameters: Record<string, unknown> = {},

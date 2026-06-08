@@ -10,4 +10,6 @@ export * from "./line-chart";
 export * from "./meta-pixel-tracker";
 export * from "./pie-chart";
 export * from "./realtime-metrics";
+export * from "./snapchat-pixel-tracker";
+export * from "./tiktok-pixel-tracker";
 export * from "./top-pages";

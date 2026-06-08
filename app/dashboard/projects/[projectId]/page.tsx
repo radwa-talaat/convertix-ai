@@ -109,7 +109,7 @@ export default async function ProjectBuilderPage({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+    <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-8 overflow-hidden">
       <PageHeader
         actions={
           <Button asChild>
@@ -135,9 +135,9 @@ export default async function ProjectBuilderPage({
         title={project.name}
       />
 
-      <section className="space-y-4" id="landing-pages">
-        <div className="flex items-center justify-between gap-3">
-          <div>
+      <section className="min-w-0 space-y-4" id="landing-pages">
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <div className="min-w-0">
             <h2 className="text-xl font-semibold tracking-normal">
               {locale === "ar" ? "صفحات الهبوط" : "Landing pages"}
             </h2>
@@ -152,7 +152,7 @@ export default async function ProjectBuilderPage({
         </div>
 
         {pages && pages.length > 0 ? (
-          <div className="grid gap-3">
+          <div className="grid min-w-0 gap-3">
             {pages.map((page) => (
               <LandingPageRow
                 key={page.id}
@@ -219,20 +219,22 @@ function LandingPageRow({
   const latestLeads = leads.slice(0, 3);
 
   return (
-    <Card>
-      <CardHeader className="gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <CardTitle className="truncate text-base">{page.title}</CardTitle>
+    <Card className="min-w-0 overflow-hidden">
+      <CardHeader className="min-w-0 gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <CardTitle className="min-w-0 max-w-full whitespace-normal break-words text-base">
+              {page.title}
+            </CardTitle>
             <Badge variant={statusVariant[page.status]}>{page.status}</Badge>
           </div>
-          <p className="mt-2 truncate text-sm text-muted-foreground">
+          <p className="mt-2 break-words text-sm text-muted-foreground">
             /{page.slug} - {isArabic ? "آخر تحديث" : "Updated"}{" "}
             {formatUpdatedAt(page.updated_at, locale)}
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button asChild size="sm">
+        <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2">
+          <Button asChild className="w-full" size="sm">
             <Link
               href={createLocalizedPathname(
                 `/dashboard/editor?page=${page.id}`,
@@ -243,7 +245,7 @@ function LandingPageRow({
               {isArabic ? "تعديل" : "Edit"}
             </Link>
           </Button>
-          <Button asChild size="sm" variant="outline">
+          <Button asChild className="w-full" size="sm" variant="outline">
             <Link
               href={createLocalizedPathname(
                 `/dashboard/preview?page=${page.id}`,
@@ -256,8 +258,8 @@ function LandingPageRow({
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="border-t border-border pt-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <CardContent className="min-w-0 border-t border-border p-4 pt-4 sm:p-6">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Inbox className="size-4 text-muted-foreground" />
             {isArabic ? "طلبات العملاء لهذه الصفحة" : "Leads for this page"}
@@ -268,16 +270,18 @@ function LandingPageRow({
         </div>
 
         {latestLeads.length ? (
-          <div className="mt-4 grid gap-2">
+          <div className="mt-4 grid min-w-0 gap-2">
             {latestLeads.map((lead) => (
               <div
-                className="rounded-md border border-border bg-secondary/30 p-3"
+                className="min-w-0 rounded-md border border-border bg-secondary/30 p-3"
                 key={lead.id}
               >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium">{lead.customer_name}</p>
-                    <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-medium">
+                      {lead.customer_name}
+                    </p>
+                    <p className="mt-1 flex min-w-0 flex-wrap items-center gap-2 break-all text-xs text-muted-foreground">
                       {lead.customer_phone ? (
                         <span className="inline-flex items-center gap-1">
                           <Phone className="size-3" />

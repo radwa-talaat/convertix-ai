@@ -28,6 +28,20 @@ export function getDemoPublishingDashboardSnapshot(): PublishingDashboardSnapsho
       enabled: false,
       pixelId: null,
     },
+    trackingPixels: {
+      meta: {
+        enabled: false,
+        pixelId: null,
+      },
+      snapchat: {
+        enabled: false,
+        pixelId: null,
+      },
+      tiktok: {
+        enabled: false,
+        pixelId: null,
+      },
+    },
     projectId: "22222222-2222-4222-8222-222222222222",
     publicUrl,
     publishedAt: now,
@@ -62,6 +76,7 @@ export function getDemoPublishingDashboardSnapshot(): PublishingDashboardSnapsho
         ],
         hostname: "launch.example.com",
         id: "domain-demo-1",
+        pageId: page.id,
         projectId: page.projectId,
         sslStatus: "issued",
         status: "active",

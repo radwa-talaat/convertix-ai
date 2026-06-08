@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireUser } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/server";
+import { createCustomDomain } from "@/services/domains";
 import {
   publishPage,
   republishPage,
@@ -20,6 +21,37 @@ const metaPixelSettingsSchema = z.object({
     .trim()
     .regex(/^[0-9]{5,32}$/, "Enter a valid numeric Meta Pixel ID.")
     .nullable(),
+});
+
+const trackingPixelSettingsSchema = z
+  .object({
+    enabled: z.boolean(),
+    pageId: z.string().uuid(),
+    pixelId: z.string().trim().min(5).max(80).nullable(),
+    platform: z.enum(["snapchat", "tiktok"]),
+  })
+  .superRefine((value, context) => {
+    if (value.enabled && !value.pixelId) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "A Pixel ID is required before enabling tracking.",
+        path: ["pixelId"],
+      });
+      return;
+    }
+
+    if (value.pixelId && !/^[A-Za-z0-9_-]{5,80}$/.test(value.pixelId)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Enter a valid Pixel ID.",
+        path: ["pixelId"],
+      });
+    }
+  });
+
+const customDomainSchema = z.object({
+  hostname: z.string().trim().min(4).max(253),
+  pageId: z.string().uuid(),
 });
 
 export async function publishPageAction(request: PublishRequest) {
@@ -86,8 +118,92 @@ export async function updateMetaPixelSettingsAction(input: {
   }
 
   revalidatePath("/dashboard/publishing");
+  revalidatePath(`/dashboard/publishing/${parsed.pageId}/settings`);
   revalidatePath(`/p/${data.slug}`);
   revalidateTag("published-pages");
+
+  return { success: true };
+}
+
+export async function updateTrackingPixelSettingsAction(input: {
+  enabled: boolean;
+  pageId: string;
+  pixelId: string | null;
+  platform: "snapchat" | "tiktok";
+}) {
+  const user = await requireUser();
+  const parsed = trackingPixelSettingsSchema.parse({
+    ...input,
+    pixelId: input.pixelId?.trim() || null,
+  });
+
+  const updates =
+    parsed.platform === "tiktok"
+      ? {
+          tiktok_pixel_enabled: parsed.enabled,
+          tiktok_pixel_id: parsed.pixelId,
+        }
+      : {
+          snapchat_pixel_enabled: parsed.enabled,
+          snapchat_pixel_id: parsed.pixelId,
+        };
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("pages")
+    .update(updates)
+    .eq("id", parsed.pageId)
+    .eq("user_id", user.id)
+    .select("slug")
+    .single();
+
+  if (error || !data) {
+    throw new Error(
+      error?.message ?? "Tracking pixel settings could not be saved.",
+    );
+  }
+
+  revalidatePath("/dashboard/publishing");
+  revalidatePath(`/dashboard/publishing/${parsed.pageId}/settings`);
+  revalidatePath(`/p/${data.slug}`);
+  revalidateTag("published-pages");
+
+  return { success: true };
+}
+
+export async function createPageCustomDomainAction(input: {
+  hostname: string;
+  pageId: string;
+}) {
+  const user = await requireUser();
+  const parsed = customDomainSchema.parse(input);
+  const supabase = createClient();
+
+  const { data: page, error: pageError } = await supabase
+    .from("pages")
+    .select("id, project_id, slug")
+    .eq("id", parsed.pageId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (pageError || !page) {
+    throw new Error(pageError?.message ?? "Landing page was not found.");
+  }
+
+  const { data, error } = await createCustomDomain(
+    supabase,
+    user.id,
+    page.project_id,
+    page.id,
+    parsed.hostname,
+  );
+
+  if (error || !data) {
+    throw new Error(error?.message ?? "Custom domain could not be created.");
+  }
+
+  revalidatePath("/dashboard/publishing");
+  revalidatePath(`/dashboard/publishing/${page.id}/settings`);
 
   return { success: true };
 }

@@ -14,6 +14,7 @@ import type {
   CustomDomain,
   DomainDnsRecord,
   MetaPixelPage,
+  PagePublishingSettingsSnapshot,
   PublishedPage,
   PublishingDashboardSnapshot,
   PublishRequest,
@@ -212,6 +213,54 @@ export async function getPublishingDashboardSnapshot(
   };
 }
 
+export async function getPagePublishingSettingsSnapshot(
+  supabase: SupabaseDatabaseClient,
+  userId: string,
+  pageId: string,
+): Promise<PagePublishingSettingsSnapshot | null> {
+  const { data: row, error } = await supabase
+    .from("pages")
+    .select("*")
+    .eq("id", pageId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error || !row) {
+    return null;
+  }
+
+  const template =
+    parseLandingPageTemplate(row.published_content) ??
+    parseLandingPageTemplate(row.content);
+
+  if (!template) {
+    return null;
+  }
+
+  const { data: versions } = await supabase
+    .from("publish_versions")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("page_id", pageId)
+    .order("created_at", { ascending: false });
+
+  const { data: domains } = await supabase
+    .from("domains")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("page_id", row.id)
+    .order("created_at", { ascending: false });
+
+  return {
+    domains: (domains ?? []).map(mapCustomDomain),
+    page: mapPublishedPage(
+      row,
+      template,
+      (versions ?? []).map(mapPublishVersion),
+    ),
+  };
+}
+
 function mapMetaPixelPage(row: Tables<"pages">): MetaPixelPage {
   return {
     id: row.id,
@@ -299,6 +348,20 @@ function mapPublishedPage(
       enabled: row.meta_pixel_enabled,
       pixelId: row.meta_pixel_id,
     },
+    trackingPixels: {
+      meta: {
+        enabled: row.meta_pixel_enabled,
+        pixelId: row.meta_pixel_id,
+      },
+      snapchat: {
+        enabled: Boolean(row.snapchat_pixel_enabled),
+        pixelId: row.snapchat_pixel_id ?? null,
+      },
+      tiktok: {
+        enabled: Boolean(row.tiktok_pixel_enabled),
+        pixelId: row.tiktok_pixel_id ?? null,
+      },
+    },
     projectId: row.project_id,
     publicUrl: row.published_url ?? createPathPublicUrl(row.slug),
     publishedAt: row.published_at,
@@ -329,6 +392,7 @@ function mapCustomDomain(row: Tables<"domains">): CustomDomain {
     dnsRecords: parseDnsRecords(row.dns_records),
     hostname: row.hostname,
     id: row.id,
+    pageId: row.page_id,
     projectId: row.project_id,
     sslStatus: row.ssl_status,
     status: row.status,

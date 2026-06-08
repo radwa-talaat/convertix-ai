@@ -26,7 +26,7 @@ export const siteConfig = {
 export const marketingNavItems: NavigationItem[] = [
   { title: "Product", href: "#product" },
   { title: "Workflow", href: "#workflow" },
-  { title: "Pricing", href: "#pricing" },
+  { title: "Pricing", href: "/pricing" },
 ];
 
 export const dashboardNavSections: NavigationSection[] = [

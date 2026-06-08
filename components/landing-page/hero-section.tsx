@@ -1,12 +1,24 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Layers3, WandSparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Container } from "@/components/layout/container";
 import { Button } from "@/components/ui/button";
 import { BodyText, DisplayText, Eyebrow } from "@/components/ui/typography";
+import { useLocalizedPathname } from "@/hooks/i18n";
 
 export function HeroSection() {
+  const t = useTranslations("landing");
+  const localizedPath = useLocalizedPathname();
+  const consoleItems = [
+    t("consoleAudienceBrief"),
+    t("consoleContentBlocks"),
+    t("consoleResponsivePreview"),
+  ];
+
   return (
     <section className="relative overflow-hidden">
       <Container className="grid min-h-[calc(100vh-4rem)] items-center gap-12 py-20 lg:grid-cols-[1fr_0.86fr] lg:py-24">
@@ -20,23 +32,22 @@ export function HeroSection() {
               width={720}
             />
           </div>
-          <Eyebrow>AI landing pages that convert</Eyebrow>
+          <Eyebrow>{t("heroEyebrow")}</Eyebrow>
           <DisplayText className="mt-5">
-            A premium workspace for faster campaign pages.
+            {t("heroTitle")}
           </DisplayText>
           <BodyText className="mt-6 max-w-2xl text-lg">
-            Plan, draft, refine, and launch high-converting landing pages from a
-            refined SaaS foundation built for scale.
+            {t("heroDescription")}
           </BodyText>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
-              <Link href="/dashboard">
-                Open Dashboard
+              <Link href={localizedPath("/dashboard")}>
+                {t("openDashboard")}
                 <ArrowRight />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link href="#product">View Structure</Link>
+              <Link href="#product">{t("viewDetails")}</Link>
             </Button>
           </div>
         </div>
@@ -46,19 +57,15 @@ export function HeroSection() {
           <div className="relative rounded-lg border border-border bg-card p-4 shadow-luxury-md">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
-                <p className="text-sm font-medium">Campaign Console</p>
+                <p className="text-sm font-medium">{t("consoleTitle")}</p>
                 <p className="text-xs text-muted-foreground">
-                  Brand, copy, layout, publish
+                  {t("consoleSubtitle")}
                 </p>
               </div>
               <WandSparkles className="size-5 text-accent-foreground" />
             </div>
             <div className="grid gap-3 py-4">
-              {[
-                "Audience brief",
-                "AI content blocks",
-                "Responsive preview",
-              ].map((item) => (
+              {consoleItems.map((item) => (
                 <div
                   className="flex items-center gap-3 rounded-md bg-secondary/60 p-3"
                   key={item}

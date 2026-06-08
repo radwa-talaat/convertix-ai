@@ -4,9 +4,11 @@ import { PricingGrid } from "@/components/billing";
 import { Container } from "@/components/layout/container";
 import { getServerTranslator } from "@/lib/i18n/server";
 import { detectCurrencyFromCountry } from "@/lib/payments";
+import { getCurrentUser } from "@/lib/supabase/auth";
 
 export default async function PricingPage() {
   const t = await getServerTranslator("billing");
+  const user = await getCurrentUser();
   const country = headers().get("x-vercel-ip-country");
   const initialCurrency = detectCurrencyFromCountry(country);
 
@@ -23,7 +25,10 @@ export default async function PricingPage() {
           <p className="mt-4 text-muted-foreground">{t("description")}</p>
         </div>
         <div className="mt-10">
-          <PricingGrid initialCurrency={initialCurrency} />
+          <PricingGrid
+            initialCurrency={initialCurrency}
+            isAuthenticated={Boolean(user)}
+          />
         </div>
       </Container>
     </main>

@@ -40,6 +40,7 @@ export async function createCustomDomain(
   supabase: SupabaseDatabaseClient,
   userId: string,
   projectId: string,
+  pageId: string,
   hostnameInput: string,
 ) {
   const hostname = assertValidHostname(hostnameInput);
@@ -51,6 +52,7 @@ export async function createCustomDomain(
     .insert({
       dns_records: dnsRecords as unknown as Json,
       hostname,
+      page_id: pageId,
       project_id: projectId,
       ssl_status: "pending",
       status: "pending",
@@ -69,6 +71,17 @@ export async function listCustomDomainsByProject(
     .from("domains")
     .select("*")
     .eq("project_id", projectId)
+    .order("created_at", { ascending: false });
+}
+
+export async function listCustomDomainsByPage(
+  supabase: SupabaseDatabaseClient,
+  pageId: string,
+) {
+  return supabase
+    .from("domains")
+    .select("*")
+    .eq("page_id", pageId)
     .order("created_at", { ascending: false });
 }
 
@@ -95,6 +108,7 @@ export function mapDomainRow(row: Tables<"domains">): CustomDomain {
     dnsRecords: (row.dns_records as unknown as DomainDnsRecord[]) ?? [],
     hostname: row.hostname,
     id: row.id,
+    pageId: row.page_id,
     projectId: row.project_id,
     sslStatus: row.ssl_status,
     status:

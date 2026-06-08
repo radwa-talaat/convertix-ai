@@ -14,8 +14,10 @@ import type { BillingCurrency } from "@/types/billing";
 
 export function PricingGrid({
   initialCurrency,
+  isAuthenticated = true,
 }: {
   initialCurrency?: BillingCurrency;
+  isAuthenticated?: boolean;
 }) {
   const t = useTranslations("billing");
   const [currency, setCurrency] = React.useState<BillingCurrency>(
@@ -60,6 +62,7 @@ export function PricingGrid({
           <PlanCard
             currency={currency}
             current={false}
+            isAuthenticated={isAuthenticated}
             key={plan.id}
             plan={plan}
           />

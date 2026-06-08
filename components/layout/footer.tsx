@@ -1,11 +1,18 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { BrandMark } from "@/components/layout/brand-mark";
 import { Container } from "@/components/layout/container";
 import { Separator } from "@/components/ui/separator";
 import { marketingNavItems, siteConfig } from "@/config/site";
+import { useLocalizedPathname } from "@/hooks/i18n";
 
 export function Footer() {
+  const t = useTranslations("landing");
+  const localizedPath = useLocalizedPathname();
+
   return (
     <footer className="border-t border-border bg-secondary/30">
       <Container className="py-10">
@@ -15,17 +22,17 @@ export function Footer() {
             {marketingNavItems.map((item) => (
               <Link
                 className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                href={item.href}
+                href={localizedPath(item.href)}
                 key={item.href}
               >
-                {item.title}
+                {t(item.title.toLowerCase())}
               </Link>
             ))}
           </nav>
         </div>
         <Separator className="my-8" />
         <p className="text-sm text-muted-foreground">
-          {siteConfig.name}. AI landing pages that convert.
+          {siteConfig.name}. {t("footerTagline")}
         </p>
       </Container>
     </footer>
