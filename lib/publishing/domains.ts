@@ -3,7 +3,8 @@ export function normalizeHostname(hostname: string): string {
     .trim()
     .toLowerCase()
     .replace(/^https?:\/\//, "")
-    .replace(/\/.*$/, "");
+    .replace(/\/.*$/, "")
+    .replace(/^www\./, "");
 }
 
 export function isValidHostname(hostname: string): boolean {

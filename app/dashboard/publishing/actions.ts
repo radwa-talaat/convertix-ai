@@ -175,35 +175,51 @@ export async function createPageCustomDomainAction(input: {
   hostname: string;
   pageId: string;
 }) {
-  const user = await requireUser();
-  const parsed = customDomainSchema.parse(input);
-  const supabase = createClient();
+  try {
+    const user = await requireUser();
+    const parsed = customDomainSchema.parse(input);
+    const supabase = createClient();
 
-  const { data: page, error: pageError } = await supabase
-    .from("pages")
-    .select("id, project_id, slug")
-    .eq("id", parsed.pageId)
-    .eq("user_id", user.id)
-    .single();
+    const { data: page, error: pageError } = await supabase
+      .from("pages")
+      .select("id, project_id, slug")
+      .eq("id", parsed.pageId)
+      .eq("user_id", user.id)
+      .single();
 
-  if (pageError || !page) {
-    throw new Error(pageError?.message ?? "Landing page was not found.");
+    if (pageError || !page) {
+      return {
+        error: pageError?.message ?? "Landing page was not found.",
+        success: false,
+      };
+    }
+
+    const { data, error } = await createCustomDomain(
+      supabase,
+      user.id,
+      page.project_id,
+      page.id,
+      parsed.hostname,
+    );
+
+    if (error || !data) {
+      return {
+        error: error?.message ?? "Custom domain could not be created.",
+        success: false,
+      };
+    }
+
+    revalidatePath("/dashboard/publishing");
+    revalidatePath(`/dashboard/publishing/${page.id}/settings`);
+
+    return { success: true };
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Custom domain could not be created.",
+      success: false,
+    };
   }
-
-  const { data, error } = await createCustomDomain(
-    supabase,
-    user.id,
-    page.project_id,
-    page.id,
-    parsed.hostname,
-  );
-
-  if (error || !data) {
-    throw new Error(error?.message ?? "Custom domain could not be created.");
-  }
-
-  revalidatePath("/dashboard/publishing");
-  revalidatePath(`/dashboard/publishing/${page.id}/settings`);
-
-  return { success: true };
 }

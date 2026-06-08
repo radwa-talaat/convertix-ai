@@ -161,6 +161,7 @@
     "pageDomainDescription": "Connect a custom domain or subdomain to this landing page. Add the DNS records below at your domain provider.",
     "domainInputLabel": "Your custom domain",
     "domainInputHelp": "Use your root domain without https://, or a subdomain such as shop.yourdomain.com.",
+    "domainInputPlaceholder": "yourdomain.com or shop.yourdomain.com",
     "addDomain": "Add domain",
     "domainCreated": "Domain added",
     "domainCreatedDescription": "DNS instructions were generated for this landing page.",
@@ -187,6 +188,14 @@
     "trackingPixelSaved": "Pixel saved",
     "trackingPixelSavedDescription": "Tracking settings were updated for this landing page.",
     "trackingPixelSaveFailed": "Pixel could not be saved",
-    "trackingPixelInvalid": "Enter a valid Pixel ID before enabling tracking."
+    "trackingPixelInvalid": "Enter a valid Pixel ID before enabling tracking.",
+    "dnsInstructionsIntro": "Copy these values into your domain provider DNS settings. Do not add www when connecting the root domain.",
+    "domainApexNotice": "For a root domain without www, use this A record.",
+    "domainSubdomainNotice": "For a subdomain such as shop.yourdomain.com, use this CNAME record.",
+    "dnsTtl": "TTL",
+    "domainExampleTitle": "Copy-ready examples",
+    "domainExampleApex": "For yourdomain.com without www: host @, type A, value 76.76.21.21, and TTL 3600.",
+    "domainExampleSubdomain": "For shop.yourdomain.com: host shop, type CNAME, value cname.vercel-dns.com, and TTL 3600.",
+    "domainVerificationAfterAdd": "The verification token appears after adding the domain"
   }
 }

@@ -27,8 +27,8 @@ export function LanguageSwitcher() {
 
   function switchLanguage() {
     document.cookie = `${localeCookieName}=${nextLocale}; path=/; max-age=31536000; samesite=lax`;
-    router.push(href);
-    router.refresh();
+    router.prefetch(href);
+    window.location.assign(href);
   }
 
   return (

@@ -328,29 +328,38 @@ function DomainSettingsCard({
   const { toast } = useToast();
   const [hostname, setHostname] = React.useState("");
   const [pending, startTransition] = React.useTransition();
+  const previewRecords = React.useMemo(
+    () =>
+      createPreviewDnsRecords(
+        hostname || "shop.yourdomain.com",
+        t("domainVerificationAfterAdd"),
+      ),
+    [hostname, t],
+  );
 
   function addDomain(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     startTransition(async () => {
-      try {
-        await createPageCustomDomainAction({
-          hostname,
-          pageId: page.id,
-        });
-        setHostname("");
+      const result = await createPageCustomDomainAction({
+        hostname,
+        pageId: page.id,
+      });
+
+      if (!result.success) {
         toast({
-          description: t("domainCreatedDescription"),
-          title: t("domainCreated"),
-        });
-      } catch (error) {
-        toast({
-          description:
-            error instanceof Error ? error.message : t("domainCreateFailed"),
+          description: result.error ?? t("domainCreateFailed"),
           title: t("domainCreateFailed"),
           variant: "destructive",
         });
+        return;
       }
+
+      setHostname("");
+      toast({
+        description: t("domainCreatedDescription"),
+        title: t("domainCreated"),
+      });
     });
   }
 
@@ -375,7 +384,7 @@ function DomainSettingsCard({
             <Input
               id="custom-domain"
               onChange={(event) => setHostname(event.target.value)}
-              placeholder="shop.yourdomain.com"
+              placeholder={t("domainInputPlaceholder")}
               required
               value={hostname}
             />
@@ -392,6 +401,53 @@ function DomainSettingsCard({
             {t("addDomain")}
           </Button>
         </form>
+
+        <div className="space-y-4 rounded-lg border border-border bg-background p-5">
+          <div className="space-y-2">
+            <p className="font-semibold">{t("dnsRecordsTitle")}</p>
+            <p className="text-sm leading-6 text-muted-foreground">
+              {t("dnsInstructionsIntro")}
+            </p>
+          </div>
+          <div className="grid gap-3 lg:grid-cols-2">
+            <DnsExampleCard
+              description={t("domainApexNotice")}
+              records={createPreviewDnsRecords(
+                "yourdomain.com",
+                t("domainVerificationAfterAdd"),
+              )}
+              title="yourdomain.com"
+            />
+            <DnsExampleCard
+              description={t("domainSubdomainNotice")}
+              records={createPreviewDnsRecords(
+                "shop.yourdomain.com",
+                t("domainVerificationAfterAdd"),
+              )}
+              title="shop.yourdomain.com"
+            />
+          </div>
+          <div className="rounded-md border border-border bg-secondary/20 p-4">
+            <p className="text-sm font-semibold">{t("domainExampleTitle")}</p>
+            <div className="mt-3 space-y-2 text-sm leading-6 text-muted-foreground">
+              <p>{t("domainExampleApex")}</p>
+              <p>{t("domainExampleSubdomain")}</p>
+            </div>
+          </div>
+          {hostname ? (
+            <div className="space-y-3">
+              <p className="text-sm font-semibold">{hostname}</p>
+              <div className="overflow-hidden rounded-md border border-border">
+                {previewRecords.map((record) => (
+                  <DnsRecordRow
+                    key={`preview-${record.type}-${record.host}-${record.value}`}
+                    record={record}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
 
         {domains.length === 0 ? (
           <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
@@ -461,8 +517,37 @@ function DnsRecordRow({ record }: { record: DomainDnsRecord }) {
       <DnsValue label={t("dnsHost")} value={record.host} />
       <DnsValue label={t("dnsType")} value={record.type} />
       <DnsValue label={t("dnsValue")} value={record.value} />
-      <DnsValue label="TTL" value="3600" />
+      <DnsValue label={t("dnsTtl")} value="3600" />
       <CopyDnsValue value={record.value} />
+    </div>
+  );
+}
+
+function DnsExampleCard({
+  description,
+  records,
+  title,
+}: {
+  description: string;
+  records: DomainDnsRecord[];
+  title: string;
+}) {
+  return (
+    <div className="space-y-3 rounded-md border border-border p-4">
+      <div>
+        <p className="font-semibold">{title}</p>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+          {description}
+        </p>
+      </div>
+      <div className="overflow-hidden rounded-md border border-border">
+        {records.map((record) => (
+          <DnsRecordRow
+            key={`example-${title}-${record.type}-${record.host}-${record.value}`}
+            record={record}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -496,4 +581,36 @@ function CopyDnsValue({ value }: { value: string }) {
       {copied ? t("copied") : t("copyValue")}
     </Button>
   );
+}
+
+function createPreviewDnsRecords(
+  hostnameInput: string,
+  verificationPlaceholder: string,
+): DomainDnsRecord[] {
+  const hostname = hostnameInput
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/.*$/, "")
+    .replace(/^www\./, "");
+  const isApex = hostname.split(".").length === 2;
+
+  return [
+    isApex
+      ? {
+          host: "@",
+          type: "A",
+          value: "76.76.21.21",
+        }
+      : {
+          host: hostname.split(".")[0] || "shop",
+          type: "CNAME",
+          value: "cname.vercel-dns.com",
+        },
+    {
+      host: "_ai-builder-verify",
+      type: "TXT",
+      value: verificationPlaceholder,
+    },
+  ];
 }

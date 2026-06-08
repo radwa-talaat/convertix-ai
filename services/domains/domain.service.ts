@@ -1,10 +1,6 @@
 import { randomBytes } from "crypto";
 
-import {
-  assertValidHostname,
-  getAppHostname,
-  getDnsTarget,
-} from "@/lib/publishing";
+import { assertValidHostname } from "@/lib/publishing";
 import type { SupabaseDatabaseClient } from "@/services/database/types";
 import type { Json, Tables } from "@/types/database";
 import type { CustomDomain, DomainDnsRecord } from "@/types/publishing";
@@ -13,7 +9,6 @@ export function createDomainDnsRecords(
   hostname: string,
   verificationToken: string,
 ): DomainDnsRecord[] {
-  const appHostname = getAppHostname();
   const isApex = hostname.split(".").length === 2;
 
   return [
@@ -26,7 +21,7 @@ export function createDomainDnsRecords(
       : {
           host: hostname.split(".")[0],
           type: "CNAME",
-          value: getDnsTarget(appHostname),
+          value: "cname.vercel-dns.com",
         },
     {
       host: "_ai-builder-verify",
