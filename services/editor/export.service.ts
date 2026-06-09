@@ -58,23 +58,32 @@ export async function downloadEditorLayerPngs() {
   }
 
   const { toPng } = await import("html-to-image");
+  const exportHost = createPngExportHost();
 
-  for (let index = 0; index < sections.length; index += 1) {
-    const section = sections[index];
-    const sectionId = section.dataset.editorSectionId || `layer-${index + 1}`;
-    const dataUrl = await toPng(section, {
-      cacheBust: true,
-      filter: (node) =>
-        !(node instanceof HTMLElement && node.dataset.editorChrome === "true"),
-      pixelRatio: 3,
-    });
+  try {
+    for (let index = 0; index < sections.length; index += 1) {
+      const section = sections[index];
+      const sectionId = section.dataset.editorSectionId || `layer-${index + 1}`;
+      const clone = createCleanExportSection(section);
+      exportHost.appendChild(clone);
 
-    downloadDataUrl(
-      dataUrl,
-      `${String(index + 1).padStart(2, "0")}-${sanitizeFileName(sectionId)}.png`,
-    );
+      const dataUrl = await toPng(clone, {
+        cacheBust: true,
+        filter: (node) =>
+          !(node instanceof HTMLElement && node.dataset.editorChrome === "true"),
+        pixelRatio: 3,
+      });
 
-    await wait(250);
+      downloadDataUrl(
+        dataUrl,
+        `${String(index + 1).padStart(2, "0")}-${sanitizeFileName(sectionId)}.png`,
+      );
+
+      clone.remove();
+      await wait(250);
+    }
+  } finally {
+    exportHost.remove();
   }
 }
 
@@ -151,6 +160,38 @@ function downloadDataUrl(url: string, filename: string) {
   document.body.appendChild(link);
   link.click();
   link.remove();
+}
+
+function createPngExportHost() {
+  const host = document.createElement("div");
+  host.setAttribute("aria-hidden", "true");
+  host.style.left = "-10000px";
+  host.style.position = "fixed";
+  host.style.top = "0";
+  host.style.width = "1440px";
+  host.style.zIndex = "-1";
+  document.body.appendChild(host);
+
+  return host;
+}
+
+function createCleanExportSection(section: HTMLElement) {
+  const clone = section.cloneNode(true) as HTMLElement;
+
+  clone.querySelectorAll(editorChromeSelector).forEach((node) => node.remove());
+  clone
+    .querySelectorAll("[contenteditable]")
+    .forEach((node) => node.removeAttribute("contenteditable"));
+
+  clone.style.border = "0";
+  clone.style.borderRadius = "0";
+  clone.style.boxShadow = "none";
+  clone.style.maxWidth = "1440px";
+  clone.style.transform = "none";
+  clone.style.transition = "none";
+  clone.style.width = "1440px";
+
+  return clone;
 }
 
 function sanitizeFileName(value: string) {

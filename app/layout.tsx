@@ -26,6 +26,8 @@ const geistMono = localFont({
 export async function generateMetadata(): Promise<Metadata> {
   const locale = getRequestLocale();
   const title = siteConfig.name;
+  const iconUrl = "/brand/convertix-icon.png";
+  const shareImageUrl = "/brand/convertix-wordmark.png";
   const description =
     locale === "ar"
       ? "منصة Convertix لإنشاء وتعديل ونشر صفحات هبوط احترافية بالذكاء الاصطناعي."
@@ -37,9 +39,22 @@ export async function generateMetadata(): Promise<Metadata> {
       languages: Object.fromEntries(locales.map((item) => [item, `/${item}`])),
     },
     description,
+    icons: {
+      apple: [{ url: iconUrl, type: "image/png" }],
+      icon: [{ url: iconUrl, type: "image/png" }],
+      shortcut: [{ url: iconUrl, type: "image/png" }],
+    },
     metadataBase: new URL(siteConfig.url),
     openGraph: {
       description,
+      images: [
+        {
+          alt: "Convertix - AI landing pages that convert",
+          height: 512,
+          url: shareImageUrl,
+          width: 1024,
+        },
+      ],
       locale: locale === "ar" ? "ar_EG" : "en_US",
       siteName: siteConfig.name,
       title,
@@ -53,6 +68,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       description,
+      images: [shareImageUrl],
       title,
     },
   };

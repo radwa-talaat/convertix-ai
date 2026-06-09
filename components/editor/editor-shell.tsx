@@ -55,7 +55,7 @@ export function EditorShell({ pageId, template }: EditorShellProps) {
 
   return (
     <CraftEditor enabled={false} resolver={{}}>
-      <div className="flex h-[calc(100vh-4rem)] min-h-[720px] flex-col overflow-hidden rounded-lg border border-border bg-background shadow-2xl">
+      <div className="flex h-[calc(100vh-7.5rem)] min-h-[760px] flex-col overflow-hidden border border-border bg-background shadow-2xl lg:h-[calc(100vh-6rem)]">
         <EditorToolbar pageId={pageId} />
         {ready ? (
           <div className="flex min-h-0 flex-1">

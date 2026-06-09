@@ -55,7 +55,7 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
   return (
     <div
       className={cn(
-        "group relative rounded-lg border border-transparent transition-all duration-200",
+        "group relative overflow-hidden rounded-md border border-transparent transition-all duration-200",
         selected && "border-foreground shadow-2xl",
         isDragging && "z-30 scale-[0.99] opacity-80",
         (!section.visible || hiddenOnDevice) && "opacity-45",
@@ -65,6 +65,10 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
       ref={setNodeRef}
       style={{
         backgroundColor: style.backgroundColor,
+        minHeight:
+          style.sectionMinHeight && style.sectionMinHeight > 0
+            ? `${style.sectionMinHeight}px`
+            : undefined,
         paddingBottom: spacing?.value,
         paddingTop: spacing?.value,
         textAlign: style.align,
@@ -79,6 +83,7 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-0 size-full object-cover"
           src={style.backgroundImageUrl}
+          style={{ opacity: (style.backgroundImageOpacity ?? 100) / 100 }}
         />
       ) : null}
 
@@ -189,13 +194,19 @@ export function SortableSectionFrame({ section }: SortableSectionFrameProps) {
         // eslint-disable-next-line @next/next/no-img-element
         <img
           alt={`${section.type} media`}
-          className="pointer-events-none absolute z-20 max-w-[70%] rounded-lg border border-border bg-background object-contain p-2 shadow-2xl"
+          className="pointer-events-none absolute z-20 max-w-[90%] border border-border bg-background object-contain p-2 shadow-2xl"
           src={style.foregroundImageUrl}
           style={{
+            borderRadius: `${style.foregroundImageRadius ?? 12}px`,
+            height:
+              style.foregroundImageHeight && style.foregroundImageHeight > 0
+                ? `${style.foregroundImageHeight}px`
+                : undefined,
             left: `${style.foregroundImageX ?? 82}%`,
+            opacity: (style.foregroundImageOpacity ?? 100) / 100,
             top: `${style.foregroundImageY ?? 72}%`,
             transform: "translate(-50%, -50%)",
-            width: `min(${style.foregroundImageWidth ?? 220}px, 70%)`,
+            width: `min(${style.foregroundImageWidth ?? 220}px, 90%)`,
           }}
         />
       ) : null}

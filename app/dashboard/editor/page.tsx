@@ -39,7 +39,9 @@ export default async function EditorPage({ searchParams }: EditorPageProps) {
           {t("starterTemplateNotice")}
         </Alert>
       ) : null}
-      <EditorShell pageId={loadedPage?.id} template={template} />
+      <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+        <EditorShell pageId={loadedPage?.id} template={template} />
+      </div>
     </div>
   );
 }

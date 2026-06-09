@@ -54,8 +54,8 @@ export function AiPreviewPanel({
             </p>
             <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
               {isArabic
-                ? "اكتب بيانات المشروع لمعاينة محتوى صفحة الهبوط قبل حفظه وتعديله."
-                : "Submit a brief to preview structured landing page copy before it moves into future editor workflows."}
+                ? "اكتب بيانات المنتج لمعاينة محتوى صفحة الهبوط قبل حفظها وتعديلها."
+                : "Submit a brief to preview structured landing page copy before saving and editing it."}
             </p>
           </div>
         </CardContent>
@@ -148,7 +148,7 @@ export function AiPreviewPanel({
                 {isArabic ? "اتجاه التصميم" : "Design Direction"}
               </p>
               <p className="mt-1 text-xs capitalize text-muted-foreground">
-                {design.theme} · {design.typographyStyle} ·{" "}
+                {design.theme} - {design.typographyStyle} -{" "}
                 {design.imagePlacement}
               </p>
             </div>

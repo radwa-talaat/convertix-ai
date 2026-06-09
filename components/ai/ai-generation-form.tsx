@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { AlertCircle, ImagePlus, Loader2, Sparkles } from "lucide-react";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 
 import { createLandingPageFromAiAction } from "@/app/dashboard/projects/actions";
 import { AiPreviewPanel } from "@/components/ai/ai-preview-panel";
@@ -15,143 +15,313 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { createApiPath } from "@/lib/api/urls";
-import type { AppLocale } from "@/lib/i18n/config";
-import type { AiGenerationInput, AiGenerationResult } from "@/types/ai";
+import type {
+  AiGenerationInput,
+  AiGenerationResult,
+  AiLandingPageContent,
+  AiLandingPageDesign,
+  AiLanguage,
+} from "@/types/ai";
 
-type GenerationStatus =
-  | "idle"
-  | "validating"
-  | "generating"
-  | "parsing"
-  | "saving"
-  | "success"
-  | "error";
+type GenerationStatus = "idle" | "loading" | "success" | "error";
 
-const initialInputDefaults: AiGenerationInput = {
-  brandStyle: "Minimal luxury",
-  businessName: "",
-  businessType: "",
-  customerProblem: "",
-  dialect: "",
-  goal: "",
-  keyBenefits: "",
-  language: "en",
-  offer: "",
-  orderMethod: "",
-  productCategory: "",
-  productPrice: "",
-  salesCountry: "",
-  targetAudience: "",
-  toneOfVoice: "Confident and clear",
-};
-
-const progressLabels: Record<GenerationStatus, string> = {
-  error: "Generation failed",
-  generating: "Generating structured copy",
-  idle: "Ready",
-  parsing: "Validating JSON output",
-  saving: "Saving draft page",
-  success: "Content generated",
-  validating: "Validating brief",
-};
-
-type AiGenerationFormProps = {
-  initialInput?: Partial<AiGenerationInput>;
+interface AiGenerationFormProps {
   projectId?: string;
   projectName?: string;
+  initialContent?: AiLandingPageContent | null;
+  initialDesign?: AiLandingPageDesign | null;
+  initialInput?: Partial<AiGenerationInput>;
+  savedPageSlug?: string | null;
+  showHeader?: boolean;
+}
+
+const initialInputDefaults: AiGenerationInput = {
+  businessName: "",
+  businessType: "",
+  targetAudience: "",
+  goal: "",
+  brandStyle: "Premium conversion-focused landing page",
+  language: "en",
+  toneOfVoice: "Confident and clear",
+  productCategory: "",
+  productPrice: "",
+  offer: "",
+  orderMethod: "Lead form or WhatsApp",
+  salesCountry: "",
+  dialect: "",
+  customerProblem: "",
+  keyBenefits: "",
 };
 
+const copy = {
+  ar: {
+    eyebrow: "محرك الذكاء الاصطناعي",
+    title: "إنشاء صفحة هبوط",
+    description: "املأ أهم بيانات المنتج، وسننشئ محتوى وتسلسل أقسام مناسب للبيع والتحويل.",
+    formTitle: "بيانات المنتج",
+    businessName: "اسم المنتج / النشاط",
+    businessType: "نوع المنتج / الخدمة",
+    targetAudience: "الجمهور المستهدف",
+    goal: "الهدف من الصفحة",
+    toneOfVoice: "نبرة المحتوى",
+    offer: "السعر أو عرض المنتج",
+    keyBenefits: "أهم فوائد المنتج",
+    customerProblem: "مشكلات العميل",
+    productImage: "صورة المنتج",
+    productImageUrl: "أو الصق رابط صورة المنتج",
+    uploadImage: "رفع صورة المنتج",
+    imageReady: "تم تجهيز صورة المنتج",
+    generate: "إنشاء المحتوى",
+    generating: "جاري الإنشاء",
+    saveDraft: "حفظ كمسودة",
+    placeholders: {
+      businessName: "مثال: Stronger With You",
+      businessType: "مثال: برفان رجالي فاخر",
+      targetAudience: "مثال: شباب ورجال يبحثون عن ثبات وفخامة",
+      goal: "مثال: زيادة طلبات الشراء من صفحة الهبوط",
+      toneOfVoice: "مثال: فاخر، مباشر، مقنع",
+      offer: "مثال: 650 جنيه بدل 850 لفترة محدودة",
+      keyBenefits: "اكتب كل فائدة في سطر: ثبات طويل، رائحة فاخرة، مناسب للهدايا",
+      customerProblem: "اكتب كل مشكلة في سطر: رائحة لا تثبت، سعر مبالغ فيه، صعوبة اختيار هدية",
+      productImageUrl: "https://example.com/product.png",
+    },
+    alerts: {
+      success: "تم إنشاء المحتوى بنجاح.",
+      error: "تعذر إنشاء المحتوى.",
+      saveSuccess: "تم حفظ صفحة الهبوط كمسودة.",
+      saveError: "تعذر حفظ المسودة.",
+      imageTooLarge: "الصورة كبيرة. استخدم صورة أقل من 1.5MB.",
+    },
+    progress: {
+      brief: "تحليل المنتج والجمهور",
+      copy: "كتابة الرسائل التسويقية",
+      design: "اقتراح ألوان وأقسام مناسبة",
+      validate: "مراجعة الجودة قبل العرض",
+    },
+  },
+  en: {
+    eyebrow: "AI Engine",
+    title: "Generate a landing page",
+    description: "Add the core product details and Convertix will create conversion-focused copy and a matching section plan.",
+    formTitle: "Product brief",
+    businessName: "Product / business name",
+    businessType: "Product / service type",
+    targetAudience: "Target audience",
+    goal: "Page goal",
+    toneOfVoice: "Tone of content",
+    offer: "Price or offer",
+    keyBenefits: "Top product benefits",
+    customerProblem: "Customer problems",
+    productImage: "Product image",
+    productImageUrl: "Or paste a product image URL",
+    uploadImage: "Upload product image",
+    imageReady: "Product image ready",
+    generate: "Generate content",
+    generating: "Generating",
+    saveDraft: "Save draft",
+    placeholders: {
+      businessName: "Example: Stronger With You",
+      businessType: "Example: premium men's perfume",
+      targetAudience: "Example: men looking for long-lasting luxury scents",
+      goal: "Example: increase landing page purchase requests",
+      toneOfVoice: "Example: premium, direct, persuasive",
+      offer: "Example: EGP 650 instead of EGP 850 for a limited time",
+      keyBenefits: "One benefit per line: long-lasting, premium scent, gift-ready",
+      customerProblem: "One problem per line: weak scent, overpriced perfumes, hard gift choices",
+      productImageUrl: "https://example.com/product.png",
+    },
+    alerts: {
+      success: "Content generated successfully.",
+      error: "Content generation failed.",
+      saveSuccess: "Landing page draft saved.",
+      saveError: "Draft could not be saved.",
+      imageTooLarge: "The image is too large. Use an image under 1.5MB.",
+    },
+    progress: {
+      brief: "Reading the product brief",
+      copy: "Writing conversion copy",
+      design: "Choosing sections and styling",
+      validate: "Validating output quality",
+    },
+  },
+} as const;
+
 export function AiGenerationForm({
-  initialInput,
   projectId,
   projectName,
-}: AiGenerationFormProps = {}) {
-  const locale = useLocale() as AppLocale;
-  const commonT = useTranslations("common");
+  initialContent,
+  initialDesign,
+  initialInput,
+  savedPageSlug,
+  showHeader = true,
+}: AiGenerationFormProps) {
+  const locale = useLocale();
+  const activeLanguage: AiLanguage = locale === "ar" ? "ar" : "en";
+  const isArabic = locale === "ar";
+  const t = isArabic ? copy.ar : copy.en;
   const { toast } = useToast();
-  const [input, setInput] = React.useState<AiGenerationInput>({
+  const [input, setInput] = React.useState<AiGenerationInput>(() => ({
     ...initialInputDefaults,
     ...initialInput,
     businessName: initialInput?.businessName ?? projectName ?? "",
-    brandStyle: initialInput?.brandStyle ?? initialInputDefaults.brandStyle,
-    businessType: initialInput?.businessType ?? "",
-    goal: initialInput?.goal ?? "",
-    language: initialInput?.language ?? locale,
-    targetAudience: initialInput?.targetAudience ?? "",
-    toneOfVoice: initialInput?.toneOfVoice ?? initialInputDefaults.toneOfVoice,
-  });
-  const [result, setResult] = React.useState<AiGenerationResult | null>(null);
-  const [status, setStatus] = React.useState<GenerationStatus>("idle");
+    language: activeLanguage,
+  }));
+  const [result, setResult] = React.useState<AiGenerationResult | null>(
+    initialContent && initialDesign
+      ? {
+          content: initialContent,
+          design: initialDesign,
+          fallbackUsed: false,
+          model: "saved",
+          usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
+        }
+      : null,
+  );
+  const [status, setStatus] = React.useState<GenerationStatus>(initialContent ? "success" : "idle");
   const [error, setError] = React.useState<string | null>(null);
-  const [savedPageId, setSavedPageId] = React.useState<string | null>(null);
-  const [savedPageSlug, setSavedPageSlug] = React.useState<string | null>(null);
-  const [generatedHeroImageUrl, setGeneratedHeroImageUrl] = React.useState<
-    string | null
-  >(null);
-  const [isGeneratingImage, setIsGeneratingImage] = React.useState(false);
-  const [imageName, setImageName] = React.useState<string | null>(null);
+  const [progressStep, setProgressStep] = React.useState(0);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [generatedHeroImageUrl, setGeneratedHeroImageUrl] = React.useState<string | null>(null);
 
-  const isLoading =
-    status === "validating" ||
-    status === "generating" ||
-    status === "parsing" ||
-    status === "saving";
+  const progressLabels = React.useMemo(
+    () => [t.progress.brief, t.progress.copy, t.progress.design, t.progress.validate],
+    [t],
+  );
 
-  function updateInput<Key extends keyof AiGenerationInput>(
-    key: Key,
-    value: AiGenerationInput[Key],
-  ) {
-    setInput((current) => ({ ...current, [key]: value }));
+  React.useEffect(() => {
+    setInput((current) => ({
+      ...current,
+      language: activeLanguage,
+      dialect: activeLanguage === "ar" ? "Arabic, clear and locally persuasive" : "",
+      orderMethod: activeLanguage === "ar" ? "نموذج طلب أو واتساب" : "Lead form or WhatsApp",
+    }));
+  }, [activeLanguage]);
+
+  React.useEffect(() => {
+    if (status !== "loading") {
+      return;
+    }
+
+    setProgressStep(0);
+    const interval = window.setInterval(() => {
+      setProgressStep((step) => Math.min(step + 1, progressLabels.length - 1));
+    }, 900);
+
+    return () => window.clearInterval(interval);
+  }, [progressLabels.length, status]);
+
+  function updateField(field: keyof AiGenerationInput, value: string) {
+    setInput((current) => ({ ...current, [field]: value }));
   }
 
-  async function submitGeneration(event: React.FormEvent<HTMLFormElement>) {
+  function updateOffer(value: string) {
+    setInput((current) => ({
+      ...current,
+      offer: value,
+      productPrice: value,
+    }));
+  }
+
+  function buildPayload(): AiGenerationInput {
+    return {
+      ...input,
+      businessName: input.businessName.trim(),
+      businessType: input.businessType.trim(),
+      productCategory: input.businessType.trim(),
+      targetAudience: input.targetAudience.trim(),
+      goal: input.goal.trim(),
+      toneOfVoice: input.toneOfVoice.trim(),
+      productPrice: (input.offer ?? "").trim(),
+      offer: (input.offer ?? "").trim(),
+      keyBenefits: input.keyBenefits?.trim(),
+      customerProblem: input.customerProblem?.trim(),
+      brandStyle: "Premium, mobile-first, conversion-focused, visually tailored to the product",
+      language: activeLanguage,
+      dialect: activeLanguage === "ar" ? "Arabic copy suitable for Egyptian and Gulf audiences" : "",
+    };
+  }
+
+  async function handleProductImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (file.size > 1_500_000) {
+      toast({
+        variant: "destructive",
+        title: t.alerts.imageTooLarge,
+      });
+      event.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      updateField("productImageUrl", String(reader.result));
+      toast({ title: t.imageReady });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function generateHeroImage(content: AiLandingPageContent) {
+    try {
+      const response = await fetch(createApiPath("/ai/images"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: [
+            `Product: ${input.businessName}`,
+            `Type: ${input.businessType}`,
+            `Offer: ${input.offer ?? input.productPrice ?? "premium offer"}`,
+            `Style: premium ecommerce landing page hero background, clean composition, product-focused, high contrast, no readable text`,
+            `Language direction: ${locale === "ar" ? "RTL Arabic layout" : "LTR English layout"}`,
+            `Headline context: ${content.headline}`,
+          ].join("\n"),
+          size: "1024x1024",
+        }),
+      });
+
+      const payload = (await response.json()) as { imageUrl?: string };
+      if (payload.imageUrl) {
+        setGeneratedHeroImageUrl(payload.imageUrl);
+      }
+    } catch {
+      setGeneratedHeroImageUrl(null);
+    }
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setStatus("loading");
     setError(null);
-    setStatus("validating");
+    setGeneratedHeroImageUrl(null);
 
     try {
-      setStatus("generating");
+      const payload = buildPayload();
       const response = await fetch(createApiPath("/ai/generate"), {
-        body: JSON.stringify({ ...input, projectId }),
-        headers: {
-          "Content-Type": "application/json",
-        },
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, projectId }),
       });
+      const data = (await response.json()) as AiGenerationResult & { error?: string };
 
-      const payload = (await response.json()) as
-        | AiGenerationResult
-        | { message?: string };
-
-      if (!response.ok) {
-        throw new Error(
-          "message" in payload && payload.message
-            ? payload.message
-            : "AI generation failed.",
-        );
+      if (!response.ok || data.error) {
+        throw new Error(data.error ?? t.alerts.error);
       }
 
-      setStatus("parsing");
-      setResult(payload as AiGenerationResult);
-      setGeneratedHeroImageUrl(null);
-      setSavedPageId(null);
-      setSavedPageSlug(null);
+      setResult(data);
       setStatus("success");
-      toast({
-        description: "Structured JSON content is ready for review.",
-        title: "AI content generated",
-      });
-    } catch (generationError) {
-      const message =
-        generationError instanceof Error
-          ? generationError.message
-          : "AI generation failed.";
+      toast({ title: t.alerts.success });
+      void generateHeroImage(data.content);
+    } catch (caughtError) {
+      const message = caughtError instanceof Error ? caughtError.message : t.alerts.error;
       setError(message);
       setStatus("error");
       toast({
-        description: message,
-        title: "Generation failed",
         variant: "destructive",
+        title: t.alerts.error,
+        description: message,
       });
     }
   }
@@ -161,11 +331,9 @@ export function AiGenerationForm({
       return;
     }
 
-    setError(null);
-    setStatus("saving");
-
+    setIsSaving(true);
     try {
-      const page = await createLandingPageFromAiAction(
+      const response = await createLandingPageFromAiAction(
         projectId,
         result.content,
         input.language,
@@ -173,350 +341,151 @@ export function AiGenerationForm({
         result.design,
         generatedHeroImageUrl ?? undefined,
       );
-      setSavedPageId(page.id);
-      setSavedPageSlug(page.slug);
-      setStatus("success");
-      toast({
-        description: "The generated landing page was saved as a draft.",
-        title: "Draft page saved",
-      });
-    } catch (saveError) {
-      const message =
-        saveError instanceof Error
-          ? saveError.message
-          : "Draft page could not be saved.";
-      setError(message);
-      setStatus("error");
-      toast({
-        description: message,
-        title: "Save failed",
-        variant: "destructive",
-      });
-    }
-  }
 
-  function handleProductImageUpload(file?: File) {
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      setError("Please upload an image file.");
-      return;
-    }
-
-    if (file.size > 900_000) {
-      setError("Image is too large. Please upload an image under 900KB.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const value = typeof reader.result === "string" ? reader.result : "";
-      updateInput("productImageUrl", value);
-      setImageName(file.name);
-      setError(null);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  async function generateHeroImage() {
-    if (!result) {
-      return;
-    }
-
-    setError(null);
-    setIsGeneratingImage(true);
-
-    try {
-      const response = await fetch(createApiPath("/ai/images"), {
-        body: JSON.stringify({
-          projectId,
-          prompt: [
-            result.design.imagePrompts.heroBackground,
-            result.design.imagePrompts.productScene,
-            `Business: ${input.businessName}`,
-            `Category: ${input.productCategory || input.businessType}`,
-            `Brand style: ${input.brandStyle}`,
-          ].join(". "),
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-      });
-      const payload = (await response.json()) as
-        | { dataUrl: string; model: string }
-        | { message?: string };
-
-      if (!response.ok || !("dataUrl" in payload)) {
-        throw new Error(
-          "message" in payload && payload.message
-            ? payload.message
-            : "Image generation failed.",
-        );
+      if (!response?.id) {
+        throw new Error(t.alerts.saveError);
       }
 
-      setGeneratedHeroImageUrl(payload.dataUrl);
       toast({
-        description: `Hero image generated with ${payload.model}.`,
-        title: "AI image ready",
+        title: t.alerts.saveSuccess,
+        description: response.slug ? `/${response.slug}` : undefined,
       });
-    } catch (imageError) {
-      const message =
-        imageError instanceof Error
-          ? imageError.message
-          : "Image generation failed.";
-      setError(message);
+    } catch (caughtError) {
+      const message = caughtError instanceof Error ? caughtError.message : t.alerts.saveError;
       toast({
-        description: message,
-        title: "Image generation failed",
         variant: "destructive",
+        title: t.alerts.saveError,
+        description: message,
       });
     } finally {
-      setIsGeneratingImage(false);
+      setIsSaving(false);
     }
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-      <PageHeader
-        description={
-          locale === "ar"
-            ? "أنشئ محتوى صفحة هبوط منظم من وصف بسيط للمشروع. الناتج JSON فقط وليس HTML."
-            : "Generate structured landing page copy from a concise business brief. Output is JSON only and never HTML."
-        }
-        eyebrow={locale === "ar" ? "محرك الذكاء الاصطناعي" : "AI Engine"}
-        title={
-          projectName
-            ? locale === "ar"
-              ? `منشئ ${projectName} بالذكاء الاصطناعي`
-              : `${projectName} AI Builder`
-            : locale === "ar"
-              ? "إنشاء المحتوى"
-              : "Content Generation"
-        }
-      />
+    <div className="space-y-8">
+      {showHeader ? (
+        <PageHeader eyebrow={t.eyebrow} title={t.title} description={t.description} />
+      ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,0.92fr)_minmax(420px,1fr)]">
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between gap-3">
-              <CardTitle>
-                {locale === "ar" ? "بيانات التوليد" : "Generation Brief"}
-              </CardTitle>
-              <GenerationProgress locale={locale} status={status} />
-            </div>
+            <CardTitle>{t.formTitle}</CardTitle>
           </CardHeader>
           <CardContent>
-            {error ? (
-              <Alert className="mb-4 border-destructive/30 text-destructive">
-                <AlertCircle className="mr-2 inline size-4" />
-                {error}
-              </Alert>
-            ) : null}
-            <form className="space-y-4" onSubmit={submitGeneration}>
-              <Field
-                label={locale === "ar" ? "اسم النشاط" : "Business Name"}
-                name="businessName"
-                onChange={(value) => updateInput("businessName", value)}
-                placeholder="Acme Growth"
+            <form className="space-y-5" onSubmit={handleSubmit}>
+              <FormInput
+                label={t.businessName}
                 value={input.businessName}
+                placeholder={t.placeholders.businessName}
+                onChange={(value) => updateField("businessName", value)}
+                required
               />
-              <Field
-                label={locale === "ar" ? "نوع النشاط" : "Business Type"}
-                name="businessType"
-                onChange={(value) => updateInput("businessType", value)}
-                placeholder="B2B SaaS analytics platform"
+              <FormInput
+                label={t.businessType}
                 value={input.businessType}
+                placeholder={t.placeholders.businessType}
+                onChange={(value) => updateField("businessType", value)}
+                required
               />
-              <Field
-                label={locale === "ar" ? "الجمهور المستهدف" : "Target Audience"}
-                name="targetAudience"
-                onChange={(value) => updateInput("targetAudience", value)}
-                placeholder="Marketing teams at mid-market SaaS companies"
+              <FormInput
+                label={t.targetAudience}
                 value={input.targetAudience}
+                placeholder={t.placeholders.targetAudience}
+                onChange={(value) => updateField("targetAudience", value)}
+                required
               />
-              <Field
-                label={locale === "ar" ? "الهدف" : "Goal"}
-                name="goal"
-                onChange={(value) => updateInput("goal", value)}
-                placeholder="Increase demo bookings"
+              <FormInput
+                label={t.goal}
                 value={input.goal}
+                placeholder={t.placeholders.goal}
+                onChange={(value) => updateField("goal", value)}
+                required
               />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  label={locale === "ar" ? "ستايل البراند" : "Brand Style"}
-                  name="brandStyle"
-                  onChange={(value) => updateInput("brandStyle", value)}
-                  value={input.brandStyle}
-                />
-                <Field
-                  label={locale === "ar" ? "نبرة الصوت" : "Tone of Voice"}
-                  name="toneOfVoice"
-                  onChange={(value) => updateInput("toneOfVoice", value)}
+              <div className="grid gap-4 md:grid-cols-2">
+                <FormInput
+                  label={t.toneOfVoice}
                   value={input.toneOfVoice}
+                  placeholder={t.placeholders.toneOfVoice}
+                  onChange={(value) => updateField("toneOfVoice", value)}
                 />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  label={locale === "ar" ? "فئة المنتج" : "Product Category"}
-                  name="productCategory"
-                  onChange={(value) => updateInput("productCategory", value)}
-                  placeholder="Perfume, supplement, clinic, course"
-                  required={false}
-                  value={input.productCategory ?? ""}
-                />
-                <Field
-                  label={locale === "ar" ? "سعر المنتج" : "Product Price"}
-                  name="productPrice"
-                  onChange={(value) => updateInput("productPrice", value)}
-                  placeholder="50 EGP, 1 USD, 99 SAR"
-                  required={false}
-                  value={input.productPrice ?? ""}
-                />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  label={locale === "ar" ? "العرض" : "Offer"}
-                  name="offer"
-                  onChange={(value) => updateInput("offer", value)}
-                  placeholder="Free delivery, limited discount, bundle"
-                  required={false}
+                <FormInput
+                  label={t.offer}
                   value={input.offer ?? ""}
-                />
-                <Field
-                  label={locale === "ar" ? "طريقة الطلب" : "Order Method"}
-                  name="orderMethod"
-                  onChange={(value) => updateInput("orderMethod", value)}
-                  placeholder="WhatsApp, form submission, call now"
-                  required={false}
-                  value={input.orderMethod ?? ""}
+                  placeholder={t.placeholders.offer}
+                  onChange={updateOffer}
                 />
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  label={locale === "ar" ? "بلد البيع" : "Sales Country"}
-                  name="salesCountry"
-                  onChange={(value) => updateInput("salesCountry", value)}
-                  placeholder="Egypt, Saudi Arabia, UAE"
-                  required={false}
-                  value={input.salesCountry ?? ""}
-                />
-                <Field
-                  label={locale === "ar" ? "اللهجة" : "Dialect"}
-                  name="dialect"
-                  onChange={(value) => updateInput("dialect", value)}
-                  placeholder="Egyptian Arabic, Saudi Arabic, formal"
-                  required={false}
-                  value={input.dialect ?? ""}
-                />
-              </div>
-              <TextareaField
-                label={locale === "ar" ? "مشكلة العميل" : "Customer Problem"}
-                name="customerProblem"
-                onChange={(value) => updateInput("customerProblem", value)}
-                placeholder="What pain or desire should the page speak to?"
-                value={input.customerProblem ?? ""}
-              />
-              <TextareaField
-                label={locale === "ar" ? "أهم الفوائد" : "Key Benefits"}
-                name="keyBenefits"
-                onChange={(value) => updateInput("keyBenefits", value)}
-                placeholder="List the strongest product benefits in plain language."
+              <FormTextarea
+                label={t.keyBenefits}
                 value={input.keyBenefits ?? ""}
+                placeholder={t.placeholders.keyBenefits}
+                onChange={(value) => updateField("keyBenefits", value)}
               />
-              <div className="space-y-2">
-                <Label htmlFor="productImage">
-                  {locale === "ar" ? "صورة المنتج" : "Product image"}
-                </Label>
-                <div className="flex flex-col gap-3 rounded-md border border-dashed border-border bg-secondary/30 p-4">
-                  <label
-                    className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium shadow-luxury-sm transition-colors hover:bg-secondary"
-                    htmlFor="productImage"
-                  >
-                    <ImagePlus className="size-4" />
-                    {locale === "ar"
-                      ? "رفع صورة المنتج"
-                      : "Upload product image"}
-                  </label>
-                  <input
-                    accept="image/*"
-                    className="sr-only"
-                    id="productImage"
-                    onChange={(event) =>
-                      handleProductImageUpload(event.target.files?.[0])
-                    }
-                    type="file"
-                  />
+              <FormTextarea
+                label={t.customerProblem}
+                value={input.customerProblem ?? ""}
+                placeholder={t.placeholders.customerProblem}
+                onChange={(value) => updateField("customerProblem", value)}
+              />
+
+              <div className="rounded-md border border-border bg-muted/20 p-4">
+                <Label className="text-sm font-semibold">{t.productImage}</Label>
+                <div className="mt-3 grid gap-3 sm:grid-cols-[auto_1fr]">
+                  <Button type="button" variant="outline" asChild>
+                    <label className="cursor-pointer">
+                      <ImagePlus className="me-2 h-4 w-4" />
+                      {t.uploadImage}
+                      <input className="hidden" type="file" accept="image/*" onChange={handleProductImageUpload} />
+                    </label>
+                  </Button>
                   <Input
-                    onChange={(event) => {
-                      updateInput("productImageUrl", event.target.value);
-                      setImageName(null);
-                    }}
-                    placeholder={
-                      locale === "ar"
-                        ? "أو الصق رابط صورة"
-                        : "Or paste an image URL"
-                    }
-                    value={
-                      input.productImageUrl?.startsWith("data:image/")
-                        ? ""
-                        : (input.productImageUrl ?? "")
-                    }
+                    value={input.productImageUrl ?? ""}
+                    placeholder={t.productImageUrl}
+                    onChange={(event) => updateField("productImageUrl", event.target.value)}
                   />
-                  {imageName ? (
-                    <p className="text-xs text-muted-foreground">
-                      {locale === "ar" ? "تم الرفع" : "Uploaded"}: {imageName}
-                    </p>
-                  ) : null}
-                  {input.productImageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      alt="Product preview"
-                      className="h-32 w-full rounded-md border border-border object-cover"
-                      src={input.productImageUrl}
-                    />
-                  ) : null}
                 </div>
+                {input.productImageUrl ? (
+                  <p className="mt-2 text-xs text-muted-foreground">{t.imageReady}</p>
+                ) : null}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="language">{commonT("language")}</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-luxury-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  id="language"
-                  onChange={(event) =>
-                    updateInput(
-                      "language",
-                      event.target.value === "ar" ? "ar" : "en",
-                    )
-                  }
-                  value={input.language}
+
+              {status === "loading" ? (
+                <motion.div
+                  className="rounded-md border border-dashed border-primary/40 bg-primary/5 p-4 text-sm text-muted-foreground"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
                 >
-                  <option value="en">{commonT("english")}</option>
-                  <option value="ar">{commonT("arabic")}</option>
-                </select>
-              </div>
-              <Button className="w-full" disabled={isLoading} type="submit">
-                {isLoading ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <Sparkles />
-                )}
-                {commonT("generate")}
+                  <div className="flex items-center gap-2 font-medium text-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    {t.generating}
+                  </div>
+                  <p className="mt-2">{progressLabels[progressStep]}</p>
+                </motion.div>
+              ) : null}
+
+              {status === "error" && error ? (
+                <Alert className="border-red-200 bg-red-50 text-red-700">
+                  <AlertCircle className="h-4 w-4" />
+                  <p className="font-medium">{t.alerts.error}</p>
+                  <p className="mt-1">{error}</p>
+                </Alert>
+              ) : null}
+
+              <Button className="w-full" size="lg" type="submit" disabled={status === "loading"}>
+                {status === "loading" ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <Sparkles className="me-2 h-4 w-4" />}
+                {status === "loading" ? t.generating : t.generate}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         <AiPreviewPanel
-          generatedImageUrl={generatedHeroImageUrl}
-          isGeneratingImage={isGeneratingImage}
-          isSaving={status === "saving"}
-          onGenerateImage={result ? generateHeroImage : undefined}
-          onSaveDraft={projectId && result ? saveDraftPage : undefined}
           result={result}
-          savedPageId={savedPageId}
+          onSaveDraft={saveDraftPage}
+          isSaving={isSaving}
+          generatedImageUrl={generatedHeroImageUrl}
           savedPageSlug={savedPageSlug}
         />
       </div>
@@ -524,96 +493,59 @@ export function AiGenerationForm({
   );
 }
 
-function Field({
+function FormInput({
   label,
-  name,
-  onChange,
-  placeholder,
-  required = true,
   value,
+  placeholder,
+  onChange,
+  required = false,
 }: {
   label: string;
-  name: keyof AiGenerationInput;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  required?: boolean;
   value: string;
+  placeholder: string;
+  onChange: (value: string) => void;
+  required?: boolean;
 }) {
+  const id = React.useId();
+
   return (
     <div className="space-y-2">
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       <Input
-        id={name}
-        minLength={required ? 2 : undefined}
-        onChange={(event) => onChange(event.target.value)}
+        id={id}
+        value={value}
         placeholder={placeholder}
         required={required}
-        value={value}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
       />
     </div>
   );
 }
 
-function TextareaField({
+function FormTextarea({
   label,
-  name,
-  onChange,
-  placeholder,
   value,
+  placeholder,
+  onChange,
 }: {
   label: string;
-  name: keyof AiGenerationInput;
-  onChange: (value: string) => void;
-  placeholder?: string;
   value: string;
+  placeholder: string;
+  onChange: (value: string) => void;
 }) {
+  const id = React.useId();
+
   return (
     <div className="space-y-2">
-      <Label htmlFor={name}>{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       <textarea
-        className="flex min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-luxury-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        id={name}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
+        id={id}
+        className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         value={value}
+        placeholder={placeholder}
+        rows={4}
+        onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => onChange(event.target.value)}
       />
-    </div>
-  );
-}
-
-function GenerationProgress({
-  locale,
-  status,
-}: {
-  locale: AppLocale;
-  status: GenerationStatus;
-}) {
-  const active = status !== "idle" && status !== "error";
-  const labels: Record<GenerationStatus, string> =
-    locale === "ar"
-      ? {
-          error: "فشل التوليد",
-          generating: "جاري إنشاء المحتوى",
-          idle: "جاهز",
-          parsing: "مراجعة JSON",
-          saving: "حفظ المسودة",
-          success: "تم إنشاء المحتوى",
-          validating: "مراجعة البيانات",
-        }
-      : progressLabels;
-
-  return (
-    <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/40 px-3 py-1.5 text-xs text-muted-foreground">
-      {active ? (
-        <motion.span
-          animate={{ opacity: [0.45, 1, 0.45] }}
-          className="size-2 rounded-full bg-accent"
-          transition={{ duration: 1.2, repeat: Infinity }}
-        />
-      ) : (
-        <span className="size-2 rounded-full bg-muted-foreground/40" />
-      )}
-      {labels[status]}
     </div>
   );
 }

@@ -21,9 +21,9 @@ import { buildEditorFontFaceCss } from "@/services/editor";
 import { useEditorStore } from "@/store/editor";
 
 const canvasWidth = {
-  desktop: "max-w-6xl",
-  mobile: "max-w-[390px]",
-  tablet: "max-w-[768px]",
+  desktop: "min-w-[1180px] max-w-[1440px]",
+  mobile: "max-w-[430px]",
+  tablet: "max-w-[834px]",
 };
 
 export function EditorCanvas() {
@@ -63,12 +63,13 @@ export function EditorCanvas() {
 
   return (
     <main className="min-h-0 flex-1 overflow-auto bg-[radial-gradient(circle_at_top,_hsl(var(--border))_1px,_transparent_1px)] [background-size:24px_24px]">
-      <div className="mx-auto flex min-h-full w-full justify-center px-4 py-6">
+      <div className="mx-auto flex min-h-full w-max min-w-full justify-center px-2 py-3 sm:px-4">
         <div
           className={cn(
-            "w-full overflow-hidden rounded-lg border border-border bg-background shadow-2xl transition-all duration-300",
+            "w-full overflow-hidden rounded-md border border-border bg-background shadow-2xl transition-all duration-300",
             canvasWidth[deviceMode],
           )}
+          data-editor-device-mode={deviceMode}
           data-editor-export-root="true"
         >
           {fontFaceCss ? (

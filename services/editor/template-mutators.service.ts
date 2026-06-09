@@ -214,14 +214,19 @@ export function addTemplateSection(
 export function createDefaultSectionStyle(): EditorSectionStyle {
   return {
     align: "start",
+    backgroundImageOpacity: 100,
     backgroundImageUrl: undefined,
     customTexts: [],
+    foregroundImageHeight: 0,
+    foregroundImageOpacity: 100,
+    foregroundImageRadius: 12,
     foregroundImageX: 82,
     foregroundImageY: 72,
     foregroundImageUrl: undefined,
     foregroundImageWidth: 220,
     hiddenOn: [],
     padding: "comfortable",
+    sectionMinHeight: 0,
     textScale: 100,
   };
 }

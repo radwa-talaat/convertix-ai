@@ -41,14 +41,19 @@ export type EditorCustomText = {
 export type EditorSectionStyle = {
   align: "start" | "center" | "end";
   backgroundColor?: string;
+  backgroundImageOpacity?: number;
   backgroundImageUrl?: string;
   customTexts?: EditorCustomText[];
+  foregroundImageHeight?: number;
+  foregroundImageOpacity?: number;
+  foregroundImageRadius?: number;
   foregroundImageX?: number;
   foregroundImageY?: number;
   foregroundImageUrl?: string;
   foregroundImageWidth?: number;
   hiddenOn: EditorDeviceMode[];
   padding: "compact" | "comfortable" | "spacious";
+  sectionMinHeight?: number;
   textScale?: number;
 };
 

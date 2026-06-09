@@ -480,7 +480,7 @@ function ActivePropertiesTab({
           <p className="text-sm font-semibold">{t("sectionTextSize")}</p>
           <RangeField
             label={t("textScale")}
-            max={180}
+            max={240}
             min={70}
             onChange={(value) => onPatchStyle({ textScale: value })}
             step={5}
@@ -517,6 +517,17 @@ function ActivePropertiesTab({
               {spacing.name}
             </button>
           ))}
+        </div>
+        <div className="rounded-md border border-border bg-background p-3">
+          <RangeField
+            label={t("sectionMinHeight")}
+            max={1100}
+            min={0}
+            onChange={(value) => onPatchStyle({ sectionMinHeight: value })}
+            step={20}
+            suffix="px"
+            value={selectedStyle.sectionMinHeight ?? 0}
+          />
         </div>
       </div>
     );
@@ -580,6 +591,19 @@ function ActivePropertiesTab({
         onChange={(value) => onPatchStyle({ backgroundImageUrl: value })}
         value={selectedStyle.backgroundImageUrl ?? ""}
       />
+      {selectedStyle.backgroundImageUrl ? (
+        <div className="rounded-md border border-border bg-background p-3">
+          <RangeField
+            label={t("backgroundOpacity")}
+            max={100}
+            min={5}
+            onChange={(value) => onPatchStyle({ backgroundImageOpacity: value })}
+            step={5}
+            suffix="%"
+            value={selectedStyle.backgroundImageOpacity ?? 100}
+          />
+        </div>
+      ) : null}
       <ImageUrlField
         label={t("imageInsideLayer")}
         onChange={(value) => onPatchStyle({ foregroundImageUrl: value })}
@@ -590,12 +614,21 @@ function ActivePropertiesTab({
           <p className="text-sm font-semibold">{t("productImagePosition")}</p>
           <RangeField
             label={t("width")}
-            max={640}
+            max={900}
             min={80}
             onChange={(value) => onPatchStyle({ foregroundImageWidth: value })}
             step={10}
             suffix="px"
             value={selectedStyle.foregroundImageWidth ?? 220}
+          />
+          <RangeField
+            label={t("height")}
+            max={900}
+            min={0}
+            onChange={(value) => onPatchStyle({ foregroundImageHeight: value })}
+            step={10}
+            suffix="px"
+            value={selectedStyle.foregroundImageHeight ?? 0}
           />
           <RangeField
             label={t("horizontal")}
@@ -614,6 +647,24 @@ function ActivePropertiesTab({
             step={1}
             suffix="%"
             value={selectedStyle.foregroundImageY ?? 72}
+          />
+          <RangeField
+            label={t("opacity")}
+            max={100}
+            min={5}
+            onChange={(value) => onPatchStyle({ foregroundImageOpacity: value })}
+            step={5}
+            suffix="%"
+            value={selectedStyle.foregroundImageOpacity ?? 100}
+          />
+          <RangeField
+            label={t("cornerRadius")}
+            max={80}
+            min={0}
+            onChange={(value) => onPatchStyle({ foregroundImageRadius: value })}
+            step={1}
+            suffix="px"
+            value={selectedStyle.foregroundImageRadius ?? 12}
           />
         </div>
       ) : null}
