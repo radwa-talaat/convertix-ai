@@ -10,6 +10,7 @@ import {
   Redo2,
   Rocket,
   Save,
+  Settings2,
   Smartphone,
   Tablet,
   Undo2,
@@ -274,6 +275,30 @@ export function EditorToolbar({ pageId }: EditorToolbarProps) {
           )}
           <span className="hidden sm:inline">{t("save")}</span>
         </Button>
+        {pageId ? (
+          <Button asChild size="sm" title={t("pageSettings")} variant="outline">
+            <Link
+              href={createLocalizedPathname(
+                `/dashboard/publishing/${pageId}/settings`,
+                locale,
+              )}
+            >
+              <Settings2 className="size-4" />
+              <span className="hidden xl:inline">{t("pageSettings")}</span>
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            disabled
+            size="sm"
+            title={t("saveBeforeSettings")}
+            type="button"
+            variant="outline"
+          >
+            <Settings2 className="size-4" />
+            <span className="hidden xl:inline">{t("pageSettings")}</span>
+          </Button>
+        )}
         <Button asChild size="sm" title={t("preview")} variant="ghost">
           <Link
             href={createLocalizedPathname(

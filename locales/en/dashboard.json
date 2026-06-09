@@ -196,6 +196,11 @@
     "domainExampleTitle": "Copy-ready examples",
     "domainExampleApex": "For yourdomain.com without www: host @, type A, value 76.76.21.21, and TTL 3600.",
     "domainExampleSubdomain": "For shop.yourdomain.com: host shop, type CNAME, value cname.vercel-dns.com, and TTL 3600.",
-    "domainVerificationAfterAdd": "The verification token appears after adding the domain"
+    "domainVerificationAfterAdd": "The verification token appears after adding the domain",
+    "backToEditor": "Back to editor",
+    "pageUnpublished": "Page unpublished",
+    "pageUnpublishedDescription": "The page is now a draft and the public URL is offline.",
+    "republishFailed": "Republish failed",
+    "unpublishFailed": "Unpublish failed"
   }
 }

@@ -50,7 +50,7 @@ export function PagePrivateSettings({
 }: PagePrivateSettingsProps) {
   const locale = useLocale() as AppLocale;
   const t = useTranslations("dashboard.publishingPage");
-  const backHref = `/${locale}/dashboard/publishing`;
+  const backHref = `/${locale}/dashboard/editor?page=${page.id}`;
 
   return (
     <div className="space-y-6">
@@ -59,7 +59,7 @@ export function PagePrivateSettings({
           <Button asChild className="mb-4" size="sm" variant="outline">
             <Link href={backHref}>
               <ArrowLeft className="size-4 rtl:rotate-180" />
-              {t("backToPublishing")}
+              {t("backToEditor")}
             </Link>
           </Button>
           <div className="flex flex-wrap items-center gap-2">

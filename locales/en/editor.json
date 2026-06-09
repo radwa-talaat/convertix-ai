@@ -84,5 +84,7 @@
   "ctaFieldsDescription": "Add or remove the small offer/details shown above the final CTA button.",
   "ctaField": "CTA field",
   "deleteCtaField": "Delete CTA field",
-  "emptyCtaFields": "Add fields for price, delivery, bonus, guarantee, or the next step."
+  "emptyCtaFields": "Add fields for price, delivery, bonus, guarantee, or the next step.",
+  "pageSettings": "Private settings",
+  "saveBeforeSettings": "Save this page before opening private settings"
 }

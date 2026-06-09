@@ -3,13 +3,14 @@
 import {
   ExternalLink,
   Eye,
+  Loader2,
   RefreshCw,
   Rocket,
   RotateCcw,
-  Settings2,
 } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import * as React from "react";
 
 import { CopyUrlButton } from "@/components/publishing/copy-url-button";
 import { PublishStatusBadge } from "@/components/publishing/publish-status-badge";
@@ -20,15 +21,34 @@ import type { PublishedPage } from "@/types/publishing";
 
 type PublishedPagesListProps = {
   onPublish: (page: PublishedPage) => void;
+  onRepublish: (page: PublishedPage) => Promise<void>;
+  onUnpublish: (page: PublishedPage) => Promise<void>;
   pages: PublishedPage[];
 };
 
 export function PublishedPagesList({
   onPublish,
+  onRepublish,
+  onUnpublish,
   pages,
 }: PublishedPagesListProps) {
   const locale = useLocale() as AppLocale;
   const t = useTranslations("dashboard.publishingPage");
+  const [pendingAction, setPendingAction] = React.useState<string | null>(null);
+
+  async function runPageAction(
+    action: "republish" | "unpublish",
+    page: PublishedPage,
+    handler: (page: PublishedPage) => Promise<void>,
+  ) {
+    setPendingAction(`${action}:${page.id}`);
+
+    try {
+      await handler(page);
+    } finally {
+      setPendingAction(null);
+    }
+  }
 
   return (
     <Card>
@@ -69,12 +89,36 @@ export function PublishedPagesList({
                   <Rocket className="size-4" />
                   {t("publish")}
                 </Button>
-                <Button size="sm" type="button" variant="outline">
-                  <RefreshCw className="size-4" />
+                <Button
+                  disabled={pendingAction !== null}
+                  onClick={() =>
+                    void runPageAction("republish", page, onRepublish)
+                  }
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  {pendingAction === `republish:${page.id}` ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-4" />
+                  )}
                   {t("republish")}
                 </Button>
-                <Button size="sm" type="button" variant="ghost">
-                  <RotateCcw className="size-4" />
+                <Button
+                  disabled={pendingAction !== null}
+                  onClick={() =>
+                    void runPageAction("unpublish", page, onUnpublish)
+                  }
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  {pendingAction === `unpublish:${page.id}` ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <RotateCcw className="size-4" />
+                  )}
                   {t("unpublish")}
                 </Button>
                 <Button asChild size="sm" variant="ghost">
@@ -87,14 +131,6 @@ export function PublishedPagesList({
                   <Link href={`/preview/${page.slug}`}>
                     <Eye className="size-4" />
                     {t("preview")}
-                  </Link>
-                </Button>
-                <Button asChild size="sm" variant="outline">
-                  <Link
-                    href={`/${locale}/dashboard/publishing/${page.id}/settings`}
-                  >
-                    <Settings2 className="size-4" />
-                    {t("privateSettings")}
                   </Link>
                 </Button>
                 <CopyUrlButton url={page.publicUrl} />

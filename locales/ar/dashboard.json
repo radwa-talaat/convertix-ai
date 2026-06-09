@@ -196,6 +196,11 @@
     "domainExampleTitle": "مثال جاهز للنسخ",
     "domainExampleApex": "لو الدومين yourdomain.com بدون www: الاسم @، النوع A، القيمة 76.76.21.21، و TTL يساوي 3600.",
     "domainExampleSubdomain": "لو الدومين shop.yourdomain.com: الاسم shop، النوع CNAME، القيمة cname.vercel-dns.com، و TTL يساوي 3600.",
-    "domainVerificationAfterAdd": "سيظهر رمز التحقق بعد إضافة الدومين"
+    "domainVerificationAfterAdd": "سيظهر رمز التحقق بعد إضافة الدومين",
+    "backToEditor": "العودة إلى المحرر",
+    "pageUnpublished": "تم إلغاء نشر الصفحة",
+    "pageUnpublishedDescription": "أصبحت الصفحة مسودة والرابط العام متوقف الآن.",
+    "republishFailed": "تعذرت إعادة النشر",
+    "unpublishFailed": "تعذر إلغاء النشر"
   }
 }
